@@ -1,0 +1,114 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Rider project files
+.idea/
+*.sln.iml
+
+# VS Code settings
+.vscode/
+
+# Auto-generated files
+Generated_Code/
+*.g.*
+
+# ASP.NET specific
+wwwroot/lib/
+wwwroot/dist/
+wwwroot/node_modules/
+
+# Publish output
+publish/
+*.publish.xml
+
+# User secrets
+secrets.json
+*.secrets.json
+**/secrets/*
+
+# Configuration files
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+appsettings.*.dev.json
+
+# Logs
+*.log
+logs/
+log/
+*.tlog
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Entity Framework migrations cache
+Migrations/*.Designer.cs
+Migrations/*ModelSnapshot.cs
+
+# dotCover
+.idea/.dotCover
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Temporary files
+~$*
+*.tmp
+*.bak
+*.cache
+*.dbmdl
+*.orig
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Node/NPM stuff if you're using frontend bundlers
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.env.*
+
+# Docker
+**/docker-compose.override.yml
+**/Dockerfile.*
+.dockerignore
+
+# Test results
+TestResults/
+*.coverage
+*.coveragexml
+*.testsettings
+*.vsmdi
+
+# Azure & deployment
+.publish/
+*.azurePubxml
+*.pubxml
+*.PublishSettings
+
+# JetBrains Rider
+.idea/
+
+# Visual Studio 2019+
+.vs/
+.vscode/

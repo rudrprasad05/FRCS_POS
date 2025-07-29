@@ -1,9 +1,35 @@
+using FrcsPos.Config;
+using FrcsPos.Interfaces;
+using AspNetCore.Swagger.Themes;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+using FrcsPos.Services;
+using FrcsPos.Context;
+using FrcsPos.Middleware;
+using FrcsPos.Service;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerServices();
+builder.Services.AddDatabaseContext(builder.Configuration);
+builder.Services.AddIdentityService();
+builder.Services.AddAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
+// builder.Services.AddSingleton<IUserContextService, UserContextService>();
+// builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
+
+
+builder.WebHost.UseUrls(builder.Configuration["Backend:Url"] ?? throw new InvalidOperationException());
 
 var app = builder.Build();
 
@@ -11,34 +37,41 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(Style.Dark);
 }
 
-app.UseHttpsRedirection();
+app
+.UseCors("allowSpecificOrigin")
+.UseHttpsRedirection()
+.UseAuthentication()
+.UseAuthorization();
 
-var summaries = new[]
+if (app.Environment.IsDevelopment())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    app.UseDeveloperExceptionPage(); 
+}
 
-app.MapGet("/weatherforecast", () =>
+// app.UseMiddleware<TokenMiddleware>();
+app.UseMiddleware<LoggingMiddleware>();
+app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        var connection = dbContext.Database.GetDbConnection();
+        Console.WriteLine("🔍 Connection string being used:");
+        Console.WriteLine(connection.ConnectionString);
+        
+        dbContext.Database.OpenConnection(); // Test the connection
+        dbContext.Database.CloseConnection();
+        Console.WriteLine("Database connection successful.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database connection failed: {ex.Message}");
+    }
+}
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

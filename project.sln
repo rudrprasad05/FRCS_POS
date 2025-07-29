@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "server", "server", "{DAD03CFC-D5FA-AC94-41C7-9ABAB326F09E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrcsPos", "server\FrcsPos\FrcsPos.csproj", "{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2} = {DAD03CFC-D5FA-AC94-41C7-9ABAB326F09E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DC51A940-B96B-4D03-B848-6D44DD4D5D36}
+	EndGlobalSection
+EndGlobal
