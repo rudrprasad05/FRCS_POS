@@ -7,10 +7,14 @@ using FrcsPos.Services;
 using FrcsPos.Context;
 using FrcsPos.Middleware;
 using FrcsPos.Service;
+using DotNetEnv;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+Env.Load();
+
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerServices();
 builder.Services.AddDatabaseContext(builder.Configuration);
