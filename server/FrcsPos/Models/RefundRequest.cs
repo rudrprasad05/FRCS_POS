@@ -20,7 +20,7 @@ namespace FrcsPos.Models
         public int SaleId { get; set; }
         public Sale Sale { get; set; } = default!;
 
-        public int RequestedByUserId { get; set; }
+        public string RequestedByUserId { get; set; } = null!;
         public User RequestedBy { get; set; } = default!;
 
         public RefundStatus Status { get; set; } = RefundStatus.Pending;

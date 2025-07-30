@@ -16,9 +16,9 @@ namespace FrcsPos.Models
         public int CompanyId { get; set; }
         public Company Company { get; set; } = default!;
 
-        public int UserId { get; set; }
+        public string UserId { get; set; } = null!;
         public User User { get; set; } = default!;
-        
+
         public CompanyRole Role { get; set; }
     }
 }

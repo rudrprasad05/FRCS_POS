@@ -7,7 +7,7 @@ namespace FrcsPos.Models
 {
     public class RefundItem : BaseModel
     {
-        public string RefundRequestId { get; set; } = new Guid().ToString();
+        public int RefundRequestId { get; set; }
         public RefundRequest RefundRequest { get; set; } = default!;
 
         public int SaleItemId { get; set; }

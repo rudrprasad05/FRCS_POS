@@ -11,6 +11,10 @@ namespace FrcsPos.Context
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+        {
+        }
         public DbSet<Company> Companies => Set<Company>();
         public DbSet<CompanyUser> CompanyUsers => Set<CompanyUser>();
         public DbSet<Warehouse> Warehouses => Set<Warehouse>();
