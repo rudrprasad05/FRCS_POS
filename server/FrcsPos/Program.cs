@@ -57,6 +57,7 @@ if (app.Environment.IsDevelopment())
 
 // app.UseMiddleware<TokenMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
+app.UseMiddleware<ApiResponseMiddleware>();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
