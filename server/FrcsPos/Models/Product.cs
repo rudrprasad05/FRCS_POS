@@ -11,9 +11,9 @@ namespace FrcsPos.Models
         public Company Company { get; set; } = default!;
 
         public string Name { get; set; } = default!;
-        public string Sku { get; set; } = default!;      // unique within company
-        public string? Barcode { get; set; }             // unique within company (nullable)
-        public decimal Price { get; set; }               // current list price
+        public string Sku { get; set; } = default!;      
+        public string? Barcode { get; set; }             
+        public decimal Price { get; set; }               
         public int TaxCategoryId { get; set; }
         public TaxCategory TaxCategory { get; set; } = default!;
         public bool IsPerishable { get; set; } = false;
