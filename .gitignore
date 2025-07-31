@@ -4,3 +4,4 @@
 
 # But keep .env.example
 !.env.example
+.fake
