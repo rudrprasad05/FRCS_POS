@@ -7,9 +7,9 @@ namespace FrcsPos.Models
 {
     public enum RefundStatus
     {
-        Pending = 1,
-        Approved = 2,
-        Rejected = 3
+        PENDING,
+        APPROVED,
+        REJECTED
     }
 
     public class RefundRequest : BaseModel
@@ -23,7 +23,7 @@ namespace FrcsPos.Models
         public string RequestedByUserId { get; set; } = null!;
         public User RequestedBy { get; set; } = default!;
 
-        public RefundStatus Status { get; set; } = RefundStatus.Pending;
+        public RefundStatus Status { get; set; } = RefundStatus.PENDING;
         public string? Reason { get; set; }
 
         public string? ApprovedByUserId { get; set; }

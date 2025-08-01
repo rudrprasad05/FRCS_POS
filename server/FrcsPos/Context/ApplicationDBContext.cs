@@ -18,8 +18,8 @@ namespace FrcsPos.Context
         public DbSet<Company> Companies => Set<Company>();
         public DbSet<CompanyUser> CompanyUsers => Set<CompanyUser>();
         public DbSet<Warehouse> Warehouses => Set<Warehouse>();
-        public DbSet<PosTerminal> POSTerminals => Set<PosTerminal>();
-        public DbSet<CashierTerminal> CashierTerminals => Set<CashierTerminal>();
+        public DbSet<PosTerminal> PosTerminals => Set<PosTerminal>();
+        public DbSet<PosSession> PosSessions => Set<PosSession>();
         public DbSet<Product> Products => Set<Product>();
         public DbSet<ProductBatch> ProductBatches => Set<ProductBatch>();
         public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
@@ -37,6 +37,7 @@ namespace FrcsPos.Context
             {
                 new IdentityRole{Name = "superadmin", NormalizedName = "SUPERADMIN"},
                 new IdentityRole{Name = "admin", NormalizedName = "ADMIN"},
+                new IdentityRole{Name = "cashier", NormalizedName = "CASHIER"},
                 new IdentityRole{Name = "user", NormalizedName = "USER"}
             };
             b.UseCollation("utf8mb4_general_ci");
@@ -44,7 +45,6 @@ namespace FrcsPos.Context
             b.Entity<IdentityUserLogin<string>>().HasKey(login => new { login.LoginProvider, login.ProviderKey });
             b.Entity<IdentityUserRole<string>>().HasKey(role => new { role.UserId, role.RoleId });
             b.Entity<IdentityUserToken<string>>().HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
-
 
             b.Entity<User>(e =>
             {
@@ -79,14 +79,14 @@ namespace FrcsPos.Context
                 e.HasIndex(x => x.SerialNumber);
             });
 
-            b.Entity<CashierTerminal>(e =>
+            b.Entity<PosSession>(e =>
             {
-                e.HasKey(x => new { x.PosTerminalId, x.UserId });
-                e.HasOne(x => x.PosTerminal).WithMany(x => x.Cashiers)
+                e.HasKey(x => new { x.PosTerminalId, x.PosUserId });
+                e.HasOne(x => x.PosTerminal).WithMany(x => x.Session)
                     .HasForeignKey(x => x.PosTerminalId)
                     .OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.User).WithMany()
-                    .HasForeignKey(x => x.UserId)
+                e.HasOne(x => x.PosUser).WithMany()
+                    .HasForeignKey(x => x.PosUserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -116,10 +116,16 @@ namespace FrcsPos.Context
 
                 e.HasIndex(x => new { x.CompanyId, x.InvoiceNumber }).IsUnique();
 
-                e.HasOne(x => x.POSTerminal).WithMany(x => x.Sales)
-                    .HasForeignKey(x => x.POSTerminalId).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.Cashier).WithMany(x => x.SalesAsCashier)
-                    .HasForeignKey(x => x.CashierId).OnDelete(DeleteBehavior.Restrict);
+                // Configure the relationship to PosSession using composite key
+                e.HasOne(x => x.PosSession)
+                    .WithMany(x => x.Sales)
+                    .HasForeignKey(x => new { x.PosTerminalId, x.PosUserId })
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                e.HasOne(x => x.Cashier)
+                    .WithMany(x => x.SalesAsCashier)
+                    .HasForeignKey(x => x.CashierId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             b.Entity<SaleItem>(e =>

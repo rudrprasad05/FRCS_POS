@@ -10,5 +10,6 @@ namespace FrcsPos.Models
     {
         public ICollection<CompanyUser> Companies { get; set; } = [];
         public ICollection<Sale> SalesAsCashier { get; set; } = [];
+        public ICollection<PosSession> PosSessions { get; set; } = [];
     }
 }

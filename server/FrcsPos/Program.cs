@@ -8,6 +8,7 @@ using FrcsPos.Context;
 using FrcsPos.Middleware;
 using FrcsPos.Service;
 using DotNetEnv;
+using FrcsPos.Repository;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 // builder.Services.AddSingleton<IUserContextService, UserContextService>();
 // builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 

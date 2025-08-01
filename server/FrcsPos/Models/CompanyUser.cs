@@ -7,8 +7,8 @@ namespace FrcsPos.Models
 {
     public enum CompanyRole
     {
-        Manager = 1,
-        Cashier = 2
+        MANAGER,
+        CASHIER
     }
 
     public class CompanyUser : BaseModel
@@ -20,5 +20,7 @@ namespace FrcsPos.Models
         public User User { get; set; } = default!;
 
         public CompanyRole Role { get; set; }
+
+        public List<PosSession> PosSessions = new List<PosSession>();
     }
 }
