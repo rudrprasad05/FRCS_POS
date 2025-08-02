@@ -29,6 +29,8 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRepository>();
+
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 

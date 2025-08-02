@@ -19,6 +19,18 @@ namespace FrcsPos.Mappers
                 PasswordHash = request.Password ?? string.Empty
             };
         }
+
+        public static UserDTO FromUserToDto(this User request)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return new UserDTO
+            {
+                Id = request.Id,
+                Username = request.UserName ?? string.Empty,
+                Email = request.Email ?? string.Empty,
+                Token = request.PasswordHash ?? string.Empty
+            };
+        }
         
     }
 }
