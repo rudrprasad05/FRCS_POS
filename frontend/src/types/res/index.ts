@@ -1,5 +1,6 @@
-import { User } from "../models";
+import { Company, User } from "../models";
 
 export interface SuperAdminDashboardDTO {
   users: User[];
+  companies: Company[];
 }

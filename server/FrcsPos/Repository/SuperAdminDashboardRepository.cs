@@ -29,17 +29,25 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<SuperAdminDashboardDTO>> GetSuperAdminDashboard()
         {
             var users = await _context.Users.ToListAsync();
+            var companies = await _context.Companies.Include(c => c.AdminUser).ToListAsync();
+
+            var companyDtos = new List<CompanyDTO>();
             var userDtos = new List<UserDTO>();
 
             foreach (var user in users)
             {
                 userDtos.Add(user.FromUserToDto());
-            }
-            ;
+            };
+
+            foreach (var company in companies)
+            {
+                companyDtos.Add(company.FromModelToDto());
+            };
 
             var dto = new SuperAdminDashboardDTO
             {
                 Users = userDtos,
+                Companies = companyDtos
             };
 
             return new ApiResponse<SuperAdminDashboardDTO>
