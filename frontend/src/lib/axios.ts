@@ -1,10 +1,5 @@
 import axios from "axios";
-import http from "https";
 import { destroyCookie } from "nookies";
-
-const agent = new http.Agent({
-  rejectUnauthorized: false,
-});
 
 export const axiosGlobal = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,

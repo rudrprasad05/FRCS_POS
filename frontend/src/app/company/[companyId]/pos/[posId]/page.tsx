@@ -2,25 +2,29 @@
 
 import { GetPosTerminalById } from "@/actions/PosTerminal";
 import { PosTerminal } from "@/types/models";
-import React, { use, useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { use, useEffect, useState } from "react";
 
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;
 };
 
 export default function PosPage({ params }: PageProps) {
-  const { companyId, posId } = use(params);
+  const { posId } = use(params);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PosTerminal | undefined>(undefined);
 
   useEffect(() => {
-    console.log(companyId, posId);
+    console.log(posId);
     const getData = async () => {
       const cake = await GetPosTerminalById(posId);
       setData(cake.data);
       setLoading(false);
     };
     getData();
-  }, [params, companyId]);
+  }, [params, posId]);
+  if (loading) {
+    return <Loader2 className="animate-spin" />;
+  }
   return <div>{data?.name}</div>;
 }

@@ -1,12 +1,8 @@
 "use server";
 
 import { axiosGlobal } from "@/lib/axios";
-import { buildMediaQueryParams } from "@/lib/params";
 import { ApiResponse, PosTerminal } from "@/types/models";
-import axios from "axios";
-import { redirect } from "next/navigation";
 import { GetToken } from "./User";
-import { SuperAdminDashboardDTO } from "@/types/res";
 
 export async function GetPosTerminalById(
   id: string

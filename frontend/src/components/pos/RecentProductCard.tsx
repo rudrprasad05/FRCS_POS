@@ -1,18 +1,19 @@
 "use client";
 
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Product } from "@/types/models";
-import { useState } from "react";
 import { ImageIcon, Plus } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import { Button } from "../ui/button";
 
 export function RecentProductCard({ item }: { item: Product }) {
   const [isImageValid, setIsImageValid] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [cart, setCart] = useState<Product[]>([]);
 
-  const addToCart = (product: Product) => {};
+  const addToCart = (product: Product) => {
+    console.log(product);
+  };
   return (
     <div
       key={item.id}

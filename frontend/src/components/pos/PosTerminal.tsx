@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Separator } from "@/components/ui/separator";
 import { MOCK_PRODUCTS } from "@/lib/data";
-import { Camera, Minus, Plus, QrCode, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { RecentProductCard } from "./RecentProductCard";
 import PosHeader from "./PosHeader";
+import { RecentProductCard } from "./RecentProductCard";
 
 interface Product {
   id: string;
@@ -74,7 +74,7 @@ export default function PosTerminal() {
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto">
                   {MOCK_PRODUCTS.map((product) => (
-                    <RecentProductCard item={product} />
+                    <RecentProductCard key={product.uuid} item={product} />
                   ))}
                 </div>
               </CardContent>

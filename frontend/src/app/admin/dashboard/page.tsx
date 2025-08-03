@@ -2,18 +2,16 @@
 
 import { GetSuperAdminDashboard } from "@/actions/SuperAdminDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import React, { useEffect, useState } from "react";
-import { SuperAdminDashboardDTO } from "@/types/res";
-import { LoadingCard } from "@/components/global/LoadingContainer";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Company } from "@/types/models";
+import { SuperAdminDashboardDTO } from "@/types/res";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function SuperAdminDashboardPage() {
   const [data, setData] = useState<SuperAdminDashboardDTO | undefined>();
@@ -61,7 +59,7 @@ export default function SuperAdminDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {data?.companies.map((company) => (
-            <CollapsibleCard company={company} />
+            <CollapsibleCard key={company.uuid} company={company} />
           ))}
         </CardContent>
       </Card>
@@ -84,7 +82,7 @@ function CollapsibleCard({ company }: { company: Company }) {
       <CollapsibleContent>
         <div className="w-11/12 mt-2 ml-auto border rounded-lg p-2">
           {company.posTerminals?.map((pos) => (
-            <div className="flex items-center justify-between">
+            <div key={pos.uuid} className="flex items-center justify-between">
               <div>PosTerminal: {pos.name}</div>
               <Link href={`/company/${company.uuid}/pos/${pos.uuid}`}>
                 Open

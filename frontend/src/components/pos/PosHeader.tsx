@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,18 +9,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Menu,
-  Maximize,
-  Minimize,
-  QrCode,
-  Sun,
-  Moon,
-  Monitor,
   CreditCard,
+  Maximize,
+  Menu,
+  Minimize,
+  Monitor,
+  Moon,
   RotateCcw,
   Settings,
+  Sun,
   User,
 } from "lucide-react";
+import { useState } from "react";
 import PosQrCodeConnectDialoge from "./PosQrCodeConnectDialoge";
 
 export default function PosHeader() {

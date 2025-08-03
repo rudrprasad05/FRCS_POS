@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { QrCode } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../ui/button";
-import { Maximize, Minimize, QrCode } from "lucide-react";
 
 export default function PosQrCodeConnectDialoge() {
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
@@ -42,7 +42,7 @@ export default function PosQrCodeConnectDialoge() {
             <h3 className="font-semibold text-gray-900">Instructions:</h3>
             <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
               <li>Download the barcode scanner app on your mobile phone</li>
-              <li>Click "Generate QR Code" above</li>
+              <li>Click &quot;Generate QR Code&quot; above</li>
               <li>Scan the QR code with your mobile app</li>
               <li>Your phone is now connected as a barcode scanner</li>
               <li>Scan product barcodes to add items to the cart</li>
