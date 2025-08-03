@@ -11,5 +11,6 @@ namespace FrcsPos.Response.DTO
         public string Name { get; set; } = default!;
         public string LocationDescription { get; set; } = string.Empty;
         public string SerialNumber { get; set; } = string.Empty;
+        public ICollection<PosSessionDTO> Session { get; set; } = [];
     }
 }

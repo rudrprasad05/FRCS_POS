@@ -31,6 +31,7 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
                 Company = request.Company.FromModelToDto(),
+                Session = request.Session.FromPosSessionListToPosSessionDTOList(),
             };
         }
         public static PosTerminalDTO FromModelToDtoWithoutCompany(this PosTerminal request)

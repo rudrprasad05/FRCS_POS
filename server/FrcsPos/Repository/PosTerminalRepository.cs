@@ -104,6 +104,22 @@ namespace FrcsPos.Repository
             };
         }
 
-       
+        public async Task<ApiResponse<PosTerminalDTO>> GetOnePosTerminalByIdAsync(string uuid)
+        {
+            var pos = await _context.PosTerminals
+                .Where(p => p.UUID == uuid)
+                .Include(c => c.Session)
+                .Include(c => c.Sales)
+                .OrderByDescending(c => c.CreatedOn)
+                .FirstOrDefaultAsync();
+
+            if (pos == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail();
+            }
+
+            var dto = pos.FromModelToDto();
+            return ApiResponse<PosTerminalDTO>.Ok(dto);
+        }
     }
 }

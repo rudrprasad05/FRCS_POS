@@ -13,6 +13,7 @@ import { SuperAdminDashboardDTO } from "@/types/res";
 import { LoadingCard } from "@/components/global/LoadingContainer";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Company } from "@/types/models";
+import Link from "next/link";
 
 export default function SuperAdminDashboardPage() {
   const [data, setData] = useState<SuperAdminDashboardDTO | undefined>();
@@ -83,7 +84,12 @@ function CollapsibleCard({ company }: { company: Company }) {
       <CollapsibleContent>
         <div className="w-11/12 mt-2 ml-auto border rounded-lg p-2">
           {company.posTerminals?.map((pos) => (
-            <div>PosTerminal: {pos.name}</div>
+            <div className="flex items-center justify-between">
+              <div>PosTerminal: {pos.name}</div>
+              <Link href={`/company/${company.uuid}/pos/${pos.uuid}`}>
+                Open
+              </Link>
+            </div>
           ))}
         </div>
       </CollapsibleContent>

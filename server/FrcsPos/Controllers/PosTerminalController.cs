@@ -49,5 +49,18 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+
+        [HttpGet("get-one")]
+        public async Task<IActionResult> GetOnePosTerminalById([FromQuery]string uuid)
+        {
+            var model = await _posTerminalRepository.GetOnePosTerminalByIdAsync(uuid);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
     }
 }
