@@ -22,8 +22,11 @@ namespace FrcsPos.Mappers
 
         public static CompanyDTO FromModelToDto(this Company request)
         {
-            ArgumentNullException.ThrowIfNull(request);
-            return new CompanyDTO
+            if (request == null)
+            {
+                return new CompanyDTO();
+            }
+            var dto = new CompanyDTO
             {
                 UUID = request.UUID,
                 Id = request.Id,
@@ -32,6 +35,16 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 AdminUser = request.AdminUser.FromUserToDto(),
             };
+
+            var posList = new List<PosTerminalDTO>();
+            foreach (var terminal in request.PosTerminals)
+            {
+                posList.Add(terminal.FromModelToDtoWithoutCompany());
+            }
+
+            dto.PosTerminals = posList;
+
+            return dto;
         }
     }
 }

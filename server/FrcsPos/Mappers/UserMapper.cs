@@ -22,13 +22,22 @@ namespace FrcsPos.Mappers
 
         public static UserDTO FromUserToDto(this User request)
         {
-            ArgumentNullException.ThrowIfNull(request);
+            if (request == null)
+            {
+                return new UserDTO
+                {
+                    Id = "id",
+                    Username = "null",
+                    Email = "null",
+                    Token = "null",
+                };
+            }
             return new UserDTO
             {
                 Id = request.Id,
                 Username = request.UserName ?? string.Empty,
                 Email = request.Email ?? string.Empty,
-                Token = request.PasswordHash ?? string.Empty
+                Token = request.PasswordHash ?? string.Empty,
             };
         }
         

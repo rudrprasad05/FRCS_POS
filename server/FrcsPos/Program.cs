@@ -31,6 +31,7 @@ builder.Services.AddControllers()
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
 builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRepository>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
