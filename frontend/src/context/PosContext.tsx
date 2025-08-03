@@ -1,0 +1,89 @@
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+  useRef,
+} from "react";
+import hash from "object-hash";
+import { toast } from "sonner";
+
+const CakeContext = createContext<{
+  data: Partial<any>;
+  isSaving: boolean;
+  setInitialState: (data: Partial<any>) => void;
+  updateValues: <K extends keyof any>(key: K, value: any[K]) => void;
+  save: () => void;
+  hasChanged: boolean;
+  setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
+}>({
+  data: {},
+  isSaving: false,
+  setInitialState: () => {},
+  updateValues: () => {},
+  save: () => {},
+  hasChanged: false,
+  setHasChanged: () => {},
+});
+
+export const CakeProvider = ({ children }: { children: ReactNode }) => {
+  const [data, setCake] = useState<Partial<any>>({});
+  const [hasChanged, setHasChanged] = useState(false);
+  const initialHashRef = useRef<string>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const currentHash = hash(data);
+    if (!initialHashRef.current) {
+      initialHashRef.current = currentHash;
+    }
+    setHasChanged(currentHash !== initialHashRef.current);
+  }, [data]);
+
+  function setInitialState(data: Partial<any>) {
+    if (data == data) return;
+    console.log("hit3");
+    setCake(data);
+    initialHashRef.current = hash(data);
+  }
+
+  function updateValues<K extends keyof any>(key: K, value: any[K]) {
+    setCake((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  }
+
+  async function save() {
+    setIsSaving(true);
+    try {
+      initialHashRef.current = hash(data);
+      setHasChanged(false);
+
+      toast.success("Saved successfully");
+    } catch (error) {
+      toast.error("Error ocured. Changes not saved");
+    }
+    setIsSaving(false);
+  }
+
+  return (
+    <CakeContext.Provider
+      value={{
+        data,
+        isSaving,
+        setInitialState,
+        updateValues,
+        save,
+        hasChanged,
+        setHasChanged,
+      }}
+    >
+      {children}
+    </CakeContext.Provider>
+  );
+};
+
+// Hook to use cake context
+export const useCake = () => useContext(CakeContext);

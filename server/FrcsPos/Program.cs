@@ -8,6 +8,7 @@ using FrcsPos.Context;
 using FrcsPos.Middleware;
 using FrcsPos.Service;
 using DotNetEnv;
+using FrcsPos.Repository;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +29,14 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
+builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRepository>();
+
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 // builder.Services.AddSingleton<IUserContextService, UserContextService>();
 // builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 
@@ -57,6 +65,7 @@ if (app.Environment.IsDevelopment())
 
 // app.UseMiddleware<TokenMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
+app.UseMiddleware<ApiResponseMiddleware>();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

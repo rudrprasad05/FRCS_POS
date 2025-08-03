@@ -35,7 +35,6 @@ secrets.json
 **/secrets/*
 
 # Configuration files
-appsettings.Development.json
 appsettings.Local.json
 appsettings.*.local.json
 appsettings.*.dev.json
@@ -88,7 +87,6 @@ yarn-error.log
 .env
 .env.*
 !.env.example
-appsettings.*.json
 appsettings.json
 /obj
 # Docker
