@@ -47,11 +47,14 @@ namespace FrcsPos.Repository
             //         s.IsActive = false;   
             //     }
             // }
-            var session = request.FromNewPosSessionRequestToModel();
-
-            session.ConnectionUUID = Guid.NewGuid().ToString();
-            session.IsActive = true;
-            session.PosTerminalId = posTerminal.Id;
+            var session = new PosSession
+            {
+                ConnectionUUID = Guid.NewGuid().ToString(),
+                ConnectionTimeOut = DateTime.UtcNow.AddHours(8),
+                IsActive = true,
+                PosTerminalId = posTerminal.Id,
+                PosUserId = request.PosUserId,
+            };
 
             var model = await _context.PosSessions.AddAsync(session);
             await _context.SaveChangesAsync();

@@ -8,7 +8,7 @@ namespace FrcsPos.Models
 {
     public class PosSession : BaseModel
     {
-        public PosTerminal PosTerminal = new PosTerminal();
+        public PosTerminal PosTerminal = null!;
         public int PosTerminalId;
 
         public User PosUser = new User();

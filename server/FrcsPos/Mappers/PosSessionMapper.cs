@@ -38,13 +38,11 @@ namespace FrcsPos.Mappers
 
         }
 
-         public static PosSession FromNewPosSessionRequestToModel(this NewPosSession session)
+        public static PosSession FromNewPosSessionRequestToModel(this NewPosSession session)
         {
             return new PosSession
             {
                 PosUserId = session.PosUserId,
-                PosTerminal = new PosTerminal{ UUID = session.PosTerminalUUID },
-
             };
 
         }
