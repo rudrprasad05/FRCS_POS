@@ -29,21 +29,29 @@ namespace FrcsPos.Repository
         }
         public async Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request)
         {
-            var isAnySessionsActive = await _context.PosSessions
-                .Where(a => a.PosTerminalId == request.PosTerminalId && a.IsActive == true)
-                .ToListAsync();
-
-            if (isAnySessionsActive != null && isAnySessionsActive.Count > 0)
+            var posTerminal = await _context.PosTerminals
+                .SingleOrDefaultAsync(p => p.UUID == request.PosTerminalUUID);
+            if (posTerminal == null)
             {
-                foreach (var s in isAnySessionsActive)
-                {
-                    s.IsActive = false;   
-                }
+                return ApiResponse<PosSessionDTO>.Fail();
             }
+
+            // var isAnySessionsActive = await _context.PosSessions
+            //     .Where(a => a.PosTerminal.UUID == request.PosTerminalUUID && a.IsActive == true)
+            //     .ToListAsync();
+
+            // if (isAnySessionsActive != null && isAnySessionsActive.Count > 0)
+            // {
+            //     foreach (var s in isAnySessionsActive)
+            //     {
+            //         s.IsActive = false;   
+            //     }
+            // }
             var session = request.FromNewPosSessionRequestToModel();
 
             session.ConnectionUUID = Guid.NewGuid().ToString();
             session.IsActive = true;
+            session.PosTerminalId = posTerminal.Id;
 
             var model = await _context.PosSessions.AddAsync(session);
             await _context.SaveChangesAsync();

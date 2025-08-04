@@ -112,7 +112,7 @@ export interface PosTerminal extends BaseModel {
   serialNumber?: string;
   isActive: boolean;
 
-  cashiers?: CashierTerminal[];
+  session?: PosSession[];
   sales?: Sale[];
 }
 
@@ -136,12 +136,17 @@ export interface Sale extends BaseModel {
   refunds?: RefundRequest[];
 }
 
-export interface CashierTerminal extends BaseModel {
-  userId: string;
-  user?: User;
+export interface PosSession extends BaseModel {
+  posUserId: string;
+  posUser?: User;
 
   posTerminalId: number;
   posTerminal?: PosTerminal;
+
+  connectionUUID: string;
+  isActive: boolean;
+  connectionTimeOut: Date;
+  sales: Sale[];
 }
 
 export interface RefundRequest extends BaseModel {

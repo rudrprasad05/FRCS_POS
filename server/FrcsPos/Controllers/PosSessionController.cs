@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Route("api/company")]
+    [Route("api/pos-session")]
     [ApiController]
     public class PosSessionController : BaseController
     {

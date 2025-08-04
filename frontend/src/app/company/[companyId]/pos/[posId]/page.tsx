@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateNewPosSession } from "@/actions/PosSession";
 import { GetPosTerminalById } from "@/actions/PosTerminal";
 import { PosTerminal } from "@/types/models";
 import { Loader2 } from "lucide-react";
@@ -23,8 +24,22 @@ export default function PosPage({ params }: PageProps) {
     };
     getData();
   }, [params, posId]);
+
+  async function handleNewSession() {
+    const res = await CreateNewPosSession({
+      posUserId: "",
+      posTerminalId: posId,
+    });
+  }
+
   if (loading) {
     return <Loader2 className="animate-spin" />;
   }
-  return <div>{data?.name}</div>;
+
+  return (
+    <div className="flex items-center gap-4">
+      <div>{data?.name}</div>
+      <div>New Session</div>
+    </div>
+  );
 }

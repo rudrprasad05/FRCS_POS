@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "kLfeLOwQs/s=",
+  "dgSpecHash": "8NXlqncSdPg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
+  "projectFilePath": "c:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\rudrp\\.nuget\\packages\\aspnetcore.swaggerui.themes\\2.0.0\\aspnetcore.swaggerui.themes.2.0.0.nupkg.sha512",
     "C:\\Users\\rudrp\\.nuget\\packages\\awssdk.core\\3.7.401.4\\awssdk.core.3.7.401.4.nupkg.sha512",
@@ -146,15 +146,5 @@
     "C:\\Users\\rudrp\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
     "C:\\Users\\rudrp\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.",
-      "projectPath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }

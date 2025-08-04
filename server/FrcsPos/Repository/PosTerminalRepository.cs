@@ -109,6 +109,7 @@ namespace FrcsPos.Repository
             var pos = await _context.PosTerminals
                 .Where(p => p.UUID == uuid)
                 .Include(c => c.Session)
+                .Include(c => c.Company)
                 .Include(c => c.Sales)
                 .OrderByDescending(c => c.CreatedOn)
                 .FirstOrDefaultAsync();

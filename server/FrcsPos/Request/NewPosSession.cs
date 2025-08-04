@@ -8,7 +8,7 @@ namespace FrcsPos.Request
     public class NewPosSession
     {
         public string PosUserId { get; set; } = string.Empty;
-        public int PosTerminalId { get; set; }
+        public string PosTerminalUUID { get; set; } = default!;
 
     }
 }

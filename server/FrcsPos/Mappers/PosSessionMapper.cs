@@ -43,7 +43,7 @@ namespace FrcsPos.Mappers
             return new PosSession
             {
                 PosUserId = session.PosUserId,
-                PosTerminalId = session.PosTerminalId,
+                PosTerminal = new PosTerminal{ UUID = session.PosTerminalUUID },
 
             };
 
