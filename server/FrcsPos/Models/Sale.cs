@@ -19,8 +19,7 @@ namespace FrcsPos.Models
         public Company Company { get; set; } = default!;
         
         // Since PosSession has a composite key, we need both parts to reference it
-        public int PosTerminalId { get; set; }
-        public string PosUserId { get; set; } = null!;
+        public int PosSessionId { get; set; }
         public PosSession PosSession { get; set; } = default!;
         
         public string CashierId { get; set; } = null!;

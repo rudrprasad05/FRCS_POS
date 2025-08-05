@@ -62,7 +62,6 @@ export default function PosTerminal({ session }: { session: PosSession }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {session.posTerminal?.name}
       <PosHeader />
 
       <div className="container mx-auto p-6">

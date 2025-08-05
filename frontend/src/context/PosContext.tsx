@@ -12,6 +12,8 @@ import { PosSession } from "@/types/models";
 
 const PosSessionContext = createContext<{
   data: Partial<PosSession>;
+  qr: string | undefined;
+  setQr: (data: string) => void;
   isSaving: boolean;
   setInitialState: (data: Partial<PosSession>) => void;
   updateValues: <K extends keyof PosSession>(
@@ -23,8 +25,10 @@ const PosSessionContext = createContext<{
   setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
 }>({
   data: {},
+  qr: undefined,
   isSaving: false,
   setInitialState: () => {},
+  setQr: () => {},
   updateValues: () => {},
   save: () => {},
   hasChanged: false,
@@ -33,6 +37,7 @@ const PosSessionContext = createContext<{
 
 export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState<Partial<PosSession>>({});
+  const [qr, setQr] = useState<string | undefined>();
   const [hasChanged, setHasChanged] = useState(false);
   const initialHashRef = useRef<string>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,6 +85,8 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     <PosSessionContext.Provider
       value={{
         data,
+        qr,
+        setQr,
         isSaving,
         setInitialState,
         updateValues,

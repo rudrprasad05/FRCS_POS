@@ -1,14 +1,8 @@
 {
   "version": 2,
-<<<<<<< HEAD
-  "dgSpecHash": "kLfeLOwQs/s=",
-  "success": true,
-  "projectFilePath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
-=======
   "dgSpecHash": "YoqHXUqNW+8=",
   "success": true,
   "projectFilePath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj",
->>>>>>> 21acb22f9c13339a23527b205013ae0c552ed48d
   "expectedPackageFiles": [
     "/Users/rudr/.nuget/packages/aspnetcore.swaggerui.themes/2.0.0/aspnetcore.swaggerui.themes.2.0.0.nupkg.sha512",
     "/Users/rudr/.nuget/packages/awssdk.core/3.7.401.4/awssdk.core.3.7.401.4.nupkg.sha512",
@@ -152,5 +146,12 @@
     "/Users/rudr/.nuget/packages/system.xml.readerwriter/4.3.0/system.xml.readerwriter.4.3.0.nupkg.sha512",
     "/Users/rudr/.nuget/packages/system.xml.xdocument/4.3.0/system.xml.xdocument.4.3.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Problem reading the cache file /Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/obj/project.nuget.cache : Invalid property identifier character: <. Path 'version', line 3, position 0."
+    }
+  ]
 }

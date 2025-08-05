@@ -1,19 +1,6 @@
 {
   "format": 1,
   "restore": {
-<<<<<<< HEAD
-    "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj": {}
-  },
-  "projects": {
-    "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj": {
-      "version": "1.0.0",
-      "restore": {
-        "projectUniqueName": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
-        "projectName": "FrcsPos",
-        "projectPath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
-        "packagesPath": "C:\\Users\\rudrp\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\obj\\",
-=======
     "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj": {}
   },
   "projects": {
@@ -25,7 +12,6 @@
         "projectPath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj",
         "packagesPath": "/Users/rudr/.nuget/packages/",
         "outputPath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/obj/",
->>>>>>> 21acb22f9c13339a23527b205013ae0c552ed48d
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/rudr/.nuget/NuGet/NuGet.Config"

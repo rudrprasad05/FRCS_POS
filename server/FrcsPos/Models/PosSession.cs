@@ -21,5 +21,6 @@ namespace FrcsPos.Models
         public DateTime ConnectionTimeOut { get; set; } = DateTime.UtcNow.AddHours(8);
 
         public List<Sale> Sales { get; set; } = [];
+        public QuickConnect? QuickConnect { get; set; } = null;
     }
 }

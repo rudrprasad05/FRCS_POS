@@ -1,7 +1,12 @@
 "use server";
 
 import { axiosGlobal } from "@/lib/axios";
-import { ApiResponse, PosSession, PosTerminal } from "@/types/models";
+import {
+  ApiResponse,
+  PosSession,
+  PosTerminal,
+  QuickConnect,
+} from "@/types/models";
 import { ICreateNewPosSession, IPosSessionData } from "@/types/res";
 
 import { GetToken } from "./User";
@@ -28,6 +33,16 @@ export async function GetPosSession(
 ): Promise<ApiResponse<PosSession>> {
   const res = await axiosGlobal.get<ApiResponse<PosSession>>(
     `pos-session/get-session-by-uuid?uuid=${uuid}`
+  );
+  return res.data;
+}
+
+export async function GenerateQr(
+  uuid: string
+): Promise<ApiResponse<QuickConnect>> {
+  console.log(uuid);
+  const res = await axiosGlobal.get<ApiResponse<QuickConnect>>(
+    `quickconnect/generate?uuid=${uuid}`
   );
   return res.data;
 }

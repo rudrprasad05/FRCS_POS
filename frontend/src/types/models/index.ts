@@ -187,11 +187,24 @@ export interface MetaData {
 }
 
 export interface ApiResponse<T> {
-  success: boolean; // True/false operation flag
-  statusCode: number; // HTTP status code
-  message?: string; // Human-readable message
-  data?: T; // Actual data payload
-  meta?: MetaData; // Extra metadata (pagination, etc.)
-  errors?: string[]; // For validation or server-side errors
-  timestamp: string; // ISO date string (e.g., 2025-08-02T10:34:12.995Z)
+  success: boolean;
+  statusCode: number;
+  message?: string;
+  data?: T;
+  meta?: MetaData;
+  errors?: string[];
+  timestamp: string;
+}
+
+export interface QuickConnect extends BaseModel {
+  posSessionId: number;
+  quickConnectMobileId?: number | null;
+  quickConnectMobile?: QuickConnectMobile | null;
+}
+
+export interface QuickConnectMobile extends BaseModel {
+  model: string;
+  location: string;
+  connectionTime: string;
+  isActive: boolean;
 }

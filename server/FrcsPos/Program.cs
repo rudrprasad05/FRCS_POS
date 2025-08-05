@@ -34,7 +34,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
 builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRepository>();
 builder.Services.AddScoped<IPosSessionRepository, PosSessionRepository>();
-
+builder.Services.AddScoped<IQuickConnectRepository, QuickConnectReopsitory>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
