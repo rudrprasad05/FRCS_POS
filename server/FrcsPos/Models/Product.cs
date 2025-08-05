@@ -18,7 +18,7 @@ namespace FrcsPos.Models
         public TaxCategory TaxCategory { get; set; } = default!;
         public bool IsPerishable { get; set; } = false;
 
-        public ICollection<ProductBatch> Batches { get; set; } = new List<ProductBatch>();
-        public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+        public ICollection<ProductBatch> Batches { get; set; } = [];
+        public ICollection<SaleItem> SaleItems { get; set; } = [];
     }
 }

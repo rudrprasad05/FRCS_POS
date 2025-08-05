@@ -8,12 +8,16 @@ import React, {
 } from "react";
 import hash from "object-hash";
 import { toast } from "sonner";
+import { PosSession } from "@/types/models";
 
-const CakeContext = createContext<{
-  data: Partial<any>;
+const PosSessionContext = createContext<{
+  data: Partial<PosSession>;
   isSaving: boolean;
-  setInitialState: (data: Partial<any>) => void;
-  updateValues: <K extends keyof any>(key: K, value: any[K]) => void;
+  setInitialState: (data: Partial<PosSession>) => void;
+  updateValues: <K extends keyof PosSession>(
+    key: K,
+    value: PosSession[K]
+  ) => void;
   save: () => void;
   hasChanged: boolean;
   setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,8 +31,8 @@ const CakeContext = createContext<{
   setHasChanged: () => {},
 });
 
-export const CakeProvider = ({ children }: { children: ReactNode }) => {
-  const [data, setCake] = useState<Partial<any>>({});
+export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
+  const [data, setData] = useState<Partial<PosSession>>({});
   const [hasChanged, setHasChanged] = useState(false);
   const initialHashRef = useRef<string>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,15 +45,19 @@ export const CakeProvider = ({ children }: { children: ReactNode }) => {
     setHasChanged(currentHash !== initialHashRef.current);
   }, [data]);
 
-  function setInitialState(data: Partial<any>) {
-    if (data == data) return;
+  function setInitialState(inti: Partial<PosSession>) {
+    console.log("hit3_a", inti);
+    if (data == inti) return;
     console.log("hit3");
-    setCake(data);
-    initialHashRef.current = hash(data);
+    setData(inti);
+    initialHashRef.current = hash(inti);
   }
 
-  function updateValues<K extends keyof any>(key: K, value: any[K]) {
-    setCake((prev) => ({
+  function updateValues<K extends keyof PosSession>(
+    key: K,
+    value: PosSession[K]
+  ) {
+    setData((prev) => ({
       ...prev,
       [key]: value,
     }));
@@ -69,7 +77,7 @@ export const CakeProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <CakeContext.Provider
+    <PosSessionContext.Provider
       value={{
         data,
         isSaving,
@@ -81,9 +89,9 @@ export const CakeProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-    </CakeContext.Provider>
+    </PosSessionContext.Provider>
   );
 };
 
 // Hook to use cake context
-export const useCake = () => useContext(CakeContext);
+export const usePosSession = () => useContext(PosSessionContext);

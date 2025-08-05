@@ -1,6 +1,7 @@
 {
   "format": 1,
   "restore": {
+<<<<<<< HEAD
     "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj": {}
   },
   "projects": {
@@ -12,20 +13,28 @@
         "projectPath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
         "packagesPath": "C:\\Users\\rudrp\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\obj\\",
+=======
+    "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj": {}
+  },
+  "projects": {
+    "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj",
+        "projectName": "FrcsPos",
+        "projectPath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj",
+        "packagesPath": "/Users/rudr/.nuget/packages/",
+        "outputPath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/obj/",
+>>>>>>> 21acb22f9c13339a23527b205013ae0c552ed48d
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\rudrp\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/rudr/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -43,8 +52,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -138,7 +146,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -9,6 +9,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import PosHeader from "./PosHeader";
 import { RecentProductCard } from "./RecentProductCard";
+import { PosSession } from "@/types/models";
 
 interface Product {
   id: string;
@@ -24,7 +25,7 @@ interface CartItem {
   quantity: number;
 }
 
-export default function PosTerminal() {
+export default function PosTerminal({ session }: { session: PosSession }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -61,6 +62,7 @@ export default function PosTerminal() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {session.posTerminal?.name}
       <PosHeader />
 
       <div className="container mx-auto p-6">

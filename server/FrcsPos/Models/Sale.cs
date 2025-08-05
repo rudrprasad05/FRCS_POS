@@ -32,7 +32,7 @@ namespace FrcsPos.Models
         public decimal Total { get; set; }
         public SaleStatus Status { get; set; } = SaleStatus.COMPLETED;
         
-        public ICollection<SaleItem> Items { get; set; } = new List<SaleItem>();
-        public ICollection<RefundRequest> Refunds { get; set; } = new List<RefundRequest>();
+        public ICollection<SaleItem> Items { get; set; } = [];
+        public ICollection<RefundRequest> Refunds { get; set; } = [];
     }
 }

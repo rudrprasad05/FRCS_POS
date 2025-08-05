@@ -29,6 +29,6 @@ namespace FrcsPos.Models
         public string? ApprovedByUserId { get; set; }
         public User? ApprovedBy { get; set; }
 
-        public ICollection<RefundItem> Items { get; set; } = new List<RefundItem>();
+        public ICollection<RefundItem> Items { get; set; } = [];
     }
 }

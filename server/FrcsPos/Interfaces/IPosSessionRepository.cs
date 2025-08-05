@@ -11,6 +11,6 @@ namespace FrcsPos.Interfaces
     public interface IPosSessionRepository
     {
         public Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request);
-        public Task<ApiResponse<PosSessionDTO>> GetPosSession(RequestQueryObject queryObject);
+        public Task<ApiResponse<PosSessionDTO>> GetPosSessionByUUID(string uuid);
     }
 }

@@ -8,16 +8,18 @@ namespace FrcsPos.Models
 {
     public class PosSession : BaseModel
     {
-        public PosTerminal PosTerminal = new PosTerminal();
-        public int PosTerminalId;
+        public PosTerminal PosTerminal { get; set; } = default!;
+        public int PosTerminalId { get; set; }
 
-        public User PosUser = new User();
-        public string PosUserId = null!;
- 
-        [Required] public string ConnectionUUID = default!;
-        [Required] public bool IsActive = true;
-        public DateTime ConnectionTimeOut = default!;
+        public User PosUser { get; set; } = default!;
+        public string PosUserId { get; set; } = default!;
 
-        public List<Sale> Sales = new List<Sale>();
+        [Required]
+        public string ConnectionUUID { get; set; } = default!;
+        [Required]
+        public bool IsActive { get; set; } = true;
+        public DateTime ConnectionTimeOut { get; set; } = DateTime.UtcNow.AddHours(8);
+
+        public List<Sale> Sales { get; set; } = [];
     }
 }

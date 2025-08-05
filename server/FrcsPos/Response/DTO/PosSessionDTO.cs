@@ -8,11 +8,14 @@ namespace FrcsPos.Response.DTO
 {
     public class PosSessionDTO : BaseDTO
     {
-        public int PosTerminalId;
-        [Required] public string ConnectionUUID = default!;
-        public DateTime ConnectionTimeOut = default!;
+        public int PosTerminalId { get; set; }
+        public PosTerminalDTO PosTerminal { get; set; } = default!;
 
-        public UserDTO PosUser = new();
-        public string PosUserId = null!;
+        [Required] public string ConnectionUUID { get; set; } = default!;
+        public DateTime ConnectionTimeOut { get; set; } = default!;
+
+        public UserDTO PosUser { get; set; } = default!;
+        public string PosUserId { get; set; } = null!;
     }
+
 }
