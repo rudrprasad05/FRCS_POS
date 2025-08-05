@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8NXlqncSdPg=",
+  "dgSpecHash": "kLfeLOwQs/s=",
   "success": true,
-  "projectFilePath": "c:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
+  "projectFilePath": "C:\\Users\\rudrp\\OneDrive\\Documents\\code\\FRCS_POS\\server\\FrcsPos\\FrcsPos.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\rudrp\\.nuget\\packages\\aspnetcore.swaggerui.themes\\2.0.0\\aspnetcore.swaggerui.themes.2.0.0.nupkg.sha512",
     "C:\\Users\\rudrp\\.nuget\\packages\\awssdk.core\\3.7.401.4\\awssdk.core.3.7.401.4.nupkg.sha512",
