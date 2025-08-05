@@ -1,4 +1,4 @@
-import { Company, User } from "../models";
+import { Company, PosSession, User } from "../models";
 
 export interface SuperAdminDashboardDTO {
   users: User[];
@@ -8,4 +8,9 @@ export interface SuperAdminDashboardDTO {
 export interface ICreateNewPosSession {
   posUserId: string;
   posTerminalId: string;
+}
+
+export interface IPosSessionData {
+  session: PosSession;
+  company: Company;
 }

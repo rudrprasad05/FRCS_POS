@@ -30,7 +30,20 @@ namespace FrcsPos.Controllers
             var model = await _posSessionRepository.CreateNewPosSession(data);
 
             if (model == null)
-            {   
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+        
+        [HttpGet("get-session-by-uuid")]
+        public async Task<IActionResult> GetAllCompanies([FromQuery] string uuid)
+        {
+            var model = await _posSessionRepository.GetPosSessionByUUID(uuid);
+
+            if (model == null)
+            {
                 return BadRequest("model not gotten");
             }
 

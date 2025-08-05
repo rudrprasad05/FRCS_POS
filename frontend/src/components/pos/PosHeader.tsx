@@ -22,8 +22,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import PosQrCodeConnectDialoge from "./PosQrCodeConnectDialoge";
+import { usePosSession } from "@/context/PosContext";
 
 export default function PosHeader() {
+  const { data, setInitialState } = usePosSession();
+
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
 
   const getThemeIcon = () => {
@@ -54,14 +57,16 @@ export default function PosHeader() {
       {/* Left side - Logo/Brand */}
       <div className="flex items-center space-x-4">
         <h1 className="text-xl font-semibold text-foreground">RetailPOS</h1>
-        <div className="text-sm text-muted-foreground">Terminal #001</div>
+        <div className="text-sm text-muted-foreground">
+          {data.posTerminal?.name}
+        </div>
       </div>
 
       {/* Center - Current page indicator */}
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center space-x-2">
         <CreditCard className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium">Point of Sale</span>
-      </div>
+      </div> */}
 
       {/* Right side - Actions */}
       <div className="flex items-center space-x-2">

@@ -47,6 +47,7 @@ namespace FrcsPos.Repository
             //         s.IsActive = false;   
             //     }
             // }
+
             var session = new PosSession
             {
                 ConnectionUUID = Guid.NewGuid().ToString(),
@@ -69,60 +70,27 @@ namespace FrcsPos.Repository
             };
         }
 
-        public async Task<ApiResponse<List<CompanyDTO>>> GetAllCompanyAsync(RequestQueryObject queryObject)
+        public async Task<ApiResponse<PosSessionDTO>> GetPosSessionByUUID(string uuid)
         {
-            var query = _context.Companies
-                .Include(c => c.AdminUser)
-                .AsQueryable();
+            var posSession = await _context.PosSessions
+                .Include(s => s.PosTerminal)
+                    .ThenInclude(t => t.Company)
+                .FirstOrDefaultAsync(s => s.UUID == uuid);
 
-            // filtering
-            if (queryObject.IsDeleted.HasValue)
+            if (posSession == null)
             {
-                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+                return ApiResponse<PosSessionDTO>.Fail();
             }
 
-            // Sorting
-            query = queryObject.SortBy switch
-            {
-                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
-                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
-                _ => query.OrderByDescending(c => c.CreatedOn)
-            };
+            var result = posSession.FromModelToDTO();
 
-            var totalCount = await query.CountAsync();
-
-            // Pagination
-            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var companies = await query
-                .Skip(skip)
-                .Take(queryObject.PageSize)
-                .ToListAsync();
-
-            // Mapping to DTOs
-            var result = new List<CompanyDTO>();
-            foreach (var company in companies)
-            {
-                var dto = company.FromModelToDto();
-                result.Add(dto);
-            }
-
-            return new ApiResponse<List<CompanyDTO>>
+            return new ApiResponse<PosSessionDTO>
             {
                 Success = true,
                 StatusCode = 200,
                 Data = result,
-                Meta = new MetaData
-                {
-                    TotalCount = totalCount,
-                    PageNumber = queryObject.PageNumber,
-                    PageSize = queryObject.PageSize
-                }
+                
             };
-        }
-
-        public Task<ApiResponse<PosSessionDTO>> GetPosSession(RequestQueryObject queryObject)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -20,6 +20,19 @@ namespace FrcsPos.Mappers
             };
         }
 
+        public static PosTerminalDTO FromModelToJustModelDTO(this PosTerminal request)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            return new PosTerminalDTO
+            {
+                Name = request.Name,
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+            };
+        }
+
         public static PosTerminalDTO FromModelToDto(this PosTerminal request)
         {
             ArgumentNullException.ThrowIfNull(request);

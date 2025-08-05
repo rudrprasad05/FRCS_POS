@@ -21,6 +21,6 @@ namespace FrcsPos.Models
 
         public CompanyRole Role { get; set; }
 
-        public List<PosSession> PosSessions = new List<PosSession>();
+        public List<PosSession> PosSessions { get; set; } = [];
     }
 }

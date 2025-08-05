@@ -24,18 +24,17 @@ namespace FrcsPos.Mappers
 
         public static PosSessionDTO FromModelToDTO(this PosSession session)
         {
-            return new PosSessionDTO
-            {
-                Id = session.Id,
-                ConnectionTimeOut = session.ConnectionTimeOut,
-                ConnectionUUID = session.ConnectionUUID,
-                UUID = session.UUID,
-                CreatedOn = session.CreatedOn,
-                UpdatedOn = session.UpdatedOn,
-                PosTerminalId = session.PosTerminalId,
+            var result = new PosSessionDTO();
 
-            };
+            result.Id = session.Id;
+            result.ConnectionTimeOut = session.ConnectionTimeOut;
+            result.ConnectionUUID = session.ConnectionUUID;
+            result.UUID = session.UUID;
+            result.CreatedOn = session.CreatedOn;
+            result.UpdatedOn = session.UpdatedOn;
+            result.PosTerminal = session.PosTerminal.FromModelToJustModelDTO();
 
+            return result;
         }
 
         public static PosSession FromNewPosSessionRequestToModel(this NewPosSession session)
