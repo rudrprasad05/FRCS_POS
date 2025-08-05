@@ -1,5 +1,6 @@
 "use client";
 
+import BarcodeScanner from "@/components/barcode/BarcodePage";
 import React, { use } from "react";
 
 type PageProps = {
@@ -9,5 +10,5 @@ type PageProps = {
 export default function QuickConnectPage({ params }: PageProps) {
   const { id } = use(params);
 
-  return <div>page {id}</div>;
+  return <BarcodeScanner />;
 }
