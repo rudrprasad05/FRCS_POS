@@ -75,7 +75,7 @@ _ReSharper*/
 *.cache
 *.dbmdl
 *.orig
-
+/cert
 # OS generated files
 .DS_Store
 Thumbs.db

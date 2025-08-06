@@ -36,5 +36,5 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     return <>No data</>;
   }
 
-  return <PosTerminal session={initialData} />;
+  return <PosTerminal />;
 }

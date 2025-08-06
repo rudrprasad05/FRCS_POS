@@ -43,7 +43,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 
 
-builder.WebHost.UseUrls(builder.Configuration["Backend:Url"] ?? throw new InvalidOperationException());
+builder.WebHost
+    .UseUrls(builder.Configuration["Backend:Url"]
+             ?? throw new InvalidOperationException());
 
 var app = builder.Build();
 
@@ -57,6 +59,7 @@ if (app.Environment.IsDevelopment())
 app
 .UseCors("allowSpecificOrigin")
 .UseHttpsRedirection()
+.UseWebSockets()
 .UseAuthentication()
 .UseAuthorization();
 

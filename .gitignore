@@ -5,3 +5,5 @@
 # But keep .env.example
 !.env.example
 /.vs/project
+/cert
+/ssl

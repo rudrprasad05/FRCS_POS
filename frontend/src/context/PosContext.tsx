@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import hash from "object-hash";
 import { toast } from "sonner";
-import { PosSession } from "@/types/models";
+import { PosSession, SaleItem } from "@/types/models";
 
 const PosSessionContext = createContext<{
   data: Partial<PosSession>;

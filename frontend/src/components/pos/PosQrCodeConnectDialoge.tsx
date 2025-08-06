@@ -25,7 +25,8 @@ export default function PosQrCodeConnectDialoge() {
   const generateQr = async () => {
     const res = await GenerateQr(sessionId);
     setIsQrGenerated(true);
-    setQr(`http://10.22.150.126:3000/quickconnect/${res.data?.uuid}`);
+    const baseUrl = process.env.NEXT_PUBLIC_IP || "http://localhost:3000";
+    setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
     console.log("hit");
     console.log(res);
   };

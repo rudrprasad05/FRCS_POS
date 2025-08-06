@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using FrcsPos.Models;
+using CrumbCodeBackend.Models;
 
 namespace FrcsPos.Context
 {
@@ -29,6 +30,8 @@ namespace FrcsPos.Context
         public DbSet<RefundItem> RefundItems => Set<RefundItem>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
+        public DbSet<Media> Medias { get; set; }
+        
         
 
         protected override void OnModelCreating(ModelBuilder b)
@@ -92,8 +95,8 @@ namespace FrcsPos.Context
                 e.HasOne(x => x.QuickConnect)
                     .WithOne(q => q.PosSession)
                     .HasForeignKey<QuickConnect>(q => q.PosSessionId)
-                    .OnDelete(DeleteBehavior.Cascade); 
-                    
+                    .OnDelete(DeleteBehavior.Cascade);
+
             });
 
             b.Entity<TaxCategory>(e =>

@@ -1,12 +1,9 @@
 "use client";
 
-import { GetPosSession } from "@/actions/PosSession";
-import { GetPosTerminalById } from "@/actions/PosTerminal";
 import PosSessionContainer from "@/components/pos/PosSessionContainer";
+import { CartProvider } from "@/context/CartContext";
 import { PosSessionProvider } from "@/context/PosContext";
-import { PosSession } from "@/types/models";
-import { IPosSessionData } from "@/types/res";
-import React, { use, useEffect, useState } from "react";
+import { use } from "react";
 
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;
@@ -17,7 +14,9 @@ export default function PosSessionPage({ params }: PageProps) {
   return (
     <div>
       <PosSessionProvider>
-        <PosSessionContainer uuid={sessionId} />
+        <CartProvider>
+          <PosSessionContainer uuid={sessionId} />
+        </CartProvider>
       </PosSessionProvider>
     </div>
   );

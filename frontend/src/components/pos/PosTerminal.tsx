@@ -6,60 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MOCK_PRODUCTS } from "@/lib/data";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
 import PosHeader from "./PosHeader";
 import { RecentProductCard } from "./RecentProductCard";
-import { PosSession } from "@/types/models";
+import { useCart } from "@/context/CartContext";
+import { Product } from "@/types/models";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  stock: number;
-  url?: string;
-}
-
-interface CartItem {
-  product: Product;
-  quantity: number;
-}
-
-export default function PosTerminal({ session }: { session: PosSession }) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-
-  const updateQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.product.id === productId
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart((prevCart) =>
-      prevCart.filter((item) => item.product.id !== productId)
-    );
-  };
-
-  const subtotal = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+export default function PosTerminal() {
+  const { items, updateQuantity, handleCheckout, removeFromCart } = useCart();
+  const subtotal = items.reduce(
+    (sum, item) => sum + (item.product as Product).price * item.quantity,
     0
   );
   const tax = subtotal * 0.08; // 8% tax rate
   const total = subtotal + tax;
-
-  const handleCheckout = () => {
-    alert(`Checkout completed! Total: $${total.toFixed(2)}`);
-    setCart([]);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <PosHeader />
@@ -91,7 +50,7 @@ export default function PosTerminal({ session }: { session: PosSession }) {
               <CardContent className="h-full">
                 <div className="h-full flex flex-col">
                   <div className="space-y-3 h-[400px] max-h-4/5 overflow-auto">
-                    {cart.length == 0 && (
+                    {items.length == 0 && (
                       <div className="w-full h-full border border-dashed border-gray-300 rounded-lg grid place-items-center">
                         <div className="text-center text-sm">
                           No Items in cart
@@ -99,18 +58,18 @@ export default function PosTerminal({ session }: { session: PosSession }) {
                       </div>
                     )}
 
-                    {cart.length > 0 &&
-                      cart.map((item) => (
+                    {items.length > 0 &&
+                      items.map((item) => (
                         <div
-                          key={item.product.id}
+                          key={item?.product?.id}
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                         >
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">
-                              {item.product.name}
+                              {item?.product?.name}
                             </h4>
                             <p className="text-blue-600 font-semibold">
-                              ${item.product.price.toFixed(2)}
+                              ${item.product?.price.toFixed(2)}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -119,7 +78,7 @@ export default function PosTerminal({ session }: { session: PosSession }) {
                               size="sm"
                               onClick={() =>
                                 updateQuantity(
-                                  item.product.id,
+                                  item.product?.uuid as string,
                                   item.quantity - 1
                                 )
                               }
@@ -134,7 +93,7 @@ export default function PosTerminal({ session }: { session: PosSession }) {
                               size="sm"
                               onClick={() =>
                                 updateQuantity(
-                                  item.product.id,
+                                  item.product?.uuid as string,
                                   item.quantity + 1
                                 )
                               }
@@ -144,7 +103,9 @@ export default function PosTerminal({ session }: { session: PosSession }) {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => removeFromCart(item.product.id)}
+                              onClick={() =>
+                                removeFromCart(item.product?.uuid as string)
+                              }
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
