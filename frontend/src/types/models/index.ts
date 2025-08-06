@@ -1,0 +1,210 @@
+import { CompanyRole, RefundStatus, SaleStatus } from "@/types/enum";
+
+export interface BaseModel {
+  id: number;
+  uuid: string;
+  createdOn: string;
+  updatedOn: string;
+}
+
+export interface Product extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  name: string;
+  sku: string;
+  barcode?: string | null;
+  price: number;
+  taxCategoryId: number;
+  taxCategory?: TaxCategory;
+  isPerishable: boolean;
+
+  batches?: ProductBatch[];
+  saleItems?: SaleItem[];
+}
+
+export interface SaleItem extends BaseModel {
+  saleId: number;
+  sale?: Sale;
+
+  productId: number;
+  product?: Product;
+
+  quantity: number;
+  unitPrice: number;
+  taxRatePercent: number;
+  lineTotal: number;
+}
+
+export interface Company extends BaseModel {
+  name: string;
+  adminUserId: string;
+  adminUser?: User;
+
+  users?: CompanyUser[];
+  warehouses?: Warehouse[];
+  posTerminals?: PosTerminal[];
+  products?: Product[];
+  taxCategories?: TaxCategory[];
+}
+
+export interface TaxCategory extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  name: string; // e.g., "VAT 15%", "Exempt"
+  ratePercent: number; // e.g., 0, 15, etc.
+
+  products?: Product[];
+}
+
+export interface ProductBatch extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  productId: number;
+  product?: Product;
+
+  warehouseId: number;
+  warehouse?: Warehouse;
+
+  quantity: number;
+  expiryDate?: string; // or Date, depending on your serialization
+
+  notifications?: Notification[];
+}
+
+export interface Warehouse extends BaseModel {
+  companyId: number;
+
+  name: string;
+  location?: string;
+
+  batches?: ProductBatch[];
+}
+
+export interface User {
+  id: string; // corresponds to IdentityUser's string ID (usually a GUID)
+  username: string;
+  email: string;
+  token?: string; // custom field for auth tokens, etc.
+
+  companies?: CompanyUser[];
+  salesAsCashier?: Sale[];
+}
+
+export interface CompanyUser extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  userId: string;
+  user?: User;
+
+  role: CompanyRole;
+}
+
+export interface PosTerminal extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  name: string;
+  locationDescription?: string;
+  serialNumber?: string;
+  isActive: boolean;
+
+  session?: PosSession[];
+  sales?: Sale[];
+}
+
+export interface Sale extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  posTerminalId: number;
+  posTerminal?: PosTerminal;
+
+  cashierId: string;
+  cashier?: User;
+
+  invoiceNumber: string;
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+  status: SaleStatus;
+
+  items?: SaleItem[];
+  refunds?: RefundRequest[];
+}
+
+export interface PosSession extends BaseModel {
+  posUserId: string;
+  posUser?: User;
+
+  posTerminalId: number;
+  posTerminal?: PosTerminal;
+
+  connectionUUID: string;
+  isActive: boolean;
+  connectionTimeOut: Date;
+  sales: Sale[];
+}
+
+export interface RefundRequest extends BaseModel {
+  companyId: number;
+  company?: Company;
+
+  saleId: number;
+  sale?: Sale;
+
+  requestedByUserId: string;
+  requestedBy?: User;
+
+  status: RefundStatus;
+  reason?: string;
+
+  approvedByUserId?: string;
+  approvedBy?: User;
+
+  items?: RefundItem[];
+}
+
+export interface RefundItem extends BaseModel {
+  refundRequestId: number;
+  refundRequest?: RefundRequest;
+
+  saleItemId: number;
+  saleItem?: SaleItem;
+
+  quantity: number;
+  approvedQuantity?: number;
+  note?: string;
+}
+
+export interface MetaData {
+  pageSize: number;
+  totalCount: number;
+  pageNumber: number;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  statusCode: number;
+  message?: string;
+  data?: T;
+  meta?: MetaData;
+  errors?: string[];
+  timestamp: string;
+}
+
+export interface QuickConnect extends BaseModel {
+  posSessionId: number;
+  quickConnectMobileId?: number | null;
+  quickConnectMobile?: QuickConnectMobile | null;
+}
+
+export interface QuickConnectMobile extends BaseModel {
+  model: string;
+  location: string;
+  connectionTime: string;
+  isActive: boolean;
+}

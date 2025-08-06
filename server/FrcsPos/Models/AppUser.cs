@@ -8,6 +8,8 @@ namespace FrcsPos.Models
 {
     public class User : IdentityUser
     {
-
+        public ICollection<CompanyUser> Companies { get; set; } = [];
+        public ICollection<Sale> SalesAsCashier { get; set; } = [];
+        public ICollection<PosSession> PosSessions { get; set; } = [];
     }
 }
