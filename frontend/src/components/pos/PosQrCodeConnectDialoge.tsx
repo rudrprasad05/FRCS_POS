@@ -46,7 +46,9 @@ export default function PosQrCodeConnectDialoge() {
         <div className="space-y-6 py-4">
           <div className="text-center">
             <HandleQr isGenerated={isQrGenerated} />
+
             <Button
+              hidden={qr != undefined && qr?.length > 0}
               onClick={() => generateQr()}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
@@ -96,11 +98,14 @@ function HandleQr({ isGenerated }: { isGenerated: boolean }) {
 
   if (isGenerated && qr && qr?.length > 0)
     return (
-      <div className="bg-gray-100 my-4 w-min h-min mx-auto border-2 border-dashed border-gray-300 rounded-lg">
-        <QRCode
-          value={qr as string}
-          className="w-64 h-64 mx-auto text-gray-400 rounded-lg p-0.5"
-        />
+      <div>
+        <div className="bg-gray-100 my-4 w-min h-min mx-auto border-2 border-dashed border-gray-300 rounded-lg">
+          <QRCode
+            value={qr as string}
+            className="w-64 h-64 mx-auto text-gray-400 rounded-lg p-0.5"
+          />
+        </div>
+        <p className="text-sm underline text-black/60">{qr}</p>
       </div>
     );
   else

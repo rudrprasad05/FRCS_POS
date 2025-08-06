@@ -7,7 +7,7 @@ export interface SuperAdminDashboardDTO {
 
 export interface ICreateNewPosSession {
   posUserId: string;
-  posTerminalId: string;
+  PosTerminalUUID: string;
 }
 
 export interface IPosSessionData {

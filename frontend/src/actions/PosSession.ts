@@ -19,7 +19,7 @@ export async function CreateNewPosSession(
   const res = await axiosGlobal.post<ApiResponse<PosSession>>(
     `pos-session/create`,
     {
-      data,
+      ...data,
     },
     {
       headers: { Authorization: `Bearer ${token}` },

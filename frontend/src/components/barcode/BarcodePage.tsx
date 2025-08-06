@@ -33,6 +33,7 @@ export default function BarcodeScanner() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
+  const beep = new Audio("/scanner-beep.mp3");
 
   const startScanning = useCallback(async () => {
     try {
@@ -68,6 +69,10 @@ export default function BarcodeScanner() {
             if (lastScanned !== newItem.data) {
               setScannedItems((prev) => [newItem, ...prev]);
               setLastScanned(newItem.data);
+
+              beep
+                .play()
+                .catch((e) => console.warn("Failed to play scan sound", e));
 
               // Clear the last scanned after 2 seconds to allow rescanning
               setTimeout(() => setLastScanned(null), 2000);
