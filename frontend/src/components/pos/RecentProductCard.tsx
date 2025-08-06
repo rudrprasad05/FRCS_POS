@@ -31,7 +31,7 @@ export function RecentProductCard({ item }: { item: Product }) {
                 setIsImageValid(false);
               }}
               onLoad={() => setIsImageLoaded(true)}
-              alt={item.taxCategory?.name as string}
+              alt={"image"}
               className={cn(
                 "w-full h-full object-cover",
                 isImageLoaded ? "opacity-100" : "opacity-0"

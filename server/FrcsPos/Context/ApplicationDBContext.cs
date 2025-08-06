@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using FrcsPos.Models;
+using CrumbCodeBackend.Models;
 
 namespace FrcsPos.Context
 {
@@ -28,6 +29,10 @@ namespace FrcsPos.Context
         public DbSet<RefundRequest> RefundRequests => Set<RefundRequest>();
         public DbSet<RefundItem> RefundItems => Set<RefundItem>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
+        public DbSet<Media> Medias { get; set; }
+        
+        
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -81,13 +86,17 @@ namespace FrcsPos.Context
 
             b.Entity<PosSession>(e =>
             {
-                e.HasKey(x => new { x.PosTerminalId, x.PosUserId });
                 e.HasOne(x => x.PosTerminal).WithMany(x => x.Session)
                     .HasForeignKey(x => x.PosTerminalId)
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.PosUser).WithMany()
                     .HasForeignKey(x => x.PosUserId)
                     .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.QuickConnect)
+                    .WithOne(q => q.PosSession)
+                    .HasForeignKey<QuickConnect>(q => q.PosSessionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
             });
 
             b.Entity<TaxCategory>(e =>
@@ -119,9 +128,9 @@ namespace FrcsPos.Context
                 // Configure the relationship to PosSession using composite key
                 e.HasOne(x => x.PosSession)
                     .WithMany(x => x.Sales)
-                    .HasForeignKey(x => new { x.PosTerminalId, x.PosUserId })
+                    .HasForeignKey(x => new { x.PosSessionId })
                     .OnDelete(DeleteBehavior.Restrict);
-                    
+
                 e.HasOne(x => x.Cashier)
                     .WithMany(x => x.SalesAsCashier)
                     .HasForeignKey(x => x.CashierId)

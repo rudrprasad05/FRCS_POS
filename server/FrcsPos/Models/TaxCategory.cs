@@ -10,9 +10,9 @@ namespace FrcsPos.Models
         public int CompanyId { get; set; }
         public Company Company { get; set; } = default!;
 
-        public string Name { get; set; } = default!; // e.g., "VAT 15%", "Exempt"
-        public decimal RatePercent { get; set; } // 0, 15, etc.
+        public string Name { get; set; } = default!; 
+        public decimal RatePercent { get; set; } 
 
-        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<Product> Products { get; set; } = [];
     }
 }

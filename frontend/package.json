@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -37,6 +37,7 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@types/object-hash": "^3.0.6",
+    "@zxing/library": "^0.21.3",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -53,6 +54,7 @@
     "react-day-picker": "^9.8.1",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.61.1",
+    "react-qr-code": "^2.0.18",
     "react-resizable-panels": "^3.0.3",
     "recharts": "^2.15.4",
     "sonner": "^2.0.6",

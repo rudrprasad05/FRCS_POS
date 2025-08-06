@@ -19,8 +19,7 @@ namespace FrcsPos.Models
         public Company Company { get; set; } = default!;
         
         // Since PosSession has a composite key, we need both parts to reference it
-        public int PosTerminalId { get; set; }
-        public string PosUserId { get; set; } = null!;
+        public int PosSessionId { get; set; }
         public PosSession PosSession { get; set; } = default!;
         
         public string CashierId { get; set; } = null!;
@@ -32,7 +31,7 @@ namespace FrcsPos.Models
         public decimal Total { get; set; }
         public SaleStatus Status { get; set; } = SaleStatus.COMPLETED;
         
-        public ICollection<SaleItem> Items { get; set; } = new List<SaleItem>();
-        public ICollection<RefundRequest> Refunds { get; set; } = new List<RefundRequest>();
+        public ICollection<SaleItem> Items { get; set; } = [];
+        public ICollection<RefundRequest> Refunds { get; set; } = [];
     }
 }

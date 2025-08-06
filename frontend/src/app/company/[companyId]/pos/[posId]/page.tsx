@@ -1,8 +1,10 @@
 "use client";
 
+import { CreateNewPosSession } from "@/actions/PosSession";
 import { GetPosTerminalById } from "@/actions/PosTerminal";
 import { PosTerminal } from "@/types/models";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
 type PageProps = {
@@ -13,6 +15,7 @@ export default function PosPage({ params }: PageProps) {
   const { posId } = use(params);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PosTerminal | undefined>(undefined);
+  const router = useRouter();
 
   useEffect(() => {
     console.log(posId);
@@ -23,8 +26,26 @@ export default function PosPage({ params }: PageProps) {
     };
     getData();
   }, [params, posId]);
+
+  async function handleNewSession() {
+    const res = await CreateNewPosSession({
+      posUserId: "ced3472e-3a37-473c-a8fd-dee05291a71c", // TODO make this current user id
+      PosTerminalUUID: posId,
+    });
+    const url = res.data?.uuid;
+    router.push(posId + "/session/" + url);
+  }
+
   if (loading) {
     return <Loader2 className="animate-spin" />;
   }
-  return <div>{data?.name}</div>;
+
+  return (
+    <div className="flex items-center gap-4">
+      <div>{data?.name}</div>
+      <div onClick={() => handleNewSession()} className="underline">
+        New Session
+      </div>
+    </div>
+  );
 }

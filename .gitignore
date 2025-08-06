@@ -1,6 +1,9 @@
 # Ignore all .env files
 .env
 .env.*
-
+.vs
 # But keep .env.example
 !.env.example
+/.vs/project
+/cert
+/ssl

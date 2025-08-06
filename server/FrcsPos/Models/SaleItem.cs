@@ -14,9 +14,9 @@ namespace FrcsPos.Models
         public Product Product { get; set; } = default!;
 
         public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }     // snapshot at time of sale
-        public decimal TaxRatePercent { get; set; } // snapshot of tax (e.g., 15)
-        public decimal LineTotal { get; set; }     // optional snapshot for reporting
+        public decimal UnitPrice { get; set; }     
+        public decimal TaxRatePercent { get; set; } 
+        public decimal LineTotal { get; set; }     
     
     }
 }

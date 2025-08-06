@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Mappers
@@ -23,14 +24,24 @@ namespace FrcsPos.Mappers
 
         public static PosSessionDTO FromModelToDTO(this PosSession session)
         {
-            return new PosSessionDTO
-            {
-                Id = session.Id,
-                UUID = session.UUID,
-                CreatedOn = session.CreatedOn,
-                UpdatedOn = session.UpdatedOn,
-                PosTerminalId = session.PosTerminalId,
+            var result = new PosSessionDTO();
 
+            result.Id = session.Id;
+            result.ConnectionTimeOut = session.ConnectionTimeOut;
+            result.ConnectionUUID = session.ConnectionUUID;
+            result.UUID = session.UUID;
+            result.CreatedOn = session.CreatedOn;
+            result.UpdatedOn = session.UpdatedOn;
+            result.PosTerminal = session.PosTerminal.FromModelToJustModelDTO();
+
+            return result;
+        }
+
+        public static PosSession FromNewPosSessionRequestToModel(this NewPosSession session)
+        {
+            return new PosSession
+            {
+                PosUserId = session.PosUserId,
             };
 
         }

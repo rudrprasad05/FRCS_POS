@@ -15,7 +15,7 @@ namespace FrcsPos.Models
         public string? SerialNumber { get; set; }
         public bool IsActive { get; set; } = true;
 
-        public ICollection<PosSession> Session { get; set; } = new List<PosSession>();
-        public ICollection<Sale> Sales { get; set; } = new List<Sale>();
+        public ICollection<PosSession> Session { get; set; } = [];
+        public ICollection<Sale> Sales { get; set; } = [];
     }
 }
