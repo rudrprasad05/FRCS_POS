@@ -1,8 +1,17 @@
-import { Company, PosSession, User } from "../models";
+import { Company, PosSession, Notification } from "../models";
+
+// export interface SuperAdminDashboardDTO {
+//   users: User[];
+//   companies: Company[];
+// }
 
 export interface SuperAdminDashboardDTO {
-  users: User[];
-  companies: Company[];
+  totalCompanies: number;
+  totalMedia: number;
+  totalUsers: number;
+  totalProducts: number;
+  totalSales: number;
+  notifications: Notification[];
 }
 
 export interface ICreateNewPosSession {

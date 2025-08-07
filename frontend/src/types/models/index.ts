@@ -74,6 +74,36 @@ export interface ProductBatch extends BaseModel {
   notifications?: Notification[];
 }
 
+export enum NotificationTypes {
+  "INFO",
+  "WARNING",
+  "ERROR",
+  "SUCCESS",
+}
+
+export interface QueryObject {
+  pageNumber?: number;
+  pageSize?: number;
+  showInGallery?: boolean;
+  isDeleted?: boolean;
+  sortBy?: ESortBy;
+  isAvailable?: boolean;
+}
+
+export enum ESortBy {
+  ASC = "ASC",
+  DSC = "DSC",
+}
+export interface Notification extends BaseModel {
+  title: string;
+  message: string;
+  isRead: boolean;
+  type: NotificationTypes;
+  userId?: number;
+  user?: User;
+  actionUrl: string;
+}
+
 export interface Warehouse extends BaseModel {
   companyId: number;
 
