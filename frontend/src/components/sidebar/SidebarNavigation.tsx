@@ -21,14 +21,26 @@ import {
   Globe,
   Cloud,
   Trash2,
+  Building2,
+  UsersIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
   {
     title: "Dashboard",
-    href: "/dashboard",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Companies",
+    href: "/admin/companies",
+    icon: Building2,
+  },
+  {
+    title: "Users",
+    href: "/admin/users",
+    icon: UsersIcon,
   },
 ];
 

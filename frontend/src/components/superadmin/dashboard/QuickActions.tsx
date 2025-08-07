@@ -1,19 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Plus,
-  FileText,
-  Star,
-  MessageSquare,
-  Cake,
-  Database,
-  Coins,
-  Banknote,
-} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Banknote, Coins, Database, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SmallText, XSmallText } from "../font/HeaderFonts";
+import { SmallText, XSmallText } from "../../font/HeaderFonts";
 
 const actions = [
   {

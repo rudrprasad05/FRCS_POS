@@ -214,6 +214,7 @@ export interface MetaData {
   pageSize: number;
   totalCount: number;
   pageNumber: number;
+  totalPages: number;
 }
 
 export interface ApiResponse<T> {

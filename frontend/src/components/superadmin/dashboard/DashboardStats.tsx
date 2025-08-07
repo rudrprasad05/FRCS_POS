@@ -1,27 +1,16 @@
 "use client";
 
+import { GetSuperAdminDashboard } from "@/actions/SuperAdminDashboard";
 import { SmallLoadingHorizontialCard } from "@/components/global/LoadingContainer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GetSuperAdminDashboard } from "@/actions/SuperAdminDashboard";
 import { SuperAdminDashboardDTO } from "@/types/res";
-import {
-  Box,
-  BuildingIcon,
-  Cake,
-  Coins,
-  Database,
-  Loader2,
-  MessageCircle,
-  User,
-  Users,
-} from "lucide-react";
+import { Box, BuildingIcon, Coins, Database, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { QuickActions } from "./QuickActions";
 import DashboardStatsCard from "./DashboardStatsCard";
-import NoDataContainer from "../containers/NoDataContainer";
+import { QuickActions } from "./QuickActions";
 
 export function DashboardStats() {
   const [data, setdata] = useState<SuperAdminDashboardDTO>();

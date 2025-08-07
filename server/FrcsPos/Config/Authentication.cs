@@ -19,12 +19,14 @@ namespace FrcsPos.Config
         public static void AddAuthentication(this IServiceCollection services, IConfiguration configuration)
         {   
             var frontend = configuration["AllowedHosts"] ?? throw new InvalidOperationException();
+            var allowedOrigins = configuration.GetSection("CorsOrigins").Get<string[]>();
+
             services.AddCors(c => 
             {
                 c.AddPolicy("allowSpecificOrigin", options => 
                 {
                     options
-                    .WithOrigins(frontend)
+                    .WithOrigins(allowedOrigins!)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials()
