@@ -1,5 +1,9 @@
 "use client";
+import { GetAllCompanies } from "@/actions/Company";
+import NoDataContainer from "@/components/containers/NoDataContainer";
+import { H1, P } from "@/components/font/HeaderFonts";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
+import PaginationSection from "@/components/global/PaginationSection";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,17 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search } from "lucide-react";
+import { Company, MetaData } from "@/types/models";
+import { HousePlus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { columns } from "./CompaniesColumns";
 import { DataTable } from "./CompaniesDataTable";
-import PaginationSection from "@/components/global/PaginationSection";
-import { GetAllCompanies } from "@/actions/Company";
-import { Company, MetaData } from "@/types/models";
-import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H1, MutedText, P } from "@/components/font/HeaderFonts";
+import NewCompanyDialoge from "./NewCompanyDialoge";
 
 export default function CompanySection() {
   return (
@@ -69,16 +70,7 @@ function Header() {
           </Select>
         </div>
 
-        <Link href={"/admin/category/create"}>
-          <div
-            className={`${buttonVariants({
-              variant: "default",
-            })} w-full text-start justify-start px-2 my-2`}
-          >
-            <Plus />
-            New Catgory
-          </div>
-        </Link>
+        <NewCompanyDialoge />
       </div>
     </div>
   );

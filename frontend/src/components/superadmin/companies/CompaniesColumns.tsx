@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Company } from "@/types/models";
+import { Company, User } from "@/types/models";
 
 export const columns: ColumnDef<Company>[] = [
   {
@@ -33,7 +33,13 @@ export const columns: ColumnDef<Company>[] = [
     accessorKey: "name",
     header: "Name",
   },
-
+  {
+    accessorKey: "adminUser",
+    header: "Admin",
+    cell: ({ row }) => {
+      return (row.getValue("adminUser") as User).email;
+    },
+  },
   {
     accessorKey: "createdOn",
     header: "Created On",
@@ -46,6 +52,7 @@ export const columns: ColumnDef<Company>[] = [
       });
     },
   },
+
   {
     id: "actions",
     accessorKey: "actions",
