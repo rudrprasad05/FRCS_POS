@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { QuickActions } from "./QuickActions";
 import DashboardStatsCard from "./DashboardStatsCard";
+import NoDataContainer from "../containers/NoDataContainer";
 
 export function DashboardStats() {
   const [data, setdata] = useState<SuperAdminDashboardDTO>();
@@ -41,7 +42,7 @@ export function DashboardStats() {
         <DashboardStatsCard
           input={{
             title: "Total Companies",
-            val: data?.totalCompanies ?? 0,
+            val: data?.totalCompanies,
             icon: BuildingIcon,
             isLoading: !data,
           }}
@@ -80,9 +81,9 @@ export function DashboardStats() {
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-gray-200 pb-0">
+        <Card className=" pb-0">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">
+            <CardTitle className="text-lg font-semibold ">
               Recent Activity
             </CardTitle>
           </CardHeader>
@@ -92,6 +93,7 @@ export function DashboardStats() {
                 Array.from({ length: 4 }, (_, i) => (
                   <SmallLoadingHorizontialCard key={i} />
                 ))}
+
               {data?.notifications &&
                 data?.notifications.map((activity, index) => (
                   <div key={index} className="flex items-center gap-3">
@@ -100,18 +102,16 @@ export function DashboardStats() {
                         src="/placeholder.svg?height=32&width=32"
                         alt={activity.user?.email}
                       />
-                      <AvatarFallback className="bg-rose-100 text-rose-700 text-xs">
-                        US
-                      </AvatarFallback>
+                      <AvatarFallback className="0 text-xs">US</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">
+                      <p className="text-sm ">
                         <span className="font-medium">
                           {activity.user?.email}
                         </span>
                         {activity.message}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs ">
                         {formatFullDate(activity.createdOn)}
                       </p>
                     </div>

@@ -48,10 +48,7 @@ export function H3({ children, className, ...props }: H1Props) {
 
 export function P({ children, className, ...props }: H1Props) {
   return (
-    <p
-      className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}
-      {...props}
-    >
+    <p className={cn("leading-7", className)} {...props}>
       {children}
     </p>
   );
@@ -60,7 +57,7 @@ export function P({ children, className, ...props }: H1Props) {
 export function MutedText({ children, className, ...props }: H1Props) {
   return (
     <p className={cn("text-muted-foreground text-sm", className)} {...props}>
-      Enter your email address.
+      {children}
     </p>
   );
 }
@@ -77,6 +74,17 @@ export function SmallText({ children, className, ...props }: H1Props) {
   return (
     <small
       className={cn("text-sm leading-none font-medium", className)}
+      {...props}
+    >
+      {children}
+    </small>
+  );
+}
+
+export function XSmallText({ children, className, ...props }: H1Props) {
+  return (
+    <small
+      className={cn("text-xs leading-none font-light", className)}
       {...props}
     >
       {children}

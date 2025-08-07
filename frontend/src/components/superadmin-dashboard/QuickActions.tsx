@@ -9,32 +9,47 @@ import {
   MessageSquare,
   Cake,
   Database,
+  Coins,
+  Banknote,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { SmallText, XSmallText } from "../font/HeaderFonts";
 
 const actions = [
   {
-    title: "New Cake",
-    description: "Create a new cake",
+    title: "New Company",
+    description: "New Company",
     icon: Plus,
     href: "/admin/cakes/create",
   },
   {
-    title: "View Cakes",
-    description: "View current cakes",
-    icon: Cake,
+    title: "New User",
+    description: "New Admin User",
+    icon: Plus,
     href: "/admin/cakes",
   },
   {
-    title: "View Messages",
-    description: "Manage customer messages",
-    icon: MessageSquare,
+    title: "View Sales",
+    description: "View sales from each company",
+    icon: Coins,
+    href: "/admin/messages",
+  },
+  {
+    title: "View Taxes",
+    description: "View Tax Sections",
+    icon: Coins,
     href: "/admin/messages",
   },
   {
     title: "View Media",
-    description: "Create and edit media images",
+    description: "View All Media",
     icon: Database,
+    href: "/admin/media",
+  },
+  {
+    title: "Active Sessions",
+    description: "View active pos terminals",
+    icon: Banknote,
     href: "/admin/media",
   },
 ];
@@ -42,11 +57,9 @@ const actions = [
 export function QuickActions() {
   const router = useRouter();
   return (
-    <Card className="border-gray-200">
+    <Card className="">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900">
-          Quick Actions
-        </CardTitle>
+        <CardTitle className="text-lg font-semibold ">Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
@@ -55,16 +68,12 @@ export function QuickActions() {
               key={action.title}
               onClick={() => router.push(action.href)}
               variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2 border-gray-200 hover:bg-rose-50 hover:border-rose-200"
+              className="h-auto p-4 flex flex-col items-center gap-2  "
             >
-              <action.icon className="h-5 w-5 text-rose-600" />
-              <div className="text-center">
-                <div className="text-sm font-medium text-gray-900">
-                  {action.title}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {action.description}
-                </div>
+              <action.icon className="h-5 w-5 text-primary" />
+              <div className="text-center flex flex-col space-y-2">
+                <SmallText className="">{action.title}</SmallText>
+                <XSmallText className="">{action.description}</XSmallText>
               </div>
             </Button>
           ))}
