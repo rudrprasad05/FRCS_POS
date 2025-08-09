@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
 using FrcsPos.Models;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
 {
@@ -16,13 +18,17 @@ namespace FrcsPos.Repository
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ITokenService _tokenService;
+        private readonly ApplicationDbContext _context;
+
         public UserRepository(
             UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
-            ITokenService tokenService
+            ITokenService tokenService,
+            ApplicationDbContext context
         )
         {
             _userManager = userManager;
+            _context = context;
             _roleManager = roleManager;
             _tokenService = tokenService;
 
@@ -78,6 +84,34 @@ namespace FrcsPos.Repository
         {
             throw new NotImplementedException();
         }
+
+        public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(string? role)
+        {
+            var userDtos = new List<UserDTO>();
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                string normalizedRole = role.Trim().ToUpperInvariant();
+
+                var usersInRole = await _userManager.GetUsersInRoleAsync(normalizedRole);
+                foreach (var user in usersInRole)
+                {
+                    userDtos.Add(user.FromUserToDto());
+                }
+            }
+            else
+            {
+                // Get all users
+                var allUsers = await _userManager.Users.ToListAsync();
+                foreach (var user in allUsers)
+                {
+                    userDtos.Add(user.FromUserToDto());
+                }
+            }
+
+            return ApiResponse<List<UserDTO>>.Ok(userDtos);
+        }
+
 
         public Task<ApiResponse<UserDTO>> GetOne(string uuid)
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Models;
@@ -16,6 +17,8 @@ namespace FrcsPos.Controllers
     public class UserController : BaseController
     {
         private readonly UserManager<User> _userManager;
+        private readonly IUserRepository _userRepository;
+
         private readonly IWebHostEnvironment _env;
         private readonly RoleManager<IdentityRole> _roleManager;
 
@@ -25,12 +28,26 @@ namespace FrcsPos.Controllers
             IConfiguration configuration,
             ITokenService tokenService,
             IWebHostEnvironment env,
-            ILogger<UserController> logger
+            ILogger<UserController> logger,
+            IUserRepository userRepository
         ) : base(configuration, tokenService, logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _env = env;
+            _userRepository = userRepository;
+        }
+
+        [HttpGet("get-all-users")]
+        public async Task<IActionResult> GetAllSuperAdmins([FromQuery] string? role)
+        {
+            var model = await _userRepository.GetAllUsers(role);
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
         }
 
         [HttpPost("create")]
@@ -40,7 +57,14 @@ namespace FrcsPos.Controllers
                 return BadRequest(ModelState);
 
             // Determine role type from email domain
-            var roleType = model.Email.Contains("@procyonfiji.com") ? "Admin" : "User";
+            string roleType;
+
+            if (model.Role != null) {
+                roleType = model.Role;
+            }
+            else {
+                roleType = model.Email.Contains("@procyonfiji.com") ? "Admin" : "User";  
+            }
 
             try
             {

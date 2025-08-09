@@ -14,6 +14,7 @@ namespace FrcsPos.Request
         public bool? IsAvailable { get; set; }
         public bool? IsDeleted { get; set; } = false;
         public ESortBy SortBy { get; set; } = ESortBy.ASC;
+
         public int PageSize
         {
             get => _pageSize;

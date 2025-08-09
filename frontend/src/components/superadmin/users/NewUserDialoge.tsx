@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { User } from "@/types/models";
-import { HousePlus, Loader2 } from "lucide-react";
+import { HousePlus, Loader2, UserPlus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import {
@@ -32,29 +32,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GetAllAdmins } from "@/actions/User";
+import { CreateUser, GetAllAdmins } from "@/actions/User";
 
 const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "name must be at least 1 character.",
+  username: z.string().min(1, {
+    message: "username must be at least 1 character.",
   }),
-  adminUserId: z.string().min(1, {
-    message: "Please select an admin.",
+  role: z.string().min(1, {
+    message: "Please select a role.",
   }),
+  email: z.email(),
 });
 
-export default function NewCompanyDialoge() {
+export type NewUserForm = z.infer<typeof formSchema>;
+
+export default function NewUserDialoge() {
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<NewUserForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      adminUserId: "",
+      username: "",
+      role: "",
+      email: "",
     },
   });
-  const selectedAdmin = form.watch("adminUserId");
 
   useEffect(() => {
     const getData = async () => {
@@ -66,9 +69,9 @@ export default function NewCompanyDialoge() {
     getData();
   }, []);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  async function onSubmit(values: NewUserForm) {
+    const res = await CreateUser(values);
+    console.log(res);
     console.log(values);
   }
 
@@ -80,8 +83,8 @@ export default function NewCompanyDialoge() {
             variant: "default",
           })} w-full text-start justify-start px-2 my-2`}
         >
-          <HousePlus />
-          New Company
+          <UserPlus />
+          New User
         </div>
       </DialogTrigger>
       <DialogContent className="">
@@ -96,16 +99,13 @@ export default function NewCompanyDialoge() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="name"
+              name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company Name</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input placeholder="admin" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This is the public display name.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -113,28 +113,38 @@ export default function NewCompanyDialoge() {
 
             <FormField
               control={form.control}
-              name="adminUserId"
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="admin@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="role"
               render={({ field }) => (
                 <FormItem className="w-full">
-                  <FormLabel>Select Admin</FormLabel>
+                  <FormLabel>Select role</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an admin" />
+                        <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="w-full">
-                      {loading && <Loader2 className="animate-spin" />}
-                      {adminUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.username ?? user.email}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value={"SUPERADMIN"}>superadmin</SelectItem>
+                      <SelectItem value={"ADMIN"}>admin</SelectItem>
+                      <SelectItem value={"CASHIER"}>cashier</SelectItem>
+                      <SelectItem value={"USER"}>user</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Choose an admin for this company.
-                  </FormDescription>
+
                   <FormMessage />
                 </FormItem>
               )}
