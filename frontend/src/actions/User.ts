@@ -1,6 +1,8 @@
 "use server";
 
+import { NewUserForm } from "@/components/superadmin/users/NewUserDialoge";
 import { axiosGlobal } from "@/lib/axios";
+import { ApiResponse, QueryObject, User } from "@/types/models";
 // import { LoginResponse } from "@/types/schema";
 // import { SignInFormType } from "@/types/zod";
 import https from "https";
@@ -15,6 +17,24 @@ export async function GetUser() {
     httpAgent: agent,
   });
   return res;
+}
+
+export async function GetAllAdmins(
+  query?: QueryObject
+): Promise<ApiResponse<User[]>> {
+  const res = await axiosGlobal.get<ApiResponse<User[]>>("user/get-all-users");
+  console.log(res.data);
+  return res.data;
+}
+
+export async function CreateUser(
+  data: NewUserForm
+): Promise<ApiResponse<User[]>> {
+  const res = await axiosGlobal.post<ApiResponse<User[]>>(
+    "user/get-all-super-admins",
+    { ...data }
+  );
+  return res.data;
 }
 
 // export async function LoginUser(data: SignInFormType): Promise<LoginResponse> {
