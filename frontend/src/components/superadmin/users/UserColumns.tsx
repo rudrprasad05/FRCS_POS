@@ -32,18 +32,19 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => {
+      const cake = row.original; // Get the entire row data (of type CakeType)
+
+      return <div className="flex gap-2">{cake.username}</div>;
+    },
   },
 
   {
-    accessorKey: "createdOn",
-    header: "Created On",
+    accessorKey: "email",
+    header: "Email",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("createdOn"));
-      return date.toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+      const cake = row.original;
+      return <div className="flex gap-2">{cake.email}</div>;
     },
   },
 

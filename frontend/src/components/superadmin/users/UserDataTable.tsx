@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { Company, User } from "@/types/models";
+import { User } from "@/types/models";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

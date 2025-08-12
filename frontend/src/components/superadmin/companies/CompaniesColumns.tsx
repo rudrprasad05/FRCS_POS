@@ -11,9 +11,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useState } from "react";
-import { Edit, Loader2, Trash } from "lucide-react";
+import { Edit, Eye, Loader2, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -69,6 +69,15 @@ export const columns: ColumnDef<Company>[] = [
             </Link>
           </Button>
           <DeleteModal cakeType={cake} />
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`/admin/companies/${cake.uuid}`}
+              className="w-24 flex items-center justify-between"
+            >
+              View
+              <Eye className="" />
+            </Link>
+          </Button>
         </div>
       );
     },
