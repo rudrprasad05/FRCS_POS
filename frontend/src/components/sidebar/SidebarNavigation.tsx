@@ -44,6 +44,16 @@ const navigationItems = [
     href: "/admin/users",
     icon: UsersIcon,
   },
+  {
+    title: "Tax",
+    href: "/admin/tax",
+    icon: BookText,
+  },
+  {
+    title: "Reports",
+    href: "/admin/reports",
+    icon: Flag,
+  },
 ];
 
 const companyNavigationItems = [
