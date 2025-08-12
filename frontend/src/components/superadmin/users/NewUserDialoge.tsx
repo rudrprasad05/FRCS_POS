@@ -120,6 +120,23 @@ export default function NewUserDialoge() {
     }, 2000);
   }
 
+  function handleDownloadCredentials() {
+    const username = form.getValues("username");
+    const email = form.getValues("email");
+    const password = form.getValues("password");
+
+    const fileContent = `Username: ${username}\nEmail: ${email}\nPassword: ${password}`;
+    const blob = new Blob([fileContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "credentials.txt";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }
+
   useEffect(() => {
     const getData = async () => {
       const data = await GetAllAdmins();
@@ -285,6 +302,7 @@ export default function NewUserDialoge() {
 =======
             <Button type="submit">Submit</Button>
             <Button
+              onClick={handleDownloadCredentials}
 >>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
               variant={"secondary"}
               type="button"
