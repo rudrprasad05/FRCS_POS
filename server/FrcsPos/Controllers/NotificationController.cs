@@ -8,16 +8,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+<<<<<<< HEAD
     [Route("api/notification")]
     [ApiController]
     public class NotificationController : BaseController
     {
         private readonly INotificationRepository _notificationRepository;
+=======
+    public class NotificationController : BaseController
+    {
+        private readonly ICompanyRepository _companyRepository;
+>>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
 
         public NotificationController(
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<NotificationController> logger,
+<<<<<<< HEAD
             INotificationRepository notificationRepository
         ) : base(configuration, tokenService, logger)
         {
@@ -35,6 +42,20 @@ namespace FrcsPos.Controllers
             }
 
             return Ok(model);
+=======
+            ICompanyRepository companyRepository
+        ) : base(configuration, tokenService, logger)
+        {
+            _companyRepository = companyRepository;
+        }
+
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
+        {
+            
+            // TODO
+            return Ok();
+>>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
         }
     }
 }

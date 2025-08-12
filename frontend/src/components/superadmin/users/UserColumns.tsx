@@ -37,6 +37,7 @@ export const columns: ColumnDef<User>[] = [
 
       return <div className="flex gap-2">{cake.username}</div>;
     },
+<<<<<<< HEAD
   },
   {
     accessorKey: "role",
@@ -46,6 +47,8 @@ export const columns: ColumnDef<User>[] = [
 
       return <div className="flex gap-2">{cake.role}</div>;
     },
+=======
+>>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
   },
 
   {

@@ -52,12 +52,11 @@ export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
               <Edit className="" />
             </Link>
           </Button>
+
           {/* <DeleteCompanyDialoge data={company} /> */}
+
           <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/${encodeURI(company.name)}`}
-              className="w-24 flex items-center justify-between"
-            >
+            <Link href={`/admin/companies/${company.uuid}`}>
               View
               <Eye className="" />
             </Link>
