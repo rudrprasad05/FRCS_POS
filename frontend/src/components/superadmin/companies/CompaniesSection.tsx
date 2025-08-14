@@ -27,8 +27,17 @@ export default function CompanySection() {
     <CompanyDataProvider
       fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
     >
-      <Header />
-      <HandleDataSection />
+      <CompanyDataProvider
+        fetchFn={() =>
+          GetAllCompanies({ pageNumber: 1, pageSize: 10 }).then((res) => ({
+            data: res.data ?? [],
+            meta: res.meta,
+          }))
+        }
+      >
+        <Header />
+        <HandleDataSection />
+      </CompanyDataProvider>
     </CompanyDataProvider>
   );
 }

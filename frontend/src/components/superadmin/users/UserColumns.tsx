@@ -50,6 +50,15 @@ export const columns: ColumnDef<User>[] = [
 =======
 >>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
   },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => {
+      const cake = row.original; // Get the entire row data (of type CakeType)
+
+      return <div className="flex gap-2">{cake.role}</div>;
+    },
+  },
 
   {
     accessorKey: "email",

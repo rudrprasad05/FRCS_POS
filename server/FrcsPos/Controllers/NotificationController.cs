@@ -17,7 +17,7 @@ namespace FrcsPos.Controllers
 =======
     public class NotificationController : BaseController
     {
-        private readonly ICompanyRepository _companyRepository;
+        private readonly INotificationRepository _notificationRepository;
 >>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
 
         public NotificationController(
@@ -43,18 +43,23 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
 =======
-            ICompanyRepository companyRepository
+            INotificationRepository notificationRepository
         ) : base(configuration, tokenService, logger)
         {
-            _companyRepository = companyRepository;
+            _notificationRepository = notificationRepository;
         }
 
-        [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
+        [HttpGet("get-all-superadmin")]
+        public async Task<IActionResult> GetAllNotificationsForSuperAdmin([FromQuery] RequestQueryObject queryObject)
         {
-            
-            // TODO
-            return Ok();
+            var model = await _notificationRepository.GetSuperAdminNotifications(queryObject);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
 >>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
         }
     }

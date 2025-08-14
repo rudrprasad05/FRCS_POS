@@ -44,6 +44,8 @@ import {
 import { CreateUser, GetAllAdmins } from "@/actions/User";
 import { generateStrongPassword } from "@/lib/utils";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { useUsers } from "@/context/UserDataContext";
 <<<<<<< HEAD
 import { Label } from "@/components/ui/label";
 import { useUsers } from "@/context/UserDataContext";
@@ -89,6 +91,9 @@ export default function NewUserDialoge() {
   const [loading, setLoading] = useState(true);
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
 >>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  const { refresh, pagination, setPagination } = useUsers();
 
   const form = useForm<NewUserForm>({
     resolver: zodResolver(formSchema),
