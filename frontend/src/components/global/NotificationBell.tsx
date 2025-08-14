@@ -71,6 +71,8 @@ export function NotificationBell() {
         sortBy: ESortBy.DSC,
       });
 
+      console.log("not", data);
+
       setNotifications(data.data as unknown as Notification[]);
       setUnreadCount(data.meta?.totalCount as number);
       setLoading(false);
