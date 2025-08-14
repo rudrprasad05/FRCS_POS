@@ -35,9 +35,9 @@ export default function CompanyAdmin({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <AdminSidebar />
+        <CompanySidebar />
         <div className="flex-1 flex flex-col relative">
-          <AdminHeader />
+          <CompanyHeader />
           <main className="flex-1 p-6">{children}</main>
         </div>
       </div>
