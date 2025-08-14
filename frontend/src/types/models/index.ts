@@ -227,6 +227,17 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+export function ApiResponseFail<T>(): ApiResponse<T> {
+  return {
+    success: false,
+    statusCode: 500,
+    data: undefined,
+    errors: ["Network error"],
+    message: "Unable to reach the server",
+    timestamp: Date.now().toString(), // FIXED: need parentheses
+  };
+}
+
 export interface QuickConnect extends BaseModel {
   posSessionId: number;
   quickConnectMobileId?: number | null;

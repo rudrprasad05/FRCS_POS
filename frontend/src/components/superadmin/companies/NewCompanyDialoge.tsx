@@ -33,6 +33,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { GetAllAdmins } from "@/actions/User";
+import { useCompanyData } from "./CompaniesSection";
+import { CreateCompany } from "@/actions/Company";
+import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -43,18 +47,23 @@ const formSchema = z.object({
   }),
 });
 
+export type NewCompanyFormType = z.infer<typeof formSchema>;
+
 export default function NewCompanyDialoge() {
+  const { refresh } = useCompanyData();
+
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<NewCompanyFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       adminUserId: "",
     },
   });
-  const selectedAdmin = form.watch("adminUserId");
 
   useEffect(() => {
     const getData = async () => {
@@ -66,14 +75,25 @@ export default function NewCompanyDialoge() {
     getData();
   }, []);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: NewCompanyFormType) {
+    setLoading(true);
+    const res = await CreateCompany(values);
+    console.log(res);
+
+    if (!res.success) {
+      toast.error("Error creating user", { description: res.message });
+      setError(res.message);
+    } else {
+      toast.success("User created");
+      refresh();
+      setOpen(false);
+    }
+
+    setLoading(false);
   }
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger>
         <div
           className={`${buttonVariants({
@@ -139,7 +159,10 @@ export default function NewCompanyDialoge() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            {error && <Label className="text-rose-400">{error}</Label>}
+            <Button type="submit" disabled={loading}>
+              Submit {loading && <Loader2 className="animate-spin" />}
+            </Button>
           </form>
         </Form>
       </DialogContent>

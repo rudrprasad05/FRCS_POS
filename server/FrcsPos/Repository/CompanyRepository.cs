@@ -17,7 +17,7 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
-        
+
         public CompanyRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService
@@ -32,14 +32,20 @@ namespace FrcsPos.Repository
         {
             var company = request.FromNewCompanyRequestToModel();
 
+            var exists = await _context.Companies.FirstOrDefaultAsync(c => c.Name == request.Name);
+            if (exists != null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "duplicate company name");
+            }
+
             var model = await _context.Companies.AddAsync(company);
             await _context.SaveChangesAsync();
 
             var result = model.Entity.FromModelToDto();
 
             await _notificationService.CreateNotificationAsync(
-                title: "New Cake",
-                message: "The cake " + result.Name + " was created",
+                title: "New Compnay",
+                message: "The company '" + result.Name + "' was created",
                 type: NotificationType.SUCCESS,
                 actionUrl: "/admin/cake/" + result.UUID
             );
@@ -49,6 +55,33 @@ namespace FrcsPos.Repository
                 Success = true,
                 StatusCode = 200,
                 Data = result,
+            };
+        }
+
+        public async Task<ApiResponse<CompanyDTO>> SoftDelete(string uuid)
+        {
+
+            var model = await _context.Companies.FirstOrDefaultAsync(c => c.UUID == uuid);
+            if (model == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail();
+            }
+
+            model.IsDeleted = true;
+            await _context.SaveChangesAsync();
+
+            await _notificationService.CreateNotificationAsync(
+                title: "Company Deleted",
+                message: "The company '" + model.Name + "' was deleted",
+                type: NotificationType.WARNING,
+                actionUrl: "/admin/cake/" + model.UUID
+            );
+
+            return new ApiResponse<CompanyDTO>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = model.FromModelToDto(),
             };
         }
 
@@ -103,6 +136,6 @@ namespace FrcsPos.Repository
             };
         }
 
-       
+
     }
 }

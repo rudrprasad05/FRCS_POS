@@ -12,5 +12,7 @@ namespace FrcsPos.Interfaces
     {
         public Task<ApiResponse<CompanyDTO>> CreateCompanyAsync(NewCompanyRequest request);
         public Task<ApiResponse<List<CompanyDTO>>> GetAllCompanyAsync(RequestQueryObject queryObject);
+        public Task<ApiResponse<CompanyDTO>> SoftDelete(string uuid);
+
     }
 }

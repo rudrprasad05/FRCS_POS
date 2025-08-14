@@ -31,19 +31,19 @@ namespace FrcsPos.Context
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
         public DbSet<Media> Medias { get; set; }
-        
-        
+
+
 
         protected override void OnModelCreating(ModelBuilder b)
         {
             base.OnModelCreating(b);
 
-            List<IdentityRole> roles = new List<IdentityRole>
+            List<IdentityRole> roles = new()
             {
-                new IdentityRole{Name = "superadmin", NormalizedName = "SUPERADMIN"},
-                new IdentityRole{Name = "admin", NormalizedName = "ADMIN"},
-                new IdentityRole{Name = "cashier", NormalizedName = "CASHIER"},
-                new IdentityRole{Name = "user", NormalizedName = "USER"}
+                new() {Name = "superadmin", NormalizedName = "SUPERADMIN"},
+                new() {Name = "admin", NormalizedName = "ADMIN"},
+                new() {Name = "cashier", NormalizedName = "CASHIER"},
+                new() {Name = "user", NormalizedName = "USER"}
             };
             b.UseCollation("utf8mb4_general_ci");
             b.Entity<IdentityRole>().HasData(roles);
@@ -63,7 +63,7 @@ namespace FrcsPos.Context
                 .HasForeignKey(x => x.AdminUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasIndex(x => x.Name);
+                e.HasIndex(x => x.Name).IsUnique(); ;
             });
 
             b.Entity<CompanyUser>(e =>
