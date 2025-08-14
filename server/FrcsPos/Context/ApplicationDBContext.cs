@@ -32,6 +32,7 @@ namespace FrcsPos.Context
         public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
         public DbSet<Media> Medias { get; set; }
 <<<<<<< HEAD
+<<<<<<< HEAD
         public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
 
 
