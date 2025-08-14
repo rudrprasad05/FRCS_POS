@@ -19,12 +19,16 @@ namespace FrcsPos.Repository
         private readonly UserManager<User> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly IPosTerminalRepository _posTerminalRepository;
-        
-        public SuperAdminDashboardRepository(IPosTerminalRepository posTerminalRepository, ApplicationDbContext applicationDbContext, UserManager<User> userManager)
+        private readonly INotificationRepository _notificationRepository;
+
+
+        public SuperAdminDashboardRepository(INotificationRepository notificationRepository, IPosTerminalRepository posTerminalRepository, ApplicationDbContext applicationDbContext, UserManager<User> userManager)
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _posTerminalRepository = posTerminalRepository;
+            _notificationRepository = notificationRepository;
+
 
         }
         public async Task<ApiResponse<SuperAdminDashboardDTO>> GetSuperAdminDashboard()
@@ -34,13 +38,17 @@ namespace FrcsPos.Repository
             foreach (var user in users)
             {
                 userDtos.Add(user.FromUserToDto());
-            };
+            }
+            ;
 
             var pos = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(new RequestQueryObject());
+            var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 8 });
+
             var dto = new SuperAdminDashboardDTO
             {
                 Users = userDtos,
-                Companies = pos.Data ?? []
+                Companies = pos.Data ?? [],
+                Notifications = notifications.Data ?? [],
             };
 
             return new ApiResponse<SuperAdminDashboardDTO>

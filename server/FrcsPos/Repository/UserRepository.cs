@@ -94,23 +94,27 @@ namespace FrcsPos.Repository
                 string normalizedRole = role.Trim().ToUpperInvariant();
 
                 var usersInRole = await _userManager.GetUsersInRoleAsync(normalizedRole);
-                foreach (var user in usersInRole)
+                foreach (var user in usersInRole.OrderByDescending(u => u.CreatedOn))
                 {
-                    userDtos.Add(user.FromUserToDto());
+                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
                 }
             }
             else
             {
-                // Get all users
-                var allUsers = await _userManager.Users.ToListAsync();
+                // Get all users, sorted by CreatedOn descending
+                var allUsers = await _userManager.Users
+                    .OrderByDescending(u => u.CreatedOn)
+                    .ToListAsync();
+
                 foreach (var user in allUsers)
                 {
-                    userDtos.Add(user.FromUserToDto());
+                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
                 }
             }
 
             return ApiResponse<List<UserDTO>>.Ok(userDtos);
         }
+
 
 
         public Task<ApiResponse<UserDTO>> GetOne(string uuid)

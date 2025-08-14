@@ -13,6 +13,7 @@ namespace FrcsPos.Models
         public NotificationType Type { get; set; } = NotificationType.INFO;
         public string? UserId { get; set; }
         public User? User { get; set; }
+        public bool IsSuperAdmin { get; set; } = false;
         public string ActionUrl { get; set; } = string.Empty;
     }
 

@@ -118,7 +118,7 @@ export interface User {
   username: string;
   email: string;
   token?: string; // custom field for auth tokens, etc.
-
+  role?: string;
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
 }
@@ -225,6 +225,17 @@ export interface ApiResponse<T> {
   meta?: MetaData;
   errors?: string[];
   timestamp: string;
+}
+
+export function ApiResponseFail<T>(): ApiResponse<T> {
+  return {
+    success: false,
+    statusCode: 500,
+    data: undefined,
+    errors: ["Network error"],
+    message: "Unable to reach the server",
+    timestamp: Date.now().toString(), // FIXED: need parentheses
+  };
 }
 
 export interface QuickConnect extends BaseModel {

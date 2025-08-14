@@ -1,25 +1,12 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Edit, Loader2, Trash } from "lucide-react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { ColumnDef } from "@tanstack/react-table";
+import { Edit, Eye } from "lucide-react";
 
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { Company, User } from "@/types/models";
+import Link from "next/link";
+import { DeleteCompanyDialoge } from "./DeleteCompaniesDialoge";
 
 export const columns: ColumnDef<Company>[] = [
   {
@@ -58,7 +45,7 @@ export const columns: ColumnDef<Company>[] = [
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const cake = row.original; // Get the entire row data (of type CakeType)
+      const company = row.original; // Get the entire row data (of type companyType)
 
       return (
         <div className="flex gap-2">
@@ -68,70 +55,18 @@ export const columns: ColumnDef<Company>[] = [
               <Edit className="" />
             </Link>
           </Button>
-          <DeleteModal cakeType={cake} />
+          <DeleteCompanyDialoge data={company} />
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`/${encodeURI(company.name)}`}
+              className="w-24 flex items-center justify-between"
+            >
+              View
+              <Eye className="" />
+            </Link>
+          </Button>
         </div>
       );
     },
   },
 ];
-
-function DeleteModal({ cakeType }: { cakeType: Company }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-
-  async function handleDelete() {
-    setIsLoading(true);
-    try {
-      //   const res = await DeleteCakeType(cakeType.uuid);
-      setIsLoading(false);
-      toast.success("Media Deleted");
-      setIsOpen(false);
-      //   setList((prevList) =>
-      //     prevList.filter((item) => item?.uuid !== cakeType.uuid)
-      //   );
-    } catch (error) {
-      console.dir(error);
-      setIsLoading(false);
-      toast.error("Error Occured");
-    }
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className="w-24" asChild>
-        <Button
-          variant="outline"
-          onClick={() => setIsOpen(true)}
-          className="w-24 flex items-center justify-between"
-        >
-          Delete <Trash className="" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-white">
-        <DialogHeader>
-          <DialogTitle>Delete Media</DialogTitle>
-          <DialogDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button onClick={() => setIsOpen(false)} variant="outline">
-              Cancel
-            </Button>
-          </DialogClose>
-          <Button
-            onClick={() => handleDelete()}
-            className="bg-rose-500 hover:bg-red-600"
-            variant={"destructive"}
-          >
-            Delete
-            {isLoading && <Loader2 className="animate-spin" />}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}

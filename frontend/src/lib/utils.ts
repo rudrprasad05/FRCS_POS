@@ -19,3 +19,35 @@ export const formatDate = (dateString: string) => {
     return date.toLocaleDateString([], { month: "short", day: "numeric" });
   }
 };
+
+export function generateStrongPassword(length = 12) {
+  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lowercase = "abcdefghijklmnopqrstuvwxyz";
+  const numbers = "0123456789";
+  const specials = "!@#$%^&*()_+[]{}|;:,.<>?/~`-=";
+
+  // Ensure at least one of each required character
+  let password = [
+    uppercase[Math.floor(Math.random() * uppercase.length)],
+    lowercase[Math.floor(Math.random() * lowercase.length)],
+    numbers[Math.floor(Math.random() * numbers.length)],
+    specials[Math.floor(Math.random() * specials.length)],
+  ];
+
+  // Fill the rest with a mix of all allowed characters
+  const allChars = uppercase + lowercase + numbers + specials;
+  for (let i = password.length; i < length; i++) {
+    password.push(allChars[Math.floor(Math.random() * allChars.length)]);
+  }
+
+  // Shuffle the password to randomize positions
+  for (let i = password.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [password[i], password[j]] = [password[j], password[i]];
+  }
+
+  return password.join("");
+}
+
+// Example usage:
+console.log(generateStrongPassword()); // e.g. "A2@dZg1*mQ!c"

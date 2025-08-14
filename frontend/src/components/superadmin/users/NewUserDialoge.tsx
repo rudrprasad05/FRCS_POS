@@ -10,7 +10,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { User } from "@/types/models";
-import { HousePlus, Loader2, UserPlus } from "lucide-react";
+import {
+  Copy,
+  CopyCheck,
+  File,
+  HousePlus,
+  Loader2,
+  RotateCcw,
+  RotateCw,
+  UserPlus,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import {
@@ -33,6 +42,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreateUser, GetAllAdmins } from "@/actions/User";
+import { generateStrongPassword } from "@/lib/utils";
+import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { useUsers } from "@/context/UserDataContext";
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -42,13 +55,31 @@ const formSchema = z.object({
     message: "Please select a role.",
   }),
   email: z.email(),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long." })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter.",
+    })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .regex(/[0-9]/, { message: "Password must contain at least one number." })
+    .regex(/[^A-Za-z0-9]/, {
+      message: "Password must contain at least one special character.",
+    }),
 });
 
 export type NewUserForm = z.infer<typeof formSchema>;
 
 export default function NewUserDialoge() {
-  const [adminUsers, setAdminUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const [isPasswordCopied, setIsPasswordCopied] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  const { refresh, pagination, setPagination } = useUsers();
 
   const form = useForm<NewUserForm>({
     resolver: zodResolver(formSchema),
@@ -56,27 +87,64 @@ export default function NewUserDialoge() {
       username: "",
       role: "",
       email: "",
+      password: generateStrongPassword(),
     },
   });
 
-  useEffect(() => {
-    const getData = async () => {
-      const data = await GetAllAdmins();
-      setAdminUsers(data.data as User[]);
+  function handleGenerateNewPassword() {
+    const newPass = generateStrongPassword();
+    form.setValue("password", newPass, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }
 
-      setLoading(false);
-    };
-    getData();
-  }, []);
+  function handleCopyPassword() {
+    navigator.clipboard.writeText(form.getValues("password"));
+    setIsPasswordCopied(true);
+    toast.success("Password copied");
+
+    setTimeout(() => {
+      setIsPasswordCopied(false);
+    }, 2000);
+  }
+
+  function handleDownloadCredentials() {
+    const username = form.getValues("username");
+    const email = form.getValues("email");
+    const password = form.getValues("password");
+
+    const fileContent = `Username: ${username}\nEmail: ${email}\nPassword: ${password}`;
+    const blob = new Blob([fileContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "credentials.txt";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  }
 
   async function onSubmit(values: NewUserForm) {
+    setLoading(true);
     const res = await CreateUser(values);
     console.log(res);
-    console.log(values);
+
+    if (!res.success) {
+      toast.error("Error creating user", { description: res.message });
+      setError(res.message);
+    } else {
+      toast.success("User created");
+      refresh();
+      setOpen(false);
+    }
+
+    setLoading(false);
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <div
           className={`${buttonVariants({
@@ -89,10 +157,9 @@ export default function NewUserDialoge() {
       </DialogTrigger>
       <DialogContent className="">
         <DialogHeader>
-          <DialogTitle>Create new company</DialogTitle>
+          <DialogTitle>Create new user</DialogTitle>
           <DialogDescription>
-            Use this dialoge to create a new company. Ensure you have atleast
-            one user before doing so.
+            Use this dialoge to create a new user
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -125,6 +192,38 @@ export default function NewUserDialoge() {
               )}
             />
 
+            <div className="flex items-end gap-2">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="grow">
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input className="grow" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex gap-1">
+                <Button
+                  type="button"
+                  onClick={handleGenerateNewPassword}
+                  variant={"outline"}
+                >
+                  <RotateCw className="" />
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleCopyPassword}
+                  variant={"outline"}
+                >
+                  {!isPasswordCopied ? <Copy className="" /> : <CopyCheck />}
+                </Button>
+              </div>
+            </div>
+
             <FormField
               control={form.control}
               name="role"
@@ -149,7 +248,19 @@ export default function NewUserDialoge() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            {error && <Label className="text-rose-400">{error}</Label>}
+            <Button type="submit" disabled={loading}>
+              Submit {loading && <Loader2 className="animate-spin" />}
+            </Button>
+            <Button
+              onClick={handleDownloadCredentials}
+              variant={"secondary"}
+              type="button"
+              className="ml-2 items-center "
+            >
+              <File />
+              Download
+            </Button>
           </form>
         </Form>
       </DialogContent>

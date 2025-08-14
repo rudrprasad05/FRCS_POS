@@ -1,6 +1,6 @@
 "use client";
 
-import BarcodeScanner from "@/components/barcode/BarcodePage";
+import BarcodeScanner from "@/components/company/barcode/BarcodePage";
 import React, { use } from "react";
 import { useEffect, useRef } from "react";
 type PageProps = {

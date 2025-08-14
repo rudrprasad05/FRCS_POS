@@ -23,6 +23,8 @@ import {
   Trash2,
   Building2,
   UsersIcon,
+  Flag,
+  BookText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +43,16 @@ const navigationItems = [
     title: "Users",
     href: "/admin/users",
     icon: UsersIcon,
+  },
+  {
+    title: "Tax",
+    href: "/admin/tax",
+    icon: BookText,
+  },
+  {
+    title: "Reports",
+    href: "/admin/reports",
+    icon: Flag,
   },
 ];
 

@@ -30,11 +30,26 @@ export async function GetAllAdmins(
 export async function CreateUser(
   data: NewUserForm
 ): Promise<ApiResponse<User[]>> {
-  const res = await axiosGlobal.post<ApiResponse<User[]>>(
-    "user/get-all-super-admins",
-    { ...data }
-  );
-  return res.data;
+  try {
+    const res = await axiosGlobal.post<ApiResponse<User[]>>(
+      "user/create",
+      data
+    );
+    return res.data;
+  } catch (error: any) {
+    if (error.response?.data) {
+      return error.response.data as ApiResponse<User[]>;
+    }
+
+    return {
+      success: false,
+      statusCode: 500,
+      data: [],
+      errors: ["Network error"],
+      message: "Unable to reach the server",
+      timestamp: Date.now.toString(),
+    };
+  }
 }
 
 // export async function LoginUser(data: SignInFormType): Promise<LoginResponse> {

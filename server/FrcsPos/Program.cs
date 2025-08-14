@@ -35,6 +35,8 @@ builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
 builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRepository>();
 builder.Services.AddScoped<IPosSessionRepository, PosSessionRepository>();
 builder.Services.AddScoped<IQuickConnectRepository, QuickConnectReopsitory>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -65,7 +67,7 @@ app
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); 
+    app.UseDeveloperExceptionPage();
 }
 
 // app.UseMiddleware<TokenMiddleware>();
@@ -81,7 +83,7 @@ using (var scope = app.Services.CreateScope())
         var connection = dbContext.Database.GetDbConnection();
         Console.WriteLine("🔍 Connection string being used:");
         Console.WriteLine(connection.ConnectionString);
-        
+
         dbContext.Database.OpenConnection(); // Test the connection
         dbContext.Database.CloseConnection();
         Console.WriteLine("Database connection successful.");
