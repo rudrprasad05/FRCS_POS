@@ -23,18 +23,21 @@ namespace FrcsPos.Service
             _context = context;
         }
 
-        public async Task CreateNotificationAsync(string title, string message, NotificationType type = NotificationType.INFO, string? actionUrl = null)
+        public async Task CreateNotificationAsync(string title, string message, NotificationType type = NotificationType.INFO, bool isSuperAdmin = false, string? actionUrl = null)
         {
             var notification = new Notification
             {
                 Title = title,
                 Message = message,
                 Type = type,
-                ActionUrl = actionUrl ?? "#"
+                ActionUrl = actionUrl ?? "#",
+                IsSuperAdmin = isSuperAdmin
             };
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
         }
+
+
     }
 }

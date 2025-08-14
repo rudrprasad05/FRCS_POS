@@ -22,15 +22,14 @@ import NewUserDialoge from "./NewUserDialoge";
 import { GetAllAdmins } from "@/actions/User";
 import { DataTable } from "./UserDataTable";
 import { columns } from "./UserColumns";
+import { UserDataProvider, useUsers } from "@/context/UserDataContext";
 
 export default function CompanySection() {
   return (
-    <>
+    <UserDataProvider>
       <Header />
       <HandleDataSection />
-    </>
-    // <CakeTypeProvider>
-    // </CakeTypeProvider>
+    </UserDataProvider>
   );
 }
 
@@ -76,51 +75,20 @@ function Header() {
     </div>
   );
 }
-
 function HandleDataSection() {
-  const [loading, setLoading] = useState(true);
-  const [list, setList] = useState<User[]>([]);
-  const router = useRouter();
-  //   const { list, setList } = useCakeType();
-  const [pagination, setPagination] = useState<MetaData>({
-    pageNumber: 1,
-    totalCount: 1,
-    pageSize: 10,
-    totalPages: 0,
-  });
-  useEffect(() => {
-    const getData = async () => {
-      const res = await GetAllAdmins({
-        pageNumber: pagination.pageNumber,
-        pageSize: pagination.pageSize,
-      });
-      console.log("res", res);
-      setList(res.data || []);
-      setPagination((prev) => ({
-        ...prev,
-        totalPages: Math.ceil(
-          (res.meta?.totalCount as number) / pagination.pageSize
-        ),
-      }));
-
-      setLoading(false);
-    };
-    getData();
-  }, [router, pagination.pageNumber, pagination.pageSize, setList]);
+  const { users, loading, pagination, setPagination } = useUsers();
 
   if (loading) {
     return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!list) {
+  if (!users) {
     return <>Invalid URL</>;
   }
-  if (list.length === 0) {
-    return <NoDataContainer />;
-  }
+
   return (
     <>
-      <DataTable columns={columns} data={list as User[]} />
+      <DataTable columns={columns} data={users} />
       <div className="py-8">
         <PaginationSection
           pagination={pagination}

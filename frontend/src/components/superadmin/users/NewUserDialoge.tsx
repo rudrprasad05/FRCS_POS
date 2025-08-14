@@ -44,6 +44,8 @@ import {
 import { CreateUser, GetAllAdmins } from "@/actions/User";
 import { generateStrongPassword } from "@/lib/utils";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { useUsers } from "@/context/UserDataContext";
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -71,9 +73,13 @@ const formSchema = z.object({
 export type NewUserForm = z.infer<typeof formSchema>;
 
 export default function NewUserDialoge() {
-  const [adminUsers, setAdminUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  const { refresh, pagination, setPagination } = useUsers();
 
   const form = useForm<NewUserForm>({
     resolver: zodResolver(formSchema),
@@ -120,24 +126,25 @@ export default function NewUserDialoge() {
     URL.revokeObjectURL(url);
   }
 
-  useEffect(() => {
-    const getData = async () => {
-      const data = await GetAllAdmins();
-      setAdminUsers(data.data as User[]);
-
-      setLoading(false);
-    };
-    getData();
-  }, []);
-
   async function onSubmit(values: NewUserForm) {
+    setLoading(true);
     const res = await CreateUser(values);
     console.log(res);
-    console.log(values);
+
+    if (!res.success) {
+      toast.error("Error creating user", { description: res.message });
+      setError(res.message);
+    } else {
+      toast.success("User created");
+      refresh();
+      setOpen(false);
+    }
+
+    setLoading(false);
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <div
           className={`${buttonVariants({
@@ -241,7 +248,10 @@ export default function NewUserDialoge() {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            {error && <Label className="text-rose-400">{error}</Label>}
+            <Button type="submit" disabled={loading}>
+              Submit {loading && <Loader2 className="animate-spin" />}
+            </Button>
             <Button
               onClick={handleDownloadCredentials}
               variant={"secondary"}

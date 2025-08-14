@@ -8,6 +8,6 @@ namespace FrcsPos.Interfaces
 {
     public interface INotificationService
     {
-        public Task CreateNotificationAsync(string title, string message, NotificationType type = NotificationType.INFO, string? actionUrl = null);
+        public Task CreateNotificationAsync(string title, string message, NotificationType type = NotificationType.INFO, bool isSuperAdmin = false, string? actionUrl = null);
     }
 }

@@ -8,26 +8,33 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Route("api/notification")]
+    [ApiController]
     public class NotificationController : BaseController
     {
-        private readonly ICompanyRepository _companyRepository;
+        private readonly INotificationRepository _notificationRepository;
 
         public NotificationController(
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<NotificationController> logger,
-            ICompanyRepository companyRepository
+            INotificationRepository notificationRepository
         ) : base(configuration, tokenService, logger)
         {
-            _companyRepository = companyRepository;
+            _notificationRepository = notificationRepository;
         }
 
-        [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
+        [HttpGet("get-all-superadmin")]
+        public async Task<IActionResult> GetAllNotificationsForSuperAdmin([FromQuery] RequestQueryObject queryObject)
         {
-            
-            // TODO
-            return Ok();
+            var model = await _notificationRepository.GetSuperAdminNotifications(queryObject);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
         }
     }
 }

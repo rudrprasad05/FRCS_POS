@@ -21,15 +21,24 @@ import { useEffect, useState } from "react";
 import { columns } from "./CompaniesColumns";
 import { DataTable } from "./CompaniesDataTable";
 import NewCompanyDialoge from "./NewCompanyDialoge";
+import { createGenericDataContext } from "@/context/GenericDataTableContext";
+
+export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
+  createGenericDataContext<Company>();
 
 export default function CompanySection() {
   return (
-    <>
+    <CompanyDataProvider
+      fetchFn={() =>
+        GetAllCompanies({ pageNumber: 1, pageSize: 10 }).then((res) => ({
+          data: res.data ?? [],
+          meta: res.meta,
+        }))
+      }
+    >
       <Header />
       <HandleDataSection />
-    </>
-    // <CakeTypeProvider>
-    // </CakeTypeProvider>
+    </CompanyDataProvider>
   );
 }
 
@@ -77,48 +86,21 @@ function Header() {
 }
 
 function HandleDataSection() {
-  const [loading, setLoading] = useState(true);
-  const [list, setList] = useState<Company[]>([]);
-  const router = useRouter();
-  //   const { list, setList } = useCakeType();
-  const [pagination, setPagination] = useState<MetaData>({
-    pageNumber: 1,
-    totalCount: 1,
-    pageSize: 10,
-    totalPages: 0,
-  });
-  useEffect(() => {
-    const getData = async () => {
-      const res = await GetAllCompanies({
-        pageNumber: pagination.pageNumber,
-        pageSize: pagination.pageSize,
-      });
-      setList(res.data || []);
-      setPagination((prev) => ({
-        ...prev,
-        totalPages: Math.ceil(
-          (res.meta?.totalCount as number) / pagination.pageSize
-        ),
-      }));
-
-      setLoading(false);
-    };
-    getData();
-  }, [router, pagination.pageNumber, pagination.pageSize, setList]);
+  const { items, loading, pagination, setPagination } = useCompanyData();
 
   if (loading) {
     return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!list) {
+  if (!items) {
     return <>Invalid URL</>;
   }
-  if (list.length === 0) {
+  if (items.length === 0) {
     return <NoDataContainer />;
   }
   return (
     <>
-      <DataTable columns={columns} data={list as Company[]} />
+      <DataTable columns={columns} data={items as Company[]} />
       <div className="py-8">
         <PaginationSection
           pagination={pagination}

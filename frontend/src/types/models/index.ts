@@ -118,7 +118,7 @@ export interface User {
   username: string;
   email: string;
   token?: string; // custom field for auth tokens, etc.
-
+  role?: string;
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
 }

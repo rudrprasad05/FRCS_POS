@@ -3,14 +3,14 @@ import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
 
-export async function GetAllNotifications(
+export async function GetAllNotificationsSuperAdmin(
   query?: QueryObject
 ): Promise<ApiResponse<Notification[]>> {
   const token = await GetToken();
   const params = buildMediaQueryParams(query);
 
   const res = await axiosGlobal.get<ApiResponse<Notification[]>>(
-    `notification/get-all?${params}`,
+    `notification/get-all-superadmin?${params}`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }

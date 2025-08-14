@@ -38,6 +38,15 @@ export const columns: ColumnDef<User>[] = [
       return <div className="flex gap-2">{cake.username}</div>;
     },
   },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => {
+      const cake = row.original; // Get the entire row data (of type CakeType)
+
+      return <div className="flex gap-2">{cake.role}</div>;
+    },
+  },
 
   {
     accessorKey: "email",

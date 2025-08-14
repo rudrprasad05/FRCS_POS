@@ -10,6 +10,7 @@ namespace FrcsPos.Response.DTO
     {
         public List<UserDTO> Users { get; set; } = [];
         public List<CompanyDTO> Companies { get; set; } = [];
-        
+        public List<NotificationDTO> Notifications { get; set; } = [];
+
     }
 }

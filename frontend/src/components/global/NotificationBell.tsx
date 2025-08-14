@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
 import { Notification, NotificationTypes } from "@/types/models";
-import { GetAllNotifications } from "@/actions/Notifications";
+import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
 
 function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
@@ -66,10 +66,12 @@ export function NotificationBell() {
   useEffect(() => {
     setNotifications([]);
     const getData = async () => {
-      const data = await GetAllNotifications({
+      const data = await GetAllNotificationsSuperAdmin({
         pageNumber: 1,
         pageSize: 10,
       });
+
+      console.log("not", data);
 
       setNotifications(data.data as unknown as Notification[]);
       setUnreadCount(
@@ -86,12 +88,9 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
+            <div className="bg-rose-500 rounded-full w-4 h-4 absolute -top-0.5 -right-0.5 flex items-center justify-center p-0 text-xs">
               {unreadCount > 99 ? "99+" : unreadCount}
-            </Badge>
+            </div>
           )}
         </Button>
       </PopoverTrigger>
@@ -110,8 +109,10 @@ export function NotificationBell() {
                     onClick={() => setOpen(false)}
                   >
                     <div
-                      className={`flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors ${
-                        !notification.isRead ? "bg-blue-50/50" : ""
+                      className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                        !notification.isRead
+                          ? "bg-green-950/40"
+                          : "bg-transparent"
                       }`}
                     >
                       <div className="flex-shrink-0 mt-0.5">
@@ -125,15 +126,15 @@ export function NotificationBell() {
                             {notification.title}
                           </p>
                           {!notification.isRead && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                            <div className="w-2 h-2  rounded-full flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-xs  mt-1 line-clamp-2">
                           {notification.message}
                         </p>
                         <div className="flex items-center gap-1 mt-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3 " />
+                          <span className="text-xs ">
                             {formatTimeAgo(notification.createdOn as string)}
                           </span>
                         </div>

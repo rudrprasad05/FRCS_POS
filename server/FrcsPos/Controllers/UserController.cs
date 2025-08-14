@@ -18,9 +18,10 @@ namespace FrcsPos.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
-
         private readonly IWebHostEnvironment _env;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly INotificationService _notificationService;
+
 
         public UserController(
             UserManager<User> userManager,
@@ -29,13 +30,17 @@ namespace FrcsPos.Controllers
             ITokenService tokenService,
             IWebHostEnvironment env,
             ILogger<UserController> logger,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            INotificationService notificationService
+
+
         ) : base(configuration, tokenService, logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _env = env;
             _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
         [HttpGet("get-all-users")]
@@ -49,25 +54,46 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
-
         [HttpPost("create")]
         public async Task<IActionResult> Register([FromBody] NewUserDTO model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var modelErrors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(ApiResponse<string>.Fail(
+                    errors: modelErrors,
+                    message: "Validation failed."
+                ));
+            }
 
             // Determine role type from email domain
-            string roleType;
-
-            if (model.Role != null) {
-                roleType = model.Role;
-            }
-            else {
-                roleType = model.Email.Contains("@procyonfiji.com") ? "Admin" : "User";  
-            }
+            string roleType = model.Role ??
+                              (model.Email.Contains("@procyonfiji.com") ? "Admin" : "User");
 
             try
             {
+                // Check for duplicate username
+                if (await _userManager.FindByNameAsync(model.Username) != null)
+                {
+                    return Conflict(ApiResponse<string>.Fail(
+                        errors: new List<string> { "Username already exists." },
+                        message: "Duplicate username."
+                    ));
+                }
+
+                // Check for duplicate email
+                if (await _userManager.FindByEmailAsync(model.Email) != null)
+                {
+                    return Conflict(ApiResponse<string>.Fail(
+                        errors: new List<string> { "Email is already registered." },
+                        message: "Duplicate email."
+                    ));
+                }
+
                 var user = new User
                 {
                     UserName = model.Username,
@@ -77,7 +103,13 @@ namespace FrcsPos.Controllers
                 // Create user
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (!result.Succeeded)
-                    return BadRequest(result.Errors);
+                {
+                    var errors = result.Errors.Select(e => e.Description).ToList();
+                    return BadRequest(ApiResponse<string>.Fail(
+                        errors: errors,
+                        message: "User creation failed."
+                    ));
+                }
 
                 // Ensure role exists
                 if (!await _roleManager.RoleExistsAsync(roleType))
@@ -88,41 +120,42 @@ namespace FrcsPos.Controllers
                 // Assign role
                 var roleResult = await _userManager.AddToRoleAsync(user, roleType);
                 if (!roleResult.Succeeded)
-                    return BadRequest(roleResult.Errors);
+                {
+                    var errors = roleResult.Errors.Select(e => e.Description).ToList();
+                    return BadRequest(ApiResponse<string>.Fail(
+                        errors: errors,
+                        message: "Role assignment failed."
+                    ));
+                }
 
                 // Include role(s) in JWT
                 var roles = await _userManager.GetRolesAsync(user);
-                var token = _tokenService.CreateToken(user, roles); 
-
-                // Set cookie
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = !_env.IsDevelopment(),
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTime.UtcNow.AddDays(7)
-                };
-
-                Response.Cookies.Append("token", token, cookieOptions);
-
                 var dto = new UserDTO
                 {
                     Username = model.Username ?? "",
                     Email = model.Email ?? "",
-                    Token = token,
                 };
 
-                return Ok(new ApiResponse<UserDTO>
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Data = dto,
-                });
+                await _notificationService.CreateNotificationAsync(
+                    title: "New user added",
+                    message: "user " + model.Username + " was created",
+                    isSuperAdmin: true,
+                    type: NotificationType.SUCCESS
+                );
+
+                return Ok(ApiResponse<UserDTO>.Ok(
+                    data: dto,
+                    message: "User registered successfully."
+                ));
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiResponse<string>.Fail(
+                    errors: new List<string> { ex.Message },
+                    message: "An unexpected error occurred."
+                ));
             }
         }
+
     }
 }
