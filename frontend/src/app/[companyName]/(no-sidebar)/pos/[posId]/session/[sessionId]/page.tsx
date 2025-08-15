@@ -1,6 +1,7 @@
 "use client";
 
 import PosSessionContainer from "@/components/company/pos/PosSessionContainer";
+
 import { PosSessionProvider } from "@/context/PosContext";
 import { use } from "react";
 
