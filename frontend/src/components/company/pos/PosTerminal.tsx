@@ -110,6 +110,7 @@ export default function PosTerminal() {
 =======
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/types/models";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function PosTerminal() {
   const { items, updateQuantity, handleCheckout, removeFromCart } = useCart();
@@ -120,38 +121,38 @@ export default function PosTerminal() {
   const tax = subtotal * 0.08; // 8% tax rate
   const total = subtotal + tax;
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex-col flex min-w-screen">
       <PosHeader />
 
-      <div className="container mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto p-2 h-full min-w-screen grow grid grid-cols-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
           {/* Product List */}
-          <div className="lg:col-span-2">
-            <Card>
+          <div className="lg:col-span-2 grid grid-cols-1">
+            <Card className="bg-transparent border-none ">
               <CardHeader>
-                <CardTitle className="text-blue-700">Product Catalog</CardTitle>
+                <CardTitle className="text-primary">Product Catalog</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto">
+              <CardContent className="overflow-scroll">
+                <ScrollArea className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {MOCK_PRODUCTS.map((product) => (
                     <RecentProductCard key={product.uuid} item={product} />
                   ))}
-                </div>
+                </ScrollArea>
               </CardContent>
             </Card>
           </div>
 
           {/* Cart Sidebar */}
           <div className="lg:col-span-1 h-full">
-            <Card className="sticky top-6 h-full">
+            <Card className="sticky top-6 h-full bg-transparent border-none">
               <CardHeader>
-                <CardTitle className="text-blue-700">Current Order</CardTitle>
+                <CardTitle className="text-primary">Current Order</CardTitle>
               </CardHeader>
               <CardContent className="h-full">
                 <div className="h-full flex flex-col">
                   <div className="space-y-3 h-[400px] max-h-4/5 overflow-auto">
                     {items.length == 0 && (
-                      <div className="w-full h-full border border-dashed border-gray-300 rounded-lg grid place-items-center">
+                      <div className="w-full h-full border border-dashed rounded-lg grid place-items-center">
                         <div className="text-center text-sm">
                           No Items in cart
                         </div>
@@ -162,7 +163,7 @@ export default function PosTerminal() {
                       items.map((item) => (
                         <div
                           key={item?.product?.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          className="flex items-center justify-between p-3 rounded-lg"
                         >
                           <div className="flex-1">
                             <h4 className="font-medium text-sm">
@@ -231,12 +232,16 @@ export default function PosTerminal() {
                     <div className="flex justify-between font-bold text-lg">
                       <span>Total:</span>
 <<<<<<< HEAD
+<<<<<<< HEAD
                       <span className="text-primary">
                         ${checkoutData.total.toFixed(2)}
                       </span>
 =======
                       <span className="text-blue-600">${total.toFixed(2)}</span>
 >>>>>>> 5f375dd (feat (ui): create pages for company admin portal. fix routing issues. finish soft delete for company in superadmin panel.)
+=======
+                      <span className="text-primary">${total.toFixed(2)}</span>
+>>>>>>> b06d943 (chore (ui): format bugs)
                     </div>
                   </div>
 
@@ -247,8 +252,12 @@ export default function PosTerminal() {
                     className="w-full mt-4 font-semibold py-3"
 =======
                     onClick={handleCheckout}
+<<<<<<< HEAD
                     className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3"
 >>>>>>> 5f375dd (feat (ui): create pages for company admin portal. fix routing issues. finish soft delete for company in superadmin panel.)
+=======
+                    className="w-full mt-4 font-semibold py-3"
+>>>>>>> b06d943 (chore (ui): format bugs)
                     size="lg"
                   >
                     Checkout
