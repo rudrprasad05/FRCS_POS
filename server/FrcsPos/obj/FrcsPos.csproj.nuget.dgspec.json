@@ -1,26 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj": {}
+    "/Users/macbook-air/Desktop/frcs/FRCS_POS/server/FrcsPos/FrcsPos.csproj": {}
   },
   "projects": {
-    "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj": {
+    "/Users/macbook-air/Desktop/frcs/FRCS_POS/server/FrcsPos/FrcsPos.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj",
+        "projectUniqueName": "/Users/macbook-air/Desktop/frcs/FRCS_POS/server/FrcsPos/FrcsPos.csproj",
         "projectName": "FrcsPos",
-        "projectPath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/FrcsPos.csproj",
-        "packagesPath": "/Users/rudr/.nuget/packages/",
-        "outputPath": "/Users/rudr/Desktop/USP/year 3/sem 2/is314/project/server/FrcsPos/obj/",
+        "projectPath": "/Users/macbook-air/Desktop/frcs/FRCS_POS/server/FrcsPos/FrcsPos.csproj",
+        "packagesPath": "/Users/macbook-air/.nuget/packages/",
+        "outputPath": "/Users/macbook-air/Desktop/frcs/FRCS_POS/server/FrcsPos/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/rudr/.nuget/NuGet/NuGet.Config"
+          "/Users/macbook-air/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -132,7 +131,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.412/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
