@@ -117,7 +117,7 @@ export function RecentProductCard({ item }: { item: Product }) {
 
   return (
     <Card key={item.id} className="bg-card/20">
-      <div className="w-full">
+      <div className="w-full grow h-full">
         <div className="relative aspect-square h-48  w-full border-b border-solid rounded-t-lg overflow-hidden">
           {isImageValid ? (
             <>
