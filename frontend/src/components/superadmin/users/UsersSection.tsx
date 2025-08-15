@@ -20,9 +20,9 @@ import { useEffect, useState } from "react";
 // import { DataTable } from "./CompaniesDataTable";
 import NewUserDialoge from "./NewUserDialoge";
 import { GetAllAdmins } from "@/actions/User";
-import { DataTable } from "./UserDataTable";
 import { columns } from "./UserColumns";
 import { UserDataProvider, useUsers } from "@/context/UserDataContext";
+import { DataTable } from "@/components/global/DataTable";
 
 export default function CompanySection() {
   return (

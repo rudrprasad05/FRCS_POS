@@ -1,10 +1,9 @@
 "use client";
-import { GetAllCompanies } from "@/actions/Company";
+
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,24 +12,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Company, MetaData } from "@/types/models";
-import { HousePlus, Search } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { columns } from "./CompaniesColumns";
-import NewCompanyDialoge from "./NewCompanyDialoge";
-import { createGenericDataContext } from "@/context/GenericDataTableContext";
+import { PosTerminal } from "@/types/models";
+import { Search } from "lucide-react";
+
+import { GetAllCompanyPosTerminals } from "@/actions/PosTerminal";
 import { DataTable } from "@/components/global/DataTable";
+import { createGenericDataContext } from "@/context/GenericDataTableContext";
+import NewPosDialoge from "./NewPosDialoge";
+import { columns } from "./PosTerminalDataColumns";
+import { useParams } from "next/navigation";
 
-export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericDataContext<Company>();
+export const { Provider: PosTerminalProvider, useGenericData: usePosTerminal } =
+  createGenericDataContext<PosTerminal>();
 
-export default function CompanySection() {
+export default function POSSection() {
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
   return (
-    <CompanyDataProvider
+    <PosTerminalProvider
       fetchFn={() =>
-        GetAllCompanies({ pageNumber: 1, pageSize: 10 }).then((res) => ({
+        GetAllCompanyPosTerminals(
+          { pageNumber: 1, pageSize: 10 },
+          companyName
+        ).then((res) => ({
           data: res.data ?? [],
           meta: res.meta,
         }))
@@ -38,7 +42,7 @@ export default function CompanySection() {
     >
       <Header />
       <HandleDataSection />
-    </CompanyDataProvider>
+    </PosTerminalProvider>
   );
 }
 
@@ -46,8 +50,8 @@ function Header() {
   return (
     <div>
       <div className="space-b-2">
-        <H1 className="">Companies</H1>
-        <P className="text-muted-foreground">Create and manage companies</P>
+        <H1 className="">Pos Terminals</H1>
+        <P className="text-muted-foreground">Create and manage pos terminals</P>
       </div>
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-4 flex-1">
@@ -79,14 +83,14 @@ function Header() {
           </Select>
         </div>
 
-        <NewCompanyDialoge />
+        <NewPosDialoge />
       </div>
     </div>
   );
 }
 
 function HandleDataSection() {
-  const { items, loading, pagination, setPagination } = useCompanyData();
+  const { items, loading, pagination, setPagination } = usePosTerminal();
 
   if (loading) {
     return <TableSkeleton columns={3} rows={8} showHeader />;
@@ -95,12 +99,10 @@ function HandleDataSection() {
   if (!items) {
     return <>Invalid URL</>;
   }
-  if (items.length === 0) {
-    return <NoDataContainer />;
-  }
+
   return (
     <>
-      <DataTable columns={columns} data={items as Company[]} />
+      <DataTable columns={columns} data={items as PosTerminal[]} />
       <div className="py-8">
         <PaginationSection
           pagination={pagination}

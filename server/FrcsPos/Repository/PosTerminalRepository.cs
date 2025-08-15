@@ -17,7 +17,7 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
-        
+
         public PosTerminalRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService
@@ -52,20 +52,28 @@ namespace FrcsPos.Repository
             };
         }
 
-        public async Task<ApiResponse<List<CompanyDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject)
+        public async Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject, string companyName)
         {
-            var query = _context.Companies
-                .Include(c => c.PosTerminals)
-                .Include(c => c.AdminUser)
-                .AsQueryable();
+            bool companyExists = await _context.Companies.AnyAsync(c => c.Name == companyName);
+            if (!companyExists)
+            {
+                return ApiResponse<List<PosTerminalDTO>>.NotFound();
+            }
 
-            // filtering
+            var query = _context.Companies
+            .Include(c => c.PosTerminals)
+            .AsQueryable();
+
+            // Filter by company name
+            query = query.Where(c => c.Name == companyName);
+
+            // Filtering by IsDeleted if needed
             if (queryObject.IsDeleted.HasValue)
             {
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
             }
 
-            // Sorting
+            // Sorting (based on created date of company or terminals — adjust as needed)
             query = queryObject.SortBy switch
             {
                 ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
@@ -73,24 +81,22 @@ namespace FrcsPos.Repository
                 _ => query.OrderByDescending(c => c.CreatedOn)
             };
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await query
+                .SelectMany(c => c.PosTerminals)
+                .CountAsync();
 
             // Pagination
             var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var companies = await query
+            var terminals = await query
+                .SelectMany(c => c.PosTerminals) // Flatten to terminals
                 .Skip(skip)
                 .Take(queryObject.PageSize)
                 .ToListAsync();
 
-            // Mapping to DTOs
-            var result = new List<CompanyDTO>();
-            foreach (var company in companies)
-            {
-                var dto = company.FromModelToDto();
-                result.Add(dto);
-            }
+            // Map to DTO
+            var result = terminals.Select(t => t.FromModelToDto()).ToList();
 
-            return new ApiResponse<List<CompanyDTO>>
+            return new ApiResponse<List<PosTerminalDTO>>
             {
                 Success = true,
                 StatusCode = 200,
@@ -103,6 +109,7 @@ namespace FrcsPos.Repository
                 }
             };
         }
+
 
         public async Task<ApiResponse<PosTerminalDTO>> GetOnePosTerminalByIdAsync(string uuid)
         {

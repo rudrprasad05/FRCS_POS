@@ -37,10 +37,10 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
-        [HttpGet("get-all-by-company")]
-        public async Task<IActionResult> GetAllPosTerminalsByCompany([FromQuery] RequestQueryObject queryObject)
+        [HttpGet("get-all/{companyName}")]
+        public async Task<IActionResult> GetAllPosTerminalsByCompany([FromRoute] string companyName, [FromQuery] RequestQueryObject queryObject)
         {
-            var model = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(queryObject);
+            var model = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(queryObject, companyName);
 
             if (model == null)
             {
@@ -51,7 +51,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("get-one")]
-        public async Task<IActionResult> GetOnePosTerminalById([FromQuery]string uuid)
+        public async Task<IActionResult> GetOnePosTerminalById([FromQuery] string uuid)
         {
             var model = await _posTerminalRepository.GetOnePosTerminalByIdAsync(uuid);
 

@@ -87,6 +87,7 @@ export interface QueryObject {
   showInGallery?: boolean;
   isDeleted?: boolean;
   sortBy?: ESortBy;
+  uuid?: string;
   isAvailable?: boolean;
 }
 

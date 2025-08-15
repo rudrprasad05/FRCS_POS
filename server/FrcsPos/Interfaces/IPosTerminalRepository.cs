@@ -11,7 +11,7 @@ namespace FrcsPos.Interfaces
     public interface IPosTerminalRepository
     {
         public Task<ApiResponse<PosTerminalDTO>> CreatePosTerminalAsync(NewPosTerminalRequest request);
-        public Task<ApiResponse<List<CompanyDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject);
+        public Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject, string companyName);
         public Task<ApiResponse<PosTerminalDTO>> GetOnePosTerminalByIdAsync(string uuid);
 
     }
