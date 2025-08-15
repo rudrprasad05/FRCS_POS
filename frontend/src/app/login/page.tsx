@@ -1,62 +1,147 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/UserContext";
+import { SignInForm, SignInFormType } from "@/types/forms/zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function LoginPage() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = event.currentTarget.email.value;
-    const password = event.currentTarget.password.value;
-    console.log("Email:", email, "Password:", password);
-    // Add your login logic here (e.g., API call)
-  };
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
+
+  const form = useForm<SignInFormType>({
+    resolver: zodResolver(SignInForm),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  async function onSubmit(values: SignInFormType) {
+    setIsLoading(true);
+    try {
+      await login(values.email, values.password, redirect as string);
+    } catch (error) {
+      toast.error("Failed login");
+    }
+
+    setIsLoading(false);
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4">
-      <EmailLabel />
-      <PasswordLabel />
-      <LoginButton />
-    </form>
-  );
-}
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="h-[90vh] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Welcome back
+            </CardTitle>
+            <CardDescription className="">
+              Sign in to your account to continue
+            </CardDescription>
+          </CardHeader>
 
-export function EmailLabel() {
-  return (
-    <div className="grid w-full max-w-sm items-center gap-3">
-      <Label htmlFor="email">Email</Label>
-      <Input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="Enter Your Email"
-        required
-      />
-    </div>
-  );
-}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-4 pb-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your email"
+                          disabled={isLoading}
+                          className="bg-background"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-export function PasswordLabel() {
-  return (
-    <div className="grid w-full max-w-sm items-center gap-3">
-      <Label htmlFor="password">Password</Label>
-      <Input
-        type="password"
-        id="password"
-        name="password"
-        placeholder="Enter Your Password"
-        required
-      />
-    </div>
-  );
-}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            disabled={isLoading}
+                            className=" pr-10"
+                            {...field}
+                          />
+                          <div
+                            className="cursor-pointer absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
 
-export function LoginButton() {
-  return (
-    <div className="flex flex-wrap items-center gap-2 md:flex-row">
-      <Button type="submit">Login</Button>
-    </div>
+              <CardFooter className="flex flex-col space-y-4">
+                <Button
+                  type="submit"
+                  className="w-full font-medium"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    "Sign in"
+                  )}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        </Card>
+      </div>
+    </Suspense>
   );
 }
