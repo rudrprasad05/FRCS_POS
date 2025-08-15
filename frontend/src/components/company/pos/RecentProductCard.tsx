@@ -20,15 +20,15 @@ export function RecentProductCard({ item }: { item: Product }) {
       product: product,
       quantity: 1,
       unitPrice: product.price,
-      taxRatePercent: 0.15,
-      lineTotal: 0,
+      taxRatePercent: 0.125,
+      lineTotal: product.price,
     };
     addProduct(sI);
   };
 
   return (
     <Card key={item.id} className="bg-card/20">
-      <div className="w-full">
+      <div className="w-full grow h-full">
         <div className="relative aspect-square h-48  w-full border-b border-solid rounded-t-lg overflow-hidden">
           {isImageValid ? (
             <>
@@ -72,7 +72,7 @@ export function RecentProductCard({ item }: { item: Product }) {
           </div>
         </div>
       </div>
-      <div className="px-4">
+      <div className="px-4 mt-auto">
         <Button
           size="sm"
           //   disabled={item.batches?.length === 0}

@@ -22,6 +22,8 @@ interface PosSessionContextType {
   ) => void;
   addProduct: (product: SaleItemOmitted) => void;
   removeProduct: (productId: string) => void;
+  deleteProduct: (productId: string) => void;
+
   checkout: () => Promise<void>;
   save: () => void;
   isSaving: boolean;
@@ -37,6 +39,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
   setInitialState: () => {},
   setQr: () => {},
   updateValues: () => {},
+  deleteProduct: () => {},
   addProduct: () => {},
   removeProduct: () => {},
   checkout: async () => {},
@@ -82,11 +85,15 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     setProducts((prev) => {
       const existing = prev.find((p) => p.productId === product.productId);
       if (existing) {
-        return prev.map((p) =>
-          p.productId === product.productId
-            ? { ...p, quantity: p.quantity + 1 }
-            : p
-        );
+        return prev.map((p) => {
+          let newQuant = p.quantity + 1;
+          let newP = {
+            ...p,
+            quantity: newQuant,
+            lineTotal: newQuant * p.unitPrice,
+          };
+          return p.productId === product.productId ? { ...newP } : p;
+        });
       }
       return [...prev, { ...product, quantity: 1 }];
     });
@@ -110,6 +117,9 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     });
   }
 
+  function deleteProduct(productUUID: string) {
+    setProducts((prev) => prev.filter((p) => p.product.uuid !== productUUID));
+  }
   async function checkout() {
     if (products.length === 0) {
       toast.error("No products to checkout");
@@ -155,6 +165,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         setQr,
         isSaving,
         setInitialState,
+        deleteProduct,
         updateValues,
         addProduct,
         removeProduct,
