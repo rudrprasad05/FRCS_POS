@@ -66,7 +66,7 @@ export function CompanySidebarNavigation() {
 <<<<<<< HEAD
             const isActive = pathname.includes(item.href);
 =======
-            const isActive = pathname === item.href;
+            const isActive = pathname.includes(item.href);
 >>>>>>> 5f375dd (feat (ui): create pages for company admin portal. fix routing issues. finish soft delete for company in superadmin panel.)
             return (
               <SidebarMenuItem key={item.href}>
