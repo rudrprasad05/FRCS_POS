@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useState } from "react";
 =======
 import { cn } from "@/lib/utils";
-import { Product } from "@/types/models";
+import { Product, SaleItemOmitted } from "@/types/models";
 import { ImageIcon, Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -103,9 +103,18 @@ export function RecentProductCard({ item }: { item: Product }) {
     </Card>
 =======
 
-  const addToCart = (product: Product) => {
-    console.log(product);
+  const handleAddProduct = (product: Product) => {
+    let sI: SaleItemOmitted = {
+      productId: product.id,
+      product: product,
+      quantity: 1,
+      unitPrice: product.price,
+      taxRatePercent: 0.15,
+      lineTotal: 0,
+    };
+    addProduct(sI);
   };
+
   return (
     <Card key={item.id} className="bg-card/20">
       <div className="w-full">
@@ -159,10 +168,10 @@ export function RecentProductCard({ item }: { item: Product }) {
       <div className="px-4">
         <Button
           size="sm"
-          disabled={item.batches?.length === 0}
+          //   disabled={item.batches?.length === 0}
           onClick={(e) => {
             e.stopPropagation();
-            addToCart(item);
+            handleAddProduct(item);
           }}
         >
           <Plus className="w-4 h-4 mr-1" />
