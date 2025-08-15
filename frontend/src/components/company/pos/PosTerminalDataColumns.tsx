@@ -20,13 +20,7 @@ export const columns: ColumnDef<PosTerminal>[] = [
     accessorKey: "name",
     header: "Name",
   },
-  {
-    accessorKey: "adminUser",
-    header: "Admin",
-    cell: ({ row }) => {
-      return (row.getValue("adminUser") as User).email;
-    },
-  },
+
   {
     accessorKey: "createdOn",
     header: "Created On",
@@ -56,7 +50,7 @@ export const columns: ColumnDef<PosTerminal>[] = [
             </Link>
           </Button>
           {/* <DeleteCompanyDialoge data={company} /> */}
-          <Button variant={"outline"} asChild className="w-24">
+          {/* <Button variant={"outline"} asChild className="w-24">
             <Link
               href={`/${encodeURI(company.name)}`}
               className="w-24 flex items-center justify-between"
@@ -64,7 +58,7 @@ export const columns: ColumnDef<PosTerminal>[] = [
               View
               <Eye className="" />
             </Link>
-          </Button>
+          </Button> */}
         </div>
       );
     },

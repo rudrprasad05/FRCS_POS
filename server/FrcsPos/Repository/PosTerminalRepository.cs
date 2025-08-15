@@ -30,18 +30,49 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<PosTerminalDTO>> CreatePosTerminalAsync(NewPosTerminalRequest request)
         {
-            var company = request.FromNewPosTerminalToModel();
+            // Get the company
+            var company = await _context.Companies
+                .Include(c => c.PosTerminals)
+                .FirstOrDefaultAsync(c => c.Name == request.CompanyName);
 
-            var model = await _context.PosTerminals.AddAsync(company);
+            if (company == null)
+            {
+                return ApiResponse<PosTerminalDTO>.NotFound();
+            }
+
+            var lastTerminal = company.PosTerminals
+                .OrderByDescending(t => t.CreatedOn)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+            if (lastTerminal != null)
+            {
+                var parts = lastTerminal.Name.Split('-');
+                if (parts.Length > 1 && int.TryParse(parts.Last(), out int lastNumber))
+                {
+                    nextNumber = lastNumber + 1;
+                }
+            }
+
+            string newTerminalName = $"{company.Name.Substring(0, Math.Min(2, company.Name.Length)).ToUpper()}-POS-{nextNumber:D3}";
+
+            // Create new terminal
+            var newTerminal = new PosTerminal
+            {
+                Name = newTerminalName,
+                CompanyId = company.Id,
+            };
+
+            var model = await _context.PosTerminals.AddAsync(newTerminal);
             await _context.SaveChangesAsync();
 
             var result = model.Entity.FromModelToDto();
 
             await _notificationService.CreateNotificationAsync(
-                title: "New Pos Terminal",
-                message: "The terminal " + result.Name + " was created",
+                title: "New POS Terminal",
+                message: $"The terminal {result.Name} was created",
                 type: NotificationType.SUCCESS,
-                actionUrl: "/admin/cake/" + result.UUID
+                actionUrl: "/admin/pos/" + result.UUID
             );
 
             return new ApiResponse<PosTerminalDTO>
@@ -51,6 +82,7 @@ namespace FrcsPos.Repository
                 Data = result,
             };
         }
+
 
         public async Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject, string companyName)
         {

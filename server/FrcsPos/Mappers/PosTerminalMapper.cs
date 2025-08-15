@@ -10,16 +10,6 @@ namespace FrcsPos.Mappers
 {
     public static class PosTerminalMapper
     {
-        public static PosTerminal FromNewPosTerminalToModel(this NewPosTerminalRequest request)
-        {
-            ArgumentNullException.ThrowIfNull(request);
-            return new PosTerminal
-            {
-                Name = request.Name,
-                CompanyId = request.CompanyId,
-            };
-        }
-
         public static PosTerminalDTO FromModelToJustModelDTO(this PosTerminal request)
         {
             ArgumentNullException.ThrowIfNull(request);

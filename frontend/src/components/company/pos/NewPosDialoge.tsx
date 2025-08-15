@@ -48,7 +48,7 @@ const formSchema = z.object({
   }),
 });
 
-export type NewCompanyFormType = z.infer<typeof formSchema>;
+export type NewPosTerminalFormType = z.infer<typeof formSchema>;
 
 export default function NewPosDialoge() {
   const { refresh } = usePosTerminal();
@@ -58,7 +58,7 @@ export default function NewPosDialoge() {
   const [error, setError] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
 
-  const form = useForm<NewCompanyFormType>({
+  const form = useForm<NewPosTerminalFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -76,7 +76,7 @@ export default function NewPosDialoge() {
     getData();
   }, []);
 
-  async function onSubmit(values: NewCompanyFormType) {
+  async function onSubmit(values: NewPosTerminalFormType) {
     setLoading(true);
     const res = await CreateCompany(values);
     console.log(res);
