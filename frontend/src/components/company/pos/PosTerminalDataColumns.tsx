@@ -49,6 +49,15 @@ export const columns: ColumnDef<PosTerminal>[] = [
               <Edit className="" />
             </Link>
           </Button>
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`pos/${company.uuid}`}
+              className="w-24 flex items-center justify-between"
+            >
+              View
+              <Edit className="" />
+            </Link>
+          </Button>
           {/* <DeleteCompanyDialoge data={company} /> */}
           {/* <Button variant={"outline"} asChild className="w-24">
             <Link

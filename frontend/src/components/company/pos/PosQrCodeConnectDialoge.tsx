@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { QrCode } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { GenerateQr } from "@/actions/PosSession";
 import { usePosSession } from "@/context/PosContext";
