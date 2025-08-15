@@ -1,7 +1,6 @@
 "use client";
 
 import PosSessionContainer from "@/components/company/pos/PosSessionContainer";
-import { CartProvider } from "@/context/CartContext";
 import { PosSessionProvider } from "@/context/PosContext";
 import { use } from "react";
 
@@ -13,9 +12,7 @@ export default function PosSessionPage({ params }: PageProps) {
 
   return (
     <PosSessionProvider>
-      <CartProvider>
-        <PosSessionContainer uuid={sessionId} />
-      </CartProvider>
+      <PosSessionContainer uuid={sessionId} />
     </PosSessionProvider>
   );
 }
