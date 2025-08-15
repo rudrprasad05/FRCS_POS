@@ -28,13 +28,18 @@ export interface SaleItem extends BaseModel {
   sale?: Sale;
 
   productId: number;
-  product?: Product;
+  product: Product;
 
   quantity: number;
   unitPrice: number;
   taxRatePercent: number;
   lineTotal: number;
 }
+
+export type SaleItemOmitted = Omit<
+  SaleItem,
+  "sale" | "saleId" | "id" | "uuid" | "createdOn" | "updatedOn"
+>;
 
 export interface Company extends BaseModel {
   name: string;
@@ -87,6 +92,7 @@ export interface QueryObject {
   showInGallery?: boolean;
   isDeleted?: boolean;
   sortBy?: ESortBy;
+  uuid?: string;
   isAvailable?: boolean;
 }
 

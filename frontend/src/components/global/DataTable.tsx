@@ -20,13 +20,13 @@ import { Company } from "@/types/models";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
-  data: Company[];
+  data: TData[];
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<Company, TValue>) {
+}: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,

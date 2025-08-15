@@ -18,15 +18,15 @@ namespace FrcsPos.Repository
     {
         private readonly UserManager<User> _userManager;
         private readonly ApplicationDbContext _context;
-        private readonly IPosTerminalRepository _posTerminalRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly INotificationRepository _notificationRepository;
 
 
-        public SuperAdminDashboardRepository(INotificationRepository notificationRepository, IPosTerminalRepository posTerminalRepository, ApplicationDbContext applicationDbContext, UserManager<User> userManager)
+        public SuperAdminDashboardRepository(INotificationRepository notificationRepository, ICompanyRepository companyRepository, ApplicationDbContext applicationDbContext, UserManager<User> userManager)
         {
             _userManager = userManager;
             _context = applicationDbContext;
-            _posTerminalRepository = posTerminalRepository;
+            _companyRepository = companyRepository;
             _notificationRepository = notificationRepository;
 
 
@@ -40,8 +40,8 @@ namespace FrcsPos.Repository
                 userDtos.Add(user.FromUserToDto());
             }
             ;
+            var pos = await _companyRepository.GetAllCompanyAsync(new RequestQueryObject());
 
-            var pos = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(new RequestQueryObject());
             var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 8 });
 
             var dto = new SuperAdminDashboardDTO
