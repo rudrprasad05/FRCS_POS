@@ -10,6 +10,8 @@ using FrcsPos.Service;
 using DotNetEnv;
 using FrcsPos.Repository;
 using Microsoft.AspNetCore.Authorization;
+using FrcsPos.Background;
+using FrcsPos.Socket;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,13 +40,14 @@ builder.Services.AddScoped<IPosSessionRepository, PosSessionRepository>();
 builder.Services.AddScoped<IQuickConnectRepository, QuickConnectReopsitory>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserContext, UserContextService>();
-
-
-builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
-// builder.Services.AddSingleton<IUserContextService, UserContextService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddHostedService<BackgroundQueueService>();
+
+builder.Services.AddSignalR();
 
 builder.WebHost
     .UseUrls(builder.Configuration["Backend:Url"]
@@ -74,6 +77,7 @@ if (app.Environment.IsDevelopment())
 // app.UseMiddleware<TokenMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
+app.MapHub<NotificationHub>("/socket/notificationHub");
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

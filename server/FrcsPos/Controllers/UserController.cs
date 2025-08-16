@@ -7,6 +7,7 @@ using FrcsPos.Interfaces;
 using FrcsPos.Models;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -138,12 +139,12 @@ namespace FrcsPos.Controllers
                     Email = model.Email ?? "",
                 };
 
-                await _notificationService.CreateNotificationAsync(
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
                     title: "New user added",
                     message: "user " + model.Username + " was created",
                     isSuperAdmin: true,
                     type: NotificationType.SUCCESS
-                );
+                ));
 
                 return Ok(ApiResponse<UserDTO>.Ok(
                     data: dto,

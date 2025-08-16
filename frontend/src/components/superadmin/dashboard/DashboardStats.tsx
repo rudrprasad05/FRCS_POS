@@ -20,7 +20,6 @@ export function DashboardStats() {
     const getData = async () => {
       const data = await GetSuperAdminDashboard();
       setdata(data.data);
-      console.dir(data);
       setLoading(false);
     };
     getData();

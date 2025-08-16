@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import * as signalR from "@microsoft/signalr";
 import {
   Popover,
   PopoverContent,
@@ -20,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
-import { Notification, NotificationTypes } from "@/types/models";
+import { ESortBy, Notification, NotificationTypes } from "@/types/models";
 import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
 
 function getNotificationIcon(type: Notification["type"]) {
@@ -53,6 +54,8 @@ function formatTimeAgo(str: string) {
   return `${diffInDays}d ago`;
 }
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -60,15 +63,12 @@ export function NotificationBell() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    //  const recentNotifications = mockNotifications.slice(0, 10);
-  }, []);
-
-  useEffect(() => {
     setNotifications([]);
     const getData = async () => {
       const data = await GetAllNotificationsSuperAdmin({
         pageNumber: 1,
         pageSize: 10,
+        sortBy: ESortBy.DSC,
       });
 
       console.log("not", data);
@@ -80,6 +80,30 @@ export function NotificationBell() {
       setLoading(false);
     };
     getData();
+  }, []);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:5081/socket/notificationHub")
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("ReceiveNotification", (notification) => {
+      console.log("conn");
+      setNotifications((prev) => [notification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    connection
+      .start()
+      .then(() => console.log("Connected to notification hub"))
+      .catch((err) => console.error(err));
+
+    return () => {
+      connection
+        .stop()
+        .catch((err) => console.error("Error stopping connection", err));
+    };
   }, []);
 
   return (

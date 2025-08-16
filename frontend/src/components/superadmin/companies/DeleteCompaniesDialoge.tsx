@@ -34,7 +34,6 @@ export function DeleteCompanyDialoge({ data }: { data: Company }) {
       setConfirmationText("");
       refresh();
     } catch (error) {
-      console.dir(error);
       setIsLoading(false);
       toast.error("Error Occurred");
     }

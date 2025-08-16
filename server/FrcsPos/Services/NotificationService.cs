@@ -7,36 +7,84 @@ using System.Text;
 using System.Threading.Tasks;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
+using FrcsPos.Mappers;
 using FrcsPos.Models;
+using FrcsPos.Socket;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FrcsPos.Service
 {
     public class NotificationService : INotificationService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IBackgroundTaskQueue _taskQueue;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ILogger<NotificationService> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-
-        public NotificationService(ApplicationDbContext context)
+        public NotificationService(
+            IHttpContextAccessor httpContextAccessor,
+            IBackgroundTaskQueue taskQueue,
+            IServiceScopeFactory serviceScopeFactory,
+            ILogger<NotificationService> logger,
+            IHubContext<NotificationHub> hubContext
+        )
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _taskQueue = taskQueue;
+            _serviceScopeFactory = serviceScopeFactory;
+            _logger = logger;
+            _hubContext = hubContext;
         }
 
-        public async Task CreateNotificationAsync(string title, string message, NotificationType type = NotificationType.INFO, bool isSuperAdmin = false, string? actionUrl = null)
+        public Task CreateBackgroundNotification(
+            string title, string message,
+            NotificationType type = NotificationType.INFO,
+            bool isSuperAdmin = false,
+            string? actionUrl = null
+        )
         {
-            var notification = new Notification
+            _taskQueue.QueueBackgroundWorkItem(async token =>
             {
-                Title = title,
-                Message = message,
-                Type = type,
-                ActionUrl = actionUrl ?? "#",
-                IsSuperAdmin = isSuperAdmin
-            };
+                try
+                {
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
+                    var notification = new Notification
+                    {
+                        Title = title,
+                        Message = message,
+                        Type = type,
+                        ActionUrl = actionUrl ?? "#",
+                        IsSuperAdmin = isSuperAdmin
+                    };
+
+                    context.Notifications.Add(notification);
+                    await context.SaveChangesAsync();
+
+                    _logger.LogInformation("Notification queued: {Title}", title);
+
+                    var notificationDto = notification.FromModelToDto();
+                    string? userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                    if (!string.IsNullOrEmpty(userId))
+                        await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notificationDto);
+                    else
+                        await _hubContext.Clients.All.SendAsync("ReceiveNotification", notificationDto);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error creating background notification: {Title}", title);
+                }
+            });
+
+            // Return immediately
+            return Task.CompletedTask;
         }
+
 
 
     }

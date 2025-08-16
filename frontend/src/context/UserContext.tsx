@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("user", JSON.stringify(tempUser));
 
       if (redirect && redirect.trim().length > 0) {
-        router.push("/" + redirect);
+        router.push("/admin" + redirect);
       } else {
         helperHandleRedirectAfterLogin(tempUser);
       }

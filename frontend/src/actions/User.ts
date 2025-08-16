@@ -3,8 +3,8 @@
 import { NewUserForm } from "@/components/superadmin/users/NewUserDialoge";
 import { axiosGlobal } from "@/lib/axios";
 import { ApiResponse, QueryObject, User } from "@/types/models";
-// import { LoginResponse } from "@/types/schema";
-// import { SignInFormType } from "@/types/zod";
+import { cookies } from "next/headers";
+
 import https from "https";
 
 const agent = new https.Agent({
@@ -22,7 +22,11 @@ export async function GetUser() {
 export async function GetAllAdmins(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  const res = await axiosGlobal.get<ApiResponse<User[]>>("user/get-all-users");
+  const token = await GetToken();
+
+  const res = await axiosGlobal.get<ApiResponse<User[]>>("user/get-all-users", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   console.log(res.data);
   return res.data;
 }
@@ -69,11 +73,11 @@ export async function ConfirmEmail(token: string): Promise<boolean> {
 }
 
 export async function GetToken(): Promise<string | undefined> {
-  //   const a = await cookies();
-  //   const token = a.get("token")?.value;
+  const a = await cookies();
+  const token = a.get("token")?.value;
 
-  //   if (!token) return undefined;
-  //   return token;
+  if (!token) return undefined;
+  return token;
   return "";
 }
 

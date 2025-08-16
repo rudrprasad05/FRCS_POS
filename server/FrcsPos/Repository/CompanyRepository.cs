@@ -9,6 +9,7 @@ using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -25,6 +26,7 @@ namespace FrcsPos.Repository
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
+
 
         }
 
@@ -43,12 +45,13 @@ namespace FrcsPos.Repository
 
             var result = model.Entity.FromModelToDto();
 
-            await _notificationService.CreateNotificationAsync(
-                title: "New Compnay",
-                message: "The company '" + result.Name + "' was created",
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                title: "New Company",
+                message: $"The company '{result.Name}' was created",
                 type: NotificationType.SUCCESS,
-                actionUrl: "/admin/cake/" + result.UUID
-            );
+                actionUrl: $"/admin/cake/{result.UUID}"
+            ));
+
 
             return new ApiResponse<CompanyDTO>
             {
@@ -70,12 +73,12 @@ namespace FrcsPos.Repository
             model.IsDeleted = true;
             await _context.SaveChangesAsync();
 
-            await _notificationService.CreateNotificationAsync(
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
                 title: "Company Deleted",
                 message: "The company '" + model.Name + "' was deleted",
                 type: NotificationType.WARNING,
                 actionUrl: "/admin/cake/" + model.UUID
-            );
+            ));
 
             return new ApiResponse<CompanyDTO>
             {

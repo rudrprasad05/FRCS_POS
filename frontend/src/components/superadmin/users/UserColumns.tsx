@@ -95,7 +95,6 @@ function DeleteModal({ cakeType }: { cakeType: Company }) {
       //     prevList.filter((item) => item?.uuid !== cakeType.uuid)
       //   );
     } catch (error) {
-      console.dir(error);
       setIsLoading(false);
       toast.error("Error Occured");
     }

@@ -25,17 +25,15 @@ axiosGlobal.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
-    console.dir(error);
-
     if (status === 401 || status === 403) {
       // Remove token cookie or localStorage
-      destroyCookie(null, "token");
+      //   destroyCookie(null, "token");
 
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
+        // localStorage.removeItem("token");
 
         // Redirect to login or home
-        // window.location.href = "/error/unauthorised";
+        window.location.href = "/error/unauthorised";
       }
 
       // Optional: reject with meaningful message

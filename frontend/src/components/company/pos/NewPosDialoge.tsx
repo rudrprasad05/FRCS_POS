@@ -85,7 +85,7 @@ export default function NewPosDialoge() {
       toast.error("Error creating user", { description: res.message });
       setError(res.message);
     } else {
-      toast.success("User created");
+      toast.success("Pos terminal created");
       refresh();
       setOpen(false);
     }
