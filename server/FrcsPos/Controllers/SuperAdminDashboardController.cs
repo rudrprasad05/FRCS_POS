@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize(Roles = "superadmin")]
     [Route("api/superadmin")]
     [ApiController]
     public class SuperAdminDashboardController : BaseController

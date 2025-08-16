@@ -33,21 +33,21 @@ namespace FrcsPos.Repository
         }
         public async Task<ApiResponse<SuperAdminDashboardDTO>> GetSuperAdminDashboard()
         {
-            var users = await _context.Users.ToListAsync();
-            var userDtos = new List<UserDTO>();
-            foreach (var user in users)
-            {
-                userDtos.Add(user.FromUserToDto());
-            }
-            ;
-            var pos = await _companyRepository.GetAllCompanyAsync(new RequestQueryObject());
+            var userCount = await _context.Users.CountAsync();
+            var companyCount = await _context.Companies.CountAsync();
+            var mediaCount = await _context.Medias.CountAsync();
+            var productCount = await _context.Products.CountAsync();
+            var saleCount = await _context.Sales.CountAsync();
 
             var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 8 });
 
             var dto = new SuperAdminDashboardDTO
             {
-                Users = userDtos,
-                Companies = pos.Data ?? [],
+                TotalUsers = userCount,
+                TotalCompanies = companyCount,
+                TotalMedia = mediaCount,
+                TotalProducts = productCount,
+                TotalSales = saleCount,
                 Notifications = notifications.Data ?? [],
             };
 

@@ -7,6 +7,7 @@ using FrcsPos.Interfaces;
 using FrcsPos.Models;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,7 @@ namespace FrcsPos.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly IWebHostEnvironment _env;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserContext _userContext;
 
         public AuthController(
             UserManager<User> userManager,
@@ -30,13 +32,15 @@ namespace FrcsPos.Controllers
             IConfiguration configuration,
             ITokenService tokenService,
             IWebHostEnvironment env,
-            ILogger<AuthController> logger
+            ILogger<AuthController> logger,
+            IUserContext userContext
         ) : base(configuration, tokenService, logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _env = env;
+            _userContext = userContext;
         }
 
         [HttpPost("login")]
@@ -91,6 +95,15 @@ namespace FrcsPos.Controllers
             {
                 return BadRequest(e.Message);
             }
+        }
+
+        [HttpGet("status")]
+        public IActionResult GetMyOrders()
+        {
+            if (!_userContext.IsAuthenticated)
+                return Unauthorized(ApiResponse<string>.Unauthorised(message: "bruh"));
+
+            return Ok(ApiResponse<string>.Ok(data: null, message: "set"));
         }
 
         [Authorize]

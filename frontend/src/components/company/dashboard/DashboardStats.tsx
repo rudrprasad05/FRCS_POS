@@ -21,7 +21,7 @@ export function CompanyDashboardStats() {
     const getData = async () => {
       const data = await GetSuperAdminDashboard();
       setdata(data.data);
-      console.dir(data);
+      console.dir("DashboardStatsCard", data);
       setLoading(false);
     };
     getData();
@@ -56,7 +56,7 @@ export function CompanyDashboardStats() {
         <CompanyDashboardStatsCard
           input={{
             title: "Total Products",
-            val: data?.totalUsers ?? 0,
+            val: data?.totalProducts ?? 0,
             icon: Box,
             isLoading: !data,
           }}
@@ -64,7 +64,7 @@ export function CompanyDashboardStats() {
         <CompanyDashboardStatsCard
           input={{
             title: "Sales Last Month",
-            val: data?.totalUsers ?? 0,
+            val: data?.totalSales ?? 0,
             icon: Coins,
             isLoading: !data,
           }}

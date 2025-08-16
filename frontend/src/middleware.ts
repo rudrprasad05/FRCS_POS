@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse, User } from "./types/models";
+import { LoginDTO } from "./types/res";
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -25,18 +27,20 @@ export async function middleware(req: NextRequest) {
         "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
       },
     });
-    console.dir(res);
+    console.dir(res, { depth: null, colors: true });
 
     if (!res.ok) {
       console.error("qqqqq Auth check failed  md.ts:", res.status);
       return NextResponse.redirect(new URL("/md", req.url));
     }
 
-    const user = await res.json();
+    const data: ApiResponse<LoginDTO> = await res.json();
+    console.dir(data, { depth: null, colors: true });
+
     // Role check
     if (
       req.nextUrl.pathname.startsWith("/admin") &&
-      (user.role as string).toLowerCase() !== "admin"
+      (data.data?.role as string).toLowerCase() !== "superadmin"
     ) {
       return NextResponse.redirect(new URL("/error/unauthorised", req.url));
     }

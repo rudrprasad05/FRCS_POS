@@ -31,3 +31,11 @@ export type LoginResponse = {
   token: string;
   role: "Admin" | "User";
 };
+
+export type LoginDTO = {
+  username: string;
+  id: string;
+  email: string;
+  token: string;
+  role: string;
+};

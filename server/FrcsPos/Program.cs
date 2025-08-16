@@ -37,6 +37,7 @@ builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRe
 builder.Services.AddScoped<IPosSessionRepository, PosSessionRepository>();
 builder.Services.AddScoped<IQuickConnectRepository, QuickConnectReopsitory>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IUserContext, UserContextService>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
