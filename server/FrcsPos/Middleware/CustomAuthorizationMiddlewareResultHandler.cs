@@ -24,13 +24,7 @@ public class CustomAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewa
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         context.Response.ContentType = "application/json";
 
-        var response = new ApiResponse<string>
-        {
-            Success = false,
-            StatusCode = 401,
-            Message = "Unauthorized",
-            Errors = new List<string> { "Authentication is required to access this resource." }
-        };
+        var response = ApiResponse<string>.Unauthorised();
 
         var json = JsonSerializer.Serialize(response);
         await context.Response.WriteAsync(json);

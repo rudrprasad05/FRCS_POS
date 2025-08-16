@@ -74,6 +74,20 @@ namespace FrcsPos.Response
             );
         }
 
+        public static ApiResponse<T> Unauthorised(int statusCode = 401, string? message = "the resource requested cannot be accessed using current credentials", List<string>? errors = null, ILogger? logger = null)
+        {
+            var traceId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
+            logger?.LogWarning("Request failed: {TraceId}, Message: {Message}", traceId, message);
+
+            return new ApiResponse<T>(
+                success: false,
+                statusCode: statusCode,
+                message: message,
+                errors: errors,
+                traceId: traceId
+            );
+        }
+
         public static ApiResponse<T> ValidationError(List<string> errors, string? traceId = null)
         {
             return new ApiResponse<T>(false, 422, "Validation failed", default, null, errors, traceId);
