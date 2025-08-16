@@ -7,11 +7,13 @@ using FrcsPos.Interfaces;
 using FrcsPos.Models;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize]
     [Route("api/user")]
     [ApiController]
     public class UserController : BaseController

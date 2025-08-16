@@ -8,9 +8,13 @@ namespace FrcsPos.Response.DTO
 {
     public class SuperAdminDashboardDTO
     {
-        public List<UserDTO> Users { get; set; } = [];
-        public List<CompanyDTO> Companies { get; set; } = [];
-        public List<NotificationDTO> Notifications { get; set; } = [];
+        public int TotalCompanies { get; set; }
+        public int TotalMedia { get; set; }
+        public int TotalUsers { get; set; }
+        public int TotalProducts { get; set; }
+        public int TotalSales { get; set; }
+
+        public List<NotificationDTO> Notifications { get; set; } = new();
 
     }
 }

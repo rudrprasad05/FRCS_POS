@@ -55,7 +55,7 @@ export function DashboardStats() {
         <DashboardStatsCard
           input={{
             title: "Total Products",
-            val: data?.totalUsers ?? 0,
+            val: data?.totalProducts ?? 0,
             icon: Box,
             isLoading: !data,
           }}
@@ -63,7 +63,7 @@ export function DashboardStats() {
         <DashboardStatsCard
           input={{
             title: "Sales Last Month",
-            val: data?.totalUsers ?? 0,
+            val: data?.totalSales ?? 0,
             icon: Coins,
             isLoading: !data,
           }}

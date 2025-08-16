@@ -9,6 +9,7 @@ using FrcsPos.Middleware;
 using FrcsPos.Service;
 using DotNetEnv;
 using FrcsPos.Repository;
+using Microsoft.AspNetCore.Authorization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,14 +37,14 @@ builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRe
 builder.Services.AddScoped<IPosSessionRepository, PosSessionRepository>();
 builder.Services.AddScoped<IQuickConnectRepository, QuickConnectReopsitory>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IUserContext, UserContextService>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 // builder.Services.AddSingleton<IUserContextService, UserContextService>();
-// builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
-
 
 builder.WebHost
     .UseUrls(builder.Configuration["Backend:Url"]

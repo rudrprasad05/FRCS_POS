@@ -48,6 +48,3 @@ export function generateStrongPassword(length = 12) {
 
   return password.join("");
 }
-
-// Example usage:
-console.log(generateStrongPassword()); // e.g. "A2@dZg1*mQ!c"
