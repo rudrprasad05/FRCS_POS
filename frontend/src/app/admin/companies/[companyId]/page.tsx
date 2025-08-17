@@ -5,6 +5,7 @@ import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, H3, MutedText } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { LoadingCard } from "@/components/global/LoadingContainer";
+import AddUsersToCompanyDialoge from "@/components/superadmin/companies/AddUsersToCompanyDialoge";
 import NewCompanyDialoge from "@/components/superadmin/companies/NewCompanyDialoge";
 import { CompanyUserColumn } from "@/components/tables/CompaniesColumns";
 import { PosTerminalOnlyColumns } from "@/components/tables/PosTerminalColumns";
@@ -66,7 +67,7 @@ function DataSection() {
   const { item } = useCompanyData();
   if (!item) return <NoDataContainer />;
   return (
-    <div>
+    <div className="space-y-4">
       <Header />
       <CompanyInfo />
 
@@ -74,16 +75,16 @@ function DataSection() {
         props={{
           title: "Users",
           desc: "List of users associated with the company",
-          items: item.users || [], // type: Warehouse[]
+          items: item.users || [],
           columns: CompanyUserColumn,
-          dialog: <NewCompanyDialoge />,
+          dialog: <AddUsersToCompanyDialoge />,
         }}
       />
       <GenericSection
         props={{
           title: "Warehouse",
           desc: "List of warehouses owned by the company",
-          items: item.warehouses || [], // type: Warehouse[]
+          items: item.warehouses || [],
           columns: WarehouseOnlyColumns,
           dialog: <NewCompanyDialoge />,
         }}
@@ -93,7 +94,7 @@ function DataSection() {
         props={{
           title: "Pos Terminal",
           desc: "List of terminals owned by the company",
-          items: item.posTerminals || [], // type: Warehouse[]
+          items: item.posTerminals || [],
           columns: PosTerminalOnlyColumns,
           dialog: <NewCompanyDialoge />,
         }}
@@ -103,7 +104,7 @@ function DataSection() {
         props={{
           title: "Products",
           desc: "List of top products owned by the company",
-          items: item.products || [], // type: Warehouse[]
+          items: item.products || [],
           columns: ProductsOnlyColumns,
           dialog: <NewCompanyDialoge />,
         }}

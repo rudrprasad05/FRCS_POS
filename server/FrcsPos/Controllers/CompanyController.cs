@@ -37,6 +37,19 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("add-user")]
+        public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompany request)
+        {
+            var model = await _companyRepository.AddUserToCompanyAsync(request);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
         {

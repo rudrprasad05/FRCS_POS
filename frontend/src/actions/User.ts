@@ -32,6 +32,22 @@ export async function GetAllAdmins(
   return res.data;
 }
 
+// TODO do this. rn the add new user dialog gets all users, regardless of wheather its in company or not
+export async function GetAllAdminsNotInCompany(
+  query?: QueryObject
+): Promise<ApiResponse<User[]>> {
+  const token = await GetToken();
+
+  const res = await axiosGlobal.get<ApiResponse<User[]>>(
+    "user/get-all-users-not-in-company",
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  console.log(res.data);
+  return res.data;
+}
+
 export async function CreateUser(
   data: NewUserForm
 ): Promise<ApiResponse<User[]>> {

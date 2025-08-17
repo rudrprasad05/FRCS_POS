@@ -57,6 +57,18 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+
+        [HttpGet("get-all-users-not-in-company")]
+        public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
+        {
+            var model = await _userRepository.GetAllUsers(role);
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
         [HttpPost("create")]
         public async Task<IActionResult> Register([FromBody] NewUserDTO model)
         {

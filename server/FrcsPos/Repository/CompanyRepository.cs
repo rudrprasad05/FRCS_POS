@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
@@ -10,6 +11,7 @@ using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using FrcsPos.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -18,12 +20,15 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly UserManager<User> _userManager;
 
         public CompanyRepository(
             ApplicationDbContext applicationDbContext,
-            INotificationService notificationService
+            INotificationService notificationService,
+            UserManager<User> userManager
         )
         {
+            _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
 
@@ -185,6 +190,41 @@ namespace FrcsPos.Repository
             }
 
             return ApiResponse<CompanyDTO>.Ok(model.FromModelToDto());
+
+        }
+
+        public async Task<ApiResponse<CompanyDTO>> AddUserToCompanyAsync(AddUserToCompany request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId);
+            if (user == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "User not found");
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.Users) // make sure Users are loaded
+                .FirstOrDefaultAsync(c => c.UUID == request.CompanyUUID);
+            if (company == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "Company not found");
+            }
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var roleClaim = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+
+            var companyUser = new CompanyUser
+            {
+                CompanyId = company.Id,
+                UserId = user.Id,
+                Role = roleClaim?.Value == "ADMIN"
+                    ? CompanyRole.MANAGER
+                    : CompanyRole.CASHIER
+            };
+
+            company.Users.Add(companyUser);
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<CompanyDTO>.Ok(company.FromModelToDto());
 
         }
     }

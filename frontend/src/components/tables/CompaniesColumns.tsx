@@ -97,7 +97,7 @@ export const CompanyUserColumn: ColumnDef<CompanyUser>[] = [
     header: "Role",
     cell: ({ row }) => {
       const company = row.original; // Get the entire row data (of type companyType)
-      return <div className="flex gap-2">{company.user?.role}</div>;
+      return <div className="flex gap-2">{company.role}</div>;
     },
   },
   {

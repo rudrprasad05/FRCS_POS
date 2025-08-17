@@ -44,20 +44,24 @@ export async function GetFullCompanyByUUID(
   );
 }
 
-// export async function GetCompanyByAdminUserId(
-//   uuid?: string
-// ): Promise<ApiResponse<Company>> {
-//   const token = await GetToken();
+export async function AddUserToCompany(
+  userId: string,
+  companyId: string
+): Promise<ApiResponse<Company>> {
+  try {
+    const res = await axiosGlobal.post<ApiResponse<Company>>(
+      "company/add-user",
+      { userId: userId, companyUUID: companyId }
+    );
+    return res.data;
+  } catch (error: any) {
+    if (error.response?.data) {
+      return error.response.data as ApiResponse<Company>;
+    }
 
-//   const res = await axiosGlobal.get<ApiResponse<Company>>(
-//     `company/get-one-by-admin-id?uuid=${uuid}`,
-//     {
-//       headers: { Authorization: `Bearer ${token}` },
-//     }
-//   );
-
-//   return res.data;
-// }
+    return ApiResponseFail<Company>();
+  }
+}
 
 export async function CreateCompany(
   data: NewCompanyFormType
