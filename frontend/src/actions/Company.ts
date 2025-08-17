@@ -8,6 +8,7 @@ import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
 import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
+import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllCompanies(
   query?: QueryObject
@@ -24,6 +25,39 @@ export async function GetAllCompanies(
 
   return res.data;
 }
+
+export async function GetCompanyByAdminUserId(
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>(
+    "GET",
+    `company/get-one-by-admin-id?uuid=${uuid}`
+  );
+}
+
+export async function GetFullCompanyByUUID(
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>(
+    "GET",
+    `company/get-full-by-uuid?uuid=${uuid}`
+  );
+}
+
+// export async function GetCompanyByAdminUserId(
+//   uuid?: string
+// ): Promise<ApiResponse<Company>> {
+//   const token = await GetToken();
+
+//   const res = await axiosGlobal.get<ApiResponse<Company>>(
+//     `company/get-one-by-admin-id?uuid=${uuid}`,
+//     {
+//       headers: { Authorization: `Bearer ${token}` },
+//     }
+//   );
+
+//   return res.data;
+// }
 
 export async function CreateCompany(
   data: NewCompanyFormType

@@ -13,4 +13,12 @@ namespace FrcsPos.Response.DTO
         public string SerialNumber { get; set; } = string.Empty;
         public ICollection<PosSessionDTO> Session { get; set; } = [];
     }
+
+    public class NewPosTerminalInit
+    {
+        public string Prefix { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public bool IsActive { get; set; } = true;
+        public CompanyDTO Company { get; set; } = null!;
+    }
 }

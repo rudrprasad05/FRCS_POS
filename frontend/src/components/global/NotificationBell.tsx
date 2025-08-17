@@ -71,12 +71,8 @@ export function NotificationBell() {
         sortBy: ESortBy.DSC,
       });
 
-      console.log("not", data);
-
       setNotifications(data.data as unknown as Notification[]);
-      setUnreadCount(
-        (data.data as unknown as Notification[]).filter((n) => !n.isRead).length
-      );
+      setUnreadCount(data.meta?.totalCount as number);
       setLoading(false);
     };
     getData();

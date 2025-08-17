@@ -162,5 +162,7 @@ namespace FrcsPos.Repository
             var dto = pos.FromModelToDto();
             return ApiResponse<PosTerminalDTO>.Ok(dto);
         }
+
+
     }
 }

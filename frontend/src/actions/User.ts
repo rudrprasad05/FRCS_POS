@@ -6,6 +6,7 @@ import { ApiResponse, QueryObject, User } from "@/types/models";
 import { cookies } from "next/headers";
 
 import https from "https";
+import { RequestWrapper } from "./RequestWrapper";
 
 const agent = new https.Agent({
   rejectUnauthorized: false, // Allow self-signed cert
@@ -34,11 +35,15 @@ export async function GetAllAdmins(
 export async function CreateUser(
   data: NewUserForm
 ): Promise<ApiResponse<User[]>> {
+  const token = await GetToken();
+
   try {
     const res = await axiosGlobal.post<ApiResponse<User[]>>(
       "user/create",
-      data
+      data,
+      { headers: { Authorization: `Bearer ${token}` } }
     );
+
     return res.data;
   } catch (error: any) {
     if (error.response?.data) {

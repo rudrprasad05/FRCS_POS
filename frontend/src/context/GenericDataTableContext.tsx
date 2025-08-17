@@ -1,4 +1,6 @@
 "use client";
+import { P } from "@/components/font/HeaderFonts";
+import { ApiResponse } from "@/types/models";
 import {
   createContext,
   ReactNode,
@@ -7,6 +9,7 @@ import {
   useState,
 } from "react";
 
+// --- Pagination metadata ---
 export interface MetaData {
   pageNumber: number;
   pageSize: number;
@@ -14,7 +17,16 @@ export interface MetaData {
   totalPages: number;
 }
 
-export interface GenericDataContextType<T> {
+// --- Single item context ---
+export interface GenericSingleDataContextType<T> {
+  item: T | null;
+  loading: boolean;
+  refresh: () => Promise<void>;
+  setItem: React.Dispatch<React.SetStateAction<T | null>>;
+}
+
+// --- List context ---
+export interface GenericListDataContextType<T> {
   items: T[];
   loading: boolean;
   pagination: MetaData;
@@ -23,8 +35,55 @@ export interface GenericDataContextType<T> {
   setItems: React.Dispatch<React.SetStateAction<T[]>>;
 }
 
-export function createGenericDataContext<T>() {
-  const Context = createContext<GenericDataContextType<T>>({
+// --- Factory for single-item context ---
+export function createGenericSingleDataContext<T>() {
+  const Context = createContext<GenericSingleDataContextType<T>>({
+    item: null,
+    loading: true,
+    refresh: async () => {},
+    setItem: () => {},
+  });
+
+  const Provider = ({
+    children,
+    fetchFn,
+  }: {
+    children: ReactNode;
+    fetchFn: () => Promise<ApiResponse<T>>;
+  }) => {
+    const [item, setItem] = useState<T | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    const refresh = async () => {
+      setLoading(true);
+      const res = await fetchFn();
+      setItem(res.data ?? null);
+      setLoading(false);
+    };
+
+    useEffect(() => {
+      refresh();
+    }, []);
+
+    if (item == null || item == undefined) {
+      return <>loading</>;
+    }
+
+    return (
+      <Context.Provider value={{ item, loading, refresh, setItem }}>
+        {children}
+      </Context.Provider>
+    );
+  };
+
+  const useGenericData = () => useContext(Context);
+
+  return { Provider, useGenericData };
+}
+
+// --- Factory for list-item context ---
+export function createGenericListDataContext<T>() {
+  const Context = createContext<GenericListDataContextType<T>>({
     items: [],
     loading: true,
     pagination: { pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0 },
@@ -42,10 +101,7 @@ export function createGenericDataContext<T>() {
     fetchFn: (
       pageNumber: number,
       pageSize: number
-    ) => Promise<{
-      data: T[];
-      meta?: { totalCount: number };
-    }>;
+    ) => Promise<ApiResponse<T[]>>;
     initialPageSize?: number;
   }) => {
     const [items, setItems] = useState<T[]>([]);
@@ -61,13 +117,15 @@ export function createGenericDataContext<T>() {
       setLoading(true);
       const res = await fetchFn(pagination.pageNumber, pagination.pageSize);
       setItems(res.data ?? []);
+
       setPagination((prev) => ({
         ...prev,
-        totalCount: res.meta?.totalCount ?? res.data.length,
+        totalCount: res.meta?.totalCount ?? (res.data?.length as number),
         totalPages: Math.ceil(
-          (res.meta?.totalCount ?? res.data.length) / prev.pageSize
+          (res.meta?.totalCount ?? (res.data?.length as number)) / prev.pageSize
         ),
       }));
+
       setLoading(false);
     };
 

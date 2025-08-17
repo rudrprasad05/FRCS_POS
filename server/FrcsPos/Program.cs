@@ -78,6 +78,10 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
 app.MapHub<NotificationHub>("/socket/notificationHub");
+app.MapHub<BarcodeHub>("/socket/barcodeHub");
+
+// TODO was adding barcodes. 
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,19 @@ namespace FrcsPos.Controllers
         public virtual Task<IActionResult> SafeDelete([FromRoute] string uuid)
         {
             return Task.FromResult<IActionResult>(NotFound());
+        }
+
+        protected string? GetCurrentUserId()
+        {
+            var claims = User.Claims.ToList();
+            foreach (var c in claims)
+            {
+                Console.WriteLine($"{c.Type} = {c.Value}");
+            }
+
+            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                   ?? User.FindFirst("sub")?.Value
+                   ?? User.FindFirst("uid")?.Value;
         }
     }
 }

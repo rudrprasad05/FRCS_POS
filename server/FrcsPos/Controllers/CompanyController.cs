@@ -50,6 +50,32 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpGet("get-one-by-admin-id")]
+        public async Task<IActionResult> GetCompanyByAdminUserId([FromQuery] string uuid)
+        {
+            var model = await _companyRepository.GetCompanyByAdminUserIdAsync(uuid);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-full-by-uuid")]
+        public async Task<IActionResult> GetFullCompanyByUUID([FromQuery] string uuid)
+        {
+            var model = await _companyRepository.GetFullCompanyByUUIDAsync(uuid);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] string uuid)
         {

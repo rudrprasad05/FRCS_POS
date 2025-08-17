@@ -139,6 +139,53 @@ namespace FrcsPos.Repository
             };
         }
 
+        public async Task<ApiResponse<CompanyDTO>> GetCompanyByAdminUserIdAsync(string uuid)
+        {
+            var model = await _context.Companies.FirstOrDefaultAsync(c => c.AdminUserId == uuid);
+            CompanyDTO? companyToBeRetuned = null;
 
+            if (model != null)
+            {
+                companyToBeRetuned = model.FromModelToDTOWithoutPosTerminals();
+            }
+            else if (model == null)
+            {
+                var company = await _context.CompanyUsers
+                .Where(cu => cu.UserId == uuid)
+                .Select(cu => cu.Company)
+                .FirstOrDefaultAsync();
+
+                if (company != null)
+                {
+                    companyToBeRetuned = company.FromModelToDTOWithoutPosTerminals();
+                }
+            }
+
+            if (companyToBeRetuned == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail();
+            }
+            return ApiResponse<CompanyDTO>.Ok(companyToBeRetuned);
+        }
+
+        public async Task<ApiResponse<CompanyDTO>> GetFullCompanyByUUIDAsync(string uuid)
+        {
+            var model = await _context.Companies
+            .Include(c => c.Warehouses)
+            .Include(c => c.Products)
+            .Include(c => c.AdminUser)
+            .Include(c => c.Users)
+                .ThenInclude(cu => cu.User)
+            .Include(c => c.PosTerminals)
+            .FirstOrDefaultAsync(c => c.UUID == uuid);
+
+            if (model == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "Company not found");
+            }
+
+            return ApiResponse<CompanyDTO>.Ok(model.FromModelToDto());
+
+        }
     }
 }

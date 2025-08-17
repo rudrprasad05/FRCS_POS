@@ -19,6 +19,23 @@ export async function GetPosTerminalById(
   return res.data;
 }
 
+export async function CreatePosTerminals(
+  cName: string
+): Promise<ApiResponse<PosTerminal>> {
+  const token = await GetToken();
+
+  const res = await axiosGlobal.post<ApiResponse<PosTerminal>>(
+    `pos-terminal/create`,
+    {
+      companyName: cName,
+    },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return res.data;
+}
+
 export async function GetAllCompanyPosTerminals(
   query?: QueryObject,
   companyName?: string

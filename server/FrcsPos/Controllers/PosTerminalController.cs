@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize]
     [Route("api/pos-terminal")]
     [ApiController]
     public class PosTerminalController : BaseController

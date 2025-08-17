@@ -4,27 +4,21 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";
 
-import { Company, User } from "@/types/models";
+import { PosTerminal } from "@/types/models";
 import Link from "next/link";
-import { DeleteCompanyDialoge } from "./DeleteCompaniesDialoge";
 
-export const columns: ColumnDef<Company>[] = [
-  {
-    accessorKey: "number",
-    header: "#",
-    cell: ({ row }) => {
-      return <div className="flex gap-2">{+row.id + 1}</div>;
-    },
-  },
+export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
   {
     accessorKey: "name",
     header: "Name",
   },
   {
-    accessorKey: "adminUser",
-    header: "Admin",
+    accessorKey: "isActive",
+    header: "Active",
     cell: ({ row }) => {
-      return (row.getValue("adminUser") as User).email;
+      const company = row.original; // Get the entire row data (of type companyType)
+
+      return <div>{company.isActive}</div>;
     },
   },
   {
@@ -50,12 +44,15 @@ export const columns: ColumnDef<Company>[] = [
       return (
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
-            <Link href="/" className="w-24 flex items-center justify-between">
+            <Link
+              href={`/admin/companies/${company.uuid}`}
+              className="w-24 flex items-center justify-between"
+            >
               Edit
               <Edit className="" />
             </Link>
           </Button>
-          <DeleteCompanyDialoge data={company} />
+          {/* <DeleteCompanyDialoge data={company} /> */}
           <Button variant={"outline"} asChild className="w-24">
             <Link
               href={`/${encodeURI(company.name)}`}

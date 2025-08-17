@@ -64,7 +64,7 @@ export function SidebarNavigation() {
       <SidebarGroupContent className="h-full">
         <SidebarMenu className="h-full">
           {navigationItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname.includes(item.href);
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
