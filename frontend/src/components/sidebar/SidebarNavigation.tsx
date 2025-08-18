@@ -25,8 +25,6 @@ import {
   UsersIcon,
   Flag,
   BookText,
-  Flag,
-  BookText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -107,11 +105,8 @@ export function SidebarNavigation() {
     <SidebarGroup className="h-full">
       <SidebarGroupContent className="h-full">
         <SidebarMenu className="h-full">
-          {itemsToShow.map((item) => {
-            const itemHref =
-              typeof item.href === "function" && companyId
-                ? item.href(companyId)
-                : item.href;
+          {navigationItems.map((item) => {
+            const itemHref = item.href;
 
             const isActive =
               pathname === itemHref ||
@@ -134,43 +129,6 @@ export function SidebarNavigation() {
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
-
-                {/* Render sub-items if they exist and the parent is active */}
-                {item.subItems && isActive && (
-                  <div className="ml-6 mt-2 space-y-1">
-                    {item.subItems.map((subItem) => {
-                      const subItemHref =
-                        typeof subItem.href === "function" && companyId
-                          ? subItem.href(companyId)
-                          : subItem.href;
-
-                      const isSubActive = pathname === subItemHref;
-
-                      return (
-                        <SidebarMenuItem
-                          key={
-                            typeof subItemHref === "string"
-                              ? subItemHref
-                              : subItem.title
-                          }
-                        >
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isSubActive}
-                            className={cn(
-                              "w-full justify-start gap-3 px-3 py-2 text-xs font-medium transition-colors",
-                              isSubActive ? "" : " "
-                            )}
-                          >
-                            <Link href={subItemHref}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </div>
-                )}
               </SidebarMenuItem>
             );
           })}

@@ -46,11 +46,6 @@ import { generateStrongPassword } from "@/lib/utils";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { useUsers } from "@/context/UserDataContext";
-<<<<<<< HEAD
-import { Label } from "@/components/ui/label";
-import { useUsers } from "@/context/UserDataContext";
-=======
->>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -78,22 +73,12 @@ const formSchema = z.object({
 export type NewUserForm = z.infer<typeof formSchema>;
 
 export default function NewUserDialoge() {
-<<<<<<< HEAD
+  const { refresh } = useUsers();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-
-  const { refresh, pagination, setPagination } = useUsers();
-=======
-  const [adminUsers, setAdminUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isPasswordCopied, setIsPasswordCopied] = useState(false);
->>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
-  const [error, setError] = useState<string | undefined>(undefined);
-
-  const { refresh, pagination, setPagination } = useUsers();
 
   const form = useForm<NewUserForm>({
     resolver: zodResolver(formSchema),
@@ -112,41 +97,6 @@ export default function NewUserDialoge() {
       shouldValidate: true,
     });
   }
-<<<<<<< HEAD
-=======
-
-  function handleCopyPassword() {
-    navigator.clipboard.writeText(form.getValues("password"));
-    setIsPasswordCopied(true);
-    toast.success("Password copied");
-
-    setTimeout(() => {
-      setIsPasswordCopied(false);
-    }, 2000);
-  }
-
-  function handleDownloadCredentials() {
-    const username = form.getValues("username");
-    const email = form.getValues("email");
-    const password = form.getValues("password");
-
-    const fileContent = `Username: ${username}\nEmail: ${email}\nPassword: ${password}`;
-    const blob = new Blob([fileContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "credentials.txt";
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }
-
-  useEffect(() => {
-    const getData = async () => {
-      const data = await GetAllAdmins();
-      setAdminUsers(data.data as User[]);
->>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
 
   function handleCopyPassword() {
     navigator.clipboard.writeText(form.getValues("password"));
@@ -297,18 +247,12 @@ export default function NewUserDialoge() {
                 </FormItem>
               )}
             />
-<<<<<<< HEAD
             {error && <Label className="text-rose-400">{error}</Label>}
             <Button type="submit" disabled={loading}>
               Submit {loading && <Loader2 className="animate-spin" />}
             </Button>
             <Button
               onClick={handleDownloadCredentials}
-=======
-            <Button type="submit">Submit</Button>
-            <Button
-              onClick={handleDownloadCredentials}
->>>>>>> bf0601d (feat: password random generate in new user dialoge. some new pages with TODO)
               variant={"secondary"}
               type="button"
               className="ml-2 items-center "

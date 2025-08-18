@@ -9,6 +9,7 @@ using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -17,7 +18,7 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
-        
+
         public InventoryRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService
@@ -35,15 +36,15 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(request.CompanyId);
                 if (company == null)
                     return ApiResponse<ProductBatchDTO>.Fail(message: "Company not found");
-                
+
                 var product = await _context.Products.FindAsync(request.ProductId);
                 if (product == null)
                     return ApiResponse<ProductBatchDTO>.Fail(message: "Product not found");
-                
+
                 var warehouse = await _context.Warehouses.FindAsync(request.WarehouseId);
                 if (warehouse == null)
                     return ApiResponse<ProductBatchDTO>.Fail(message: "Warehouse not found");
-                
+
                 // Create new batch
                 var newBatch = new ProductBatch
                 {
@@ -56,10 +57,10 @@ namespace FrcsPos.Repository
                     CreatedOn = DateTime.UtcNow,
                     UpdatedOn = DateTime.UtcNow
                 };
-                
+
                 await _context.ProductBatches.AddAsync(newBatch);
                 await _context.SaveChangesAsync();
-                
+
                 // Create notification for low stock if needed
                 if (product.IsPerishable && request.ExpiryDate.HasValue)
                 {
@@ -69,7 +70,7 @@ namespace FrcsPos.Repository
                         await CreateExpiryNotification(newBatch, daysUntilExpiry);
                     }
                 }
-                
+
                 // Map to DTO and return
                 return ApiResponse<ProductBatchDTO>.Ok(await MapToProductBatchDTO(newBatch));
             }
@@ -85,18 +86,18 @@ namespace FrcsPos.Repository
             {
                 var batch = await _context.ProductBatches
                     .FirstOrDefaultAsync(b => b.UUID == request.UUID);
-                
+
                 if (batch == null)
                     return ApiResponse<ProductBatchDTO>.Fail(message: "Product batch not found");
-                
+
                 // Update batch
                 batch.Quantity = request.Quantity;
                 batch.ExpiryDate = request.ExpiryDate;
                 batch.UpdatedOn = DateTime.UtcNow;
-                
+
                 _context.ProductBatches.Update(batch);
                 await _context.SaveChangesAsync();
-                
+
                 // Check if we need to create expiry notification
                 if (batch.ExpiryDate.HasValue)
                 {
@@ -106,7 +107,7 @@ namespace FrcsPos.Repository
                         await CreateExpiryNotification(batch, daysUntilExpiry);
                     }
                 }
-                
+
                 // Map to DTO and return
                 return ApiResponse<ProductBatchDTO>.Ok(await MapToProductBatchDTO(batch));
             }
@@ -122,13 +123,13 @@ namespace FrcsPos.Repository
             {
                 var batch = await _context.ProductBatches
                     .FirstOrDefaultAsync(b => b.UUID == uuid);
-                
+
                 if (batch == null)
                     return ApiResponse<bool>.Fail(message: "Product batch not found");
-                
+
                 _context.ProductBatches.Remove(batch);
                 await _context.SaveChangesAsync();
-                
+
                 return ApiResponse<bool>.Ok(true);
             }
             catch (Exception ex)
@@ -146,10 +147,10 @@ namespace FrcsPos.Repository
                     .Include(b => b.Warehouse)
                     .Include(b => b.Company)
                     .FirstOrDefaultAsync(b => b.UUID == uuid);
-                
+
                 if (batch == null)
                     return ApiResponse<ProductBatchDTO>.Fail(message: "Product batch not found");
-                
+
                 return ApiResponse<ProductBatchDTO>.Ok(await MapToProductBatchDTO(batch));
             }
             catch (Exception ex)
@@ -168,13 +169,13 @@ namespace FrcsPos.Repository
                     .Include(b => b.Company)
                     .Where(b => b.ProductId == productId)
                     .ToListAsync();
-                
+
                 var batchDTOs = new List<ProductBatchDTO>();
                 foreach (var batch in batches)
                 {
                     batchDTOs.Add(await MapToProductBatchDTO(batch));
                 }
-                
+
                 return ApiResponse<List<ProductBatchDTO>>.Ok(batchDTOs);
             }
             catch (Exception ex)
@@ -193,13 +194,13 @@ namespace FrcsPos.Repository
                     .Include(b => b.Company)
                     .Where(b => b.WarehouseId == warehouseId)
                     .ToListAsync();
-                
+
                 var batchDTOs = new List<ProductBatchDTO>();
                 foreach (var batch in batches)
                 {
                     batchDTOs.Add(await MapToProductBatchDTO(batch));
                 }
-                
+
                 return ApiResponse<List<ProductBatchDTO>>.Ok(batchDTOs);
             }
             catch (Exception ex)
@@ -215,43 +216,43 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(companyId);
                 if (company == null)
                     return ApiResponse<InventorySummaryDTO>.Fail(message: "Company not found");
-                
+
                 // Get all products for the company
                 var products = await _context.Products
                     .Where(p => p.CompanyId == companyId)
                     .ToListAsync();
-                
+
                 // Get all batches for the company
                 var batches = await _context.ProductBatches
                     .Include(b => b.Product)
                     .Where(b => b.CompanyId == companyId)
                     .ToListAsync();
-                
+
                 // Get all warehouses for the company
                 var warehouses = await _context.Warehouses
                     .Where(w => w.CompanyId == companyId)
                     .ToListAsync();
-                
+
                 // Calculate low stock products (less than 10 items)
                 var productStockCounts = batches
                     .GroupBy(b => b.ProductId)
                     .ToDictionary(g => g.Key, g => g.Sum(b => b.Quantity));
-                
+
                 var lowStockCount = productStockCounts
                     .Count(p => p.Value < 10);
-                
+
                 // Calculate expiring products (within 30 days)
                 var now = DateTime.UtcNow;
                 var expiringCount = batches
                     .Count(b => b.ExpiryDate.HasValue && (b.ExpiryDate.Value - now).Days <= 30);
-                
+
                 // Calculate total inventory value
                 decimal totalValue = 0;
                 foreach (var batch in batches)
                 {
                     totalValue += batch.Quantity * batch.Product.Price;
                 }
-                
+
                 // Create warehouse summaries
                 var warehouseSummaries = new List<WarehouseInventorySummaryDTO>();
                 foreach (var warehouse in warehouses)
@@ -260,7 +261,7 @@ namespace FrcsPos.Repository
                     var warehouseProducts = warehouseBatches.Select(b => b.ProductId).Distinct().Count();
                     var warehouseItemsCount = warehouseBatches.Sum(b => b.Quantity);
                     var warehouseValue = warehouseBatches.Sum(b => b.Quantity * b.Product.Price);
-                    
+
                     warehouseSummaries.Add(new WarehouseInventorySummaryDTO
                     {
                         WarehouseId = warehouse.Id,
@@ -271,7 +272,7 @@ namespace FrcsPos.Repository
                         InventoryValue = warehouseValue
                     });
                 }
-                
+
                 // Create summary DTO
                 var summary = new InventorySummaryDTO
                 {
@@ -283,7 +284,7 @@ namespace FrcsPos.Repository
                     TotalInventoryValue = totalValue,
                     WarehouseSummaries = warehouseSummaries
                 };
-                
+
                 return ApiResponse<InventorySummaryDTO>.Ok(summary);
             }
             catch (Exception ex)
@@ -299,23 +300,23 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(companyId);
                 if (company == null)
                     return ApiResponse<List<ProductStockDTO>>.Fail(message: "Company not found");
-                
+
                 // Get all products for the company
                 var products = await _context.Products
                     .Where(p => p.CompanyId == companyId)
                     .ToListAsync();
-                
+
                 // Get all batches for the company
                 var batches = await _context.ProductBatches
                     .Include(b => b.Warehouse)
                     .Where(b => b.CompanyId == companyId)
                     .ToListAsync();
-                
+
                 // Group batches by product
                 var batchesByProduct = batches
                     .GroupBy(b => b.ProductId)
                     .ToDictionary(g => g.Key, g => g.ToList());
-                
+
                 // Create product stock DTOs for low stock products
                 var lowStockProducts = new List<ProductStockDTO>();
                 foreach (var product in products)
@@ -336,7 +337,7 @@ namespace FrcsPos.Repository
                         });
                         continue;
                     }
-                    
+
                     var totalStock = productBatches.Sum(b => b.Quantity);
                     if (totalStock <= threshold)
                     {
@@ -347,7 +348,7 @@ namespace FrcsPos.Repository
                                 g => g.First().Warehouse.Name,
                                 g => g.Sum(b => b.Quantity)
                             );
-                        
+
                         lowStockProducts.Add(new ProductStockDTO
                         {
                             ProductId = product.Id,
@@ -361,7 +362,7 @@ namespace FrcsPos.Repository
                         });
                     }
                 }
-                
+
                 return ApiResponse<List<ProductStockDTO>>.Ok(lowStockProducts);
             }
             catch (Exception ex)
@@ -377,26 +378,26 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(companyId);
                 if (company == null)
                     return ApiResponse<List<ProductBatchDTO>>.Fail(message: "Company not found");
-                
+
                 var now = DateTime.UtcNow;
                 var expiryDate = now.AddDays(daysThreshold);
-                
+
                 // Get expiring batches
                 var expiringBatches = await _context.ProductBatches
                     .Include(b => b.Product)
                     .Include(b => b.Warehouse)
                     .Include(b => b.Company)
-                    .Where(b => b.CompanyId == companyId && 
-                           b.ExpiryDate.HasValue && 
+                    .Where(b => b.CompanyId == companyId &&
+                           b.ExpiryDate.HasValue &&
                            b.ExpiryDate <= expiryDate)
                     .ToListAsync();
-                
+
                 var batchDTOs = new List<ProductBatchDTO>();
                 foreach (var batch in expiringBatches)
                 {
                     batchDTOs.Add(await MapToProductBatchDTO(batch));
                 }
-                
+
                 return ApiResponse<List<ProductBatchDTO>>.Ok(batchDTOs);
             }
             catch (Exception ex)
@@ -413,33 +414,33 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(request.CompanyId);
                 if (company == null)
                     return ApiResponse<StockTransferDTO>.Fail(message: "Company not found");
-                
+
                 var product = await _context.Products.FindAsync(request.ProductId);
                 if (product == null)
                     return ApiResponse<StockTransferDTO>.Fail(message: "Product not found");
-                
+
                 var sourceWarehouse = await _context.Warehouses.FindAsync(request.SourceWarehouseId);
                 if (sourceWarehouse == null)
                     return ApiResponse<StockTransferDTO>.Fail(message: "Source warehouse not found");
-                
+
                 var destinationWarehouse = await _context.Warehouses.FindAsync(request.DestinationWarehouseId);
                 if (destinationWarehouse == null)
                     return ApiResponse<StockTransferDTO>.Fail(message: "Destination warehouse not found");
-                
+
                 var user = await _context.Users.FindAsync(request.TransferredByUserId);
                 if (user == null)
                     return ApiResponse<StockTransferDTO>.Fail(message: "User not found");
-                
+
                 // Check if source warehouse has enough stock
                 var sourceBatches = await _context.ProductBatches
-                    .Where(b => b.ProductId == request.ProductId && 
+                    .Where(b => b.ProductId == request.ProductId &&
                            b.WarehouseId == request.SourceWarehouseId)
                     .ToListAsync();
-                
+
                 var availableStock = sourceBatches.Sum(b => b.Quantity);
                 if (availableStock < request.Quantity)
                     return ApiResponse<StockTransferDTO>.Fail(message: "Not enough stock in source warehouse");
-                
+
                 // Create stock transfer record
                 var transfer = new StockTransfer
                 {
@@ -454,19 +455,19 @@ namespace FrcsPos.Repository
                     CreatedOn = DateTime.UtcNow,
                     UpdatedOn = DateTime.UtcNow
                 };
-                
+
                 await _context.StockTransfers.AddAsync(transfer);
-                
+
                 // Update source warehouse stock (reduce)
                 var remainingToReduce = request.Quantity;
                 foreach (var batch in sourceBatches.OrderBy(b => b.ExpiryDate)) // Use FIFO for stock reduction
                 {
                     if (remainingToReduce <= 0) break;
-                    
+
                     var reduceAmount = Math.Min(batch.Quantity, remainingToReduce);
                     batch.Quantity -= reduceAmount;
                     remainingToReduce -= reduceAmount;
-                    
+
                     if (batch.Quantity <= 0)
                     {
                         _context.ProductBatches.Remove(batch);
@@ -476,13 +477,13 @@ namespace FrcsPos.Repository
                         _context.ProductBatches.Update(batch);
                     }
                 }
-                
+
                 // Add stock to destination warehouse
                 // Check if there's an existing batch with the same product in the destination
                 var existingDestinationBatch = await _context.ProductBatches
-                    .FirstOrDefaultAsync(b => b.ProductId == request.ProductId && 
+                    .FirstOrDefaultAsync(b => b.ProductId == request.ProductId &&
                                        b.WarehouseId == request.DestinationWarehouseId);
-                
+
                 if (existingDestinationBatch != null)
                 {
                     // Update existing batch
@@ -504,20 +505,20 @@ namespace FrcsPos.Repository
                         CreatedOn = DateTime.UtcNow,
                         UpdatedOn = DateTime.UtcNow
                     };
-                    
+
                     await _context.ProductBatches.AddAsync(newBatch);
                 }
-                
+
                 await _context.SaveChangesAsync();
-                
-                // Create notification for the transfer
-                await _notificationService.CreateNotificationAsync(
-                    $"Stock Transfer: {product.Name}",
-                    $"{request.Quantity} units of {product.Name} transferred from {sourceWarehouse.Name} to {destinationWarehouse.Name}",
-                    NotificationType.INFO,
-                    $"/inventory/transfers/{transfer.UUID}"
-                );
-                
+
+
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                    title: $"Stock Transfer: {product.Name}",
+                    message: $"{request.Quantity} units of {product.Name} transferred from {sourceWarehouse.Name} to {destinationWarehouse.Name}",
+                    isSuperAdmin: true,
+                    type: NotificationType.SUCCESS
+                ));
+
                 // Map to DTO and return
                 var transferDTO = new StockTransferDTO
                 {
@@ -539,7 +540,7 @@ namespace FrcsPos.Repository
                     TransferredByUserId = transfer.TransferredByUserId,
                     TransferredByUserName = user.UserName
                 };
-                
+
                 return ApiResponse<StockTransferDTO>.Ok(transferDTO);
             }
             catch (Exception ex)
@@ -555,21 +556,21 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(companyId);
                 if (company == null)
                     return ApiResponse<List<StockTransferDTO>>.Fail(message: "Company not found");
-                
+
                 var query = _context.StockTransfers
                     .Include(t => t.Product)
                     .Include(t => t.SourceWarehouse)
                     .Include(t => t.DestinationWarehouse)
                     .Include(t => t.TransferredByUser)
                     .Where(t => t.CompanyId == companyId);
-                
+
                 // Apply pagination
                 query = query
                     .Skip((queryObject.PageNumber - 1) * queryObject.PageSize)
                     .Take(queryObject.PageSize);
-                
+
                 var transfers = await query.ToListAsync();
-                
+
                 var transferDTOs = new List<StockTransferDTO>();
                 foreach (var transfer in transfers)
                 {
@@ -594,7 +595,7 @@ namespace FrcsPos.Repository
                         TransferredByUserName = transfer.TransferredByUser.UserName
                     });
                 }
-                
+
                 return ApiResponse<List<StockTransferDTO>>.Ok(transferDTOs);
             }
             catch (Exception ex)
@@ -602,7 +603,7 @@ namespace FrcsPos.Repository
                 return ApiResponse<List<StockTransferDTO>>.Fail(message: $"Error retrieving stock transfer history: {ex.Message}");
             }
         }
-        
+
         public async Task<ApiResponse<ProductStockDTO>> GetProductByBarcodeAsync(int companyId, string barcode)
         {
             try
@@ -610,20 +611,20 @@ namespace FrcsPos.Repository
                 var company = await _context.Companies.FindAsync(companyId);
                 if (company == null)
                     return ApiResponse<ProductStockDTO>.Fail(message: "Company not found");
-                
+
                 // Find the product by barcode
                 var product = await _context.Products
                     .FirstOrDefaultAsync(p => p.CompanyId == companyId && p.Barcode == barcode);
-                
+
                 if (product == null)
                     return ApiResponse<ProductStockDTO>.Fail(message: "Product not found with the given barcode");
-                
+
                 // Get all batches for this product
                 var batches = await _context.ProductBatches
                     .Include(b => b.Warehouse)
                     .Where(b => b.ProductId == product.Id)
                     .ToListAsync();
-                
+
                 // Calculate total stock and stock by warehouse
                 var totalStock = batches.Sum(b => b.Quantity);
                 var stockByWarehouse = batches
@@ -632,7 +633,7 @@ namespace FrcsPos.Repository
                         g => g.First().Warehouse.Name,
                         g => g.Sum(b => b.Quantity)
                     );
-                
+
                 // Create and return the product stock DTO
                 var productStockDTO = new ProductStockDTO
                 {
@@ -645,7 +646,7 @@ namespace FrcsPos.Repository
                     TotalStock = totalStock,
                     StockByWarehouse = stockByWarehouse
                 };
-                
+
                 return ApiResponse<ProductStockDTO>.Ok(productStockDTO);
             }
             catch (Exception ex)
@@ -660,13 +661,13 @@ namespace FrcsPos.Repository
             // Ensure related entities are loaded
             if (batch.Product == null)
                 batch.Product = await _context.Products.FindAsync(batch.ProductId) ?? new Product();
-                
+
             if (batch.Warehouse == null)
                 batch.Warehouse = await _context.Warehouses.FindAsync(batch.WarehouseId) ?? new Warehouse();
-                
+
             if (batch.Company == null)
                 batch.Company = await _context.Companies.FindAsync(batch.CompanyId) ?? new Company();
-            
+
             return new ProductBatchDTO
             {
                 Id = batch.Id,
@@ -684,18 +685,18 @@ namespace FrcsPos.Repository
                 ExpiryDate = batch.ExpiryDate
             };
         }
-        
+
         private async Task CreateExpiryNotification(ProductBatch batch, int daysUntilExpiry)
         {
             if (batch.Product == null)
                 batch.Product = await _context.Products.FindAsync(batch.ProductId) ?? new Product();
-                
+
             if (batch.Warehouse == null)
                 batch.Warehouse = await _context.Warehouses.FindAsync(batch.WarehouseId) ?? new Warehouse();
-            
+
             string title;
             NotificationType type;
-            
+
             if (daysUntilExpiry <= 0)
             {
                 title = $"EXPIRED: {batch.Product.Name} in {batch.Warehouse.Name}";
@@ -711,15 +712,15 @@ namespace FrcsPos.Repository
                 title = $"{batch.Product.Name} expires in {daysUntilExpiry} days";
                 type = NotificationType.INFO;
             }
-            
+
             var message = $"{batch.Quantity} units in {batch.Warehouse.Name} warehouse will expire on {batch.ExpiryDate:yyyy-MM-dd}";
-            
-            await _notificationService.CreateNotificationAsync(
-                title,
-                message,
-                type,
-                $"/inventory/product-batch/{batch.UUID}"
-            );
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                    title: title,
+                    message: message,
+                    isSuperAdmin: true,
+                    type: type
+                ));
         }
     }
 }

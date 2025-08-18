@@ -84,8 +84,6 @@ namespace FrcsPos.Repository
             };
         }
 
-<<<<<<< HEAD
-
         public async Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject, string companyName)
         {
             bool companyExists = await _context.Companies.AnyAsync(c => c.Name == companyName);
@@ -94,16 +92,6 @@ namespace FrcsPos.Repository
                 return ApiResponse<List<PosTerminalDTO>>.NotFound();
             }
 
-=======
-        public async Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject, string companyName)
-        {
-            bool companyExists = await _context.Companies.AnyAsync(c => c.Name == companyName);
-            if (!companyExists)
-            {
-                return ApiResponse<List<PosTerminalDTO>>.NotFound();
-            }
-
->>>>>>> a6831a3 (feat (api+frontend): get pos terminals associated with company. find by company name)
             var query = _context.Companies
             .Include(c => c.PosTerminals)
             .AsQueryable();

@@ -130,7 +130,7 @@ export interface User {
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
 }
-
+export interface ProductBatchDTO {}
 export interface CompanyUser extends BaseModel {
   companyId: number;
   company?: Company;

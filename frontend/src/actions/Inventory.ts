@@ -1,4 +1,12 @@
-import { ApiResponse, InventorySummaryDTO, ProductBatchDTO, ProductStockDTO, QueryObject, StockTransferDTO } from "@/types/models";
+import {
+  ApiResponse,
+  InventorySummaryDTO,
+  ProductBatch,
+  ProductBatchDTO,
+  ProductStockDTO,
+  QueryObject,
+  StockTransferDTO,
+} from "@/types/models";
 import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
@@ -147,10 +155,10 @@ export async function GetLowStockProducts(
 export async function GetExpiringProductBatches(
   companyId: number,
   daysThreshold: number = 30
-): Promise<ApiResponse<ProductBatchDTO[]>> {
+): Promise<ApiResponse<ProductBatch[]>> {
   const token = await GetToken();
 
-  const res = await axiosGlobal.get<ApiResponse<ProductBatchDTO[]>>(
+  const res = await axiosGlobal.get<ApiResponse<ProductBatch[]>>(
     `api/inventory/expiring/${companyId}?daysThreshold=${daysThreshold}`,
     {
       headers: { Authorization: `Bearer ${token}` },
