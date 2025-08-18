@@ -74,7 +74,6 @@ export default function AddUsersToCompanyDialoge() {
   async function onSubmit(values: AddUsersToCompanyFormType) {
     setLoading(true);
     console.log(values);
-    return;
 
     const res = await AddUserToCompany(
       values.adminUserId,

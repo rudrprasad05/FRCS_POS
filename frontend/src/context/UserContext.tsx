@@ -1,5 +1,6 @@
 "use client";
 
+import { Logout } from "@/actions/User";
 import { axiosGlobal } from "@/lib/axios";
 import { RegisterFormType } from "@/types/forms/zod";
 import { ApiResponse, User } from "@/types/models";
@@ -110,8 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // 🔹 Logout function
-  const logout = (unAuth = false) => {
-    destroyCookie(null, "token");
+  const logout = async (unAuth = false) => {
+    const res = await Logout();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -133,15 +134,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (isAdmin)
       try {
-        const res = await axiosGlobal.get<LoginResponse>("auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosGlobal.get<ApiResponse<LoginResponse>>(
+          "auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        let data = res.data.data;
+        if (!data) return;
         tempUser = {
-          id: res.data.id,
-          username: res.data.username,
-          email: res.data.email,
-          token: res.data.token,
-          role: res.data.role,
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          token: data.token,
+          role: data.role,
         };
       } catch (error) {}
   }, [pathname]);

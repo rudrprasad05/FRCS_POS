@@ -43,12 +43,27 @@ namespace FrcsPos.Controllers
             _userContext = userContext;
         }
 
+        [Authorize]
+        [HttpGet("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            Response.Cookies.Delete("token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok(ApiResponse<string>.Ok(data: "ok"));
+        }
+
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+
             }
             try
             {

@@ -6,7 +6,6 @@ import { ApiResponse, QueryObject, User } from "@/types/models";
 import { cookies } from "next/headers";
 
 import https from "https";
-import { RequestWrapper } from "./RequestWrapper";
 
 const agent = new https.Agent({
   rejectUnauthorized: false, // Allow self-signed cert
@@ -77,11 +76,15 @@ export async function CreateUser(
   }
 }
 
-// export async function LoginUser(data: SignInFormType): Promise<LoginResponse> {
-//   const res = await axiosGlobal.post<LoginResponse>("auth/login", data);
+export async function Logout(): Promise<ApiResponse<string>> {
+  const token = await GetToken();
 
-//   return res.data;
-// }
+  const res = await axiosGlobal.get<ApiResponse<string>>("auth/logout", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data;
+}
 
 export async function ConfirmEmail(token: string): Promise<boolean> {
   try {

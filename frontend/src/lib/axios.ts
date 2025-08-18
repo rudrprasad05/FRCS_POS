@@ -23,18 +23,6 @@ axiosGlobal.interceptors.request.use((config) => {
 
 axiosGlobal.interceptors.response.use(
   (response) => {
-    console.log("Response intercepted:", response.status, response.data);
-    return response;
-  },
-  (error) => {
-    console.log("Error intercepted:");
-    console.dir(error);
-    return Promise.reject(error);
-  }
-);
-
-axiosGlobal.interceptors.response.use(
-  (response) => {
     return response;
   },
   (error) => {
@@ -42,10 +30,10 @@ axiosGlobal.interceptors.response.use(
     if (status === 401 || status === 403) {
       console.log("uhm");
       // Remove token cookie or localStorage
-      //   destroyCookie(null, "token");
+      destroyCookie(null, "token");
 
       if (typeof window !== "undefined") {
-        // localStorage.removeItem("token");
+        localStorage.removeItem("token");
 
         // Redirect to login or home
         window.location.href = "/error/unauthorised";
