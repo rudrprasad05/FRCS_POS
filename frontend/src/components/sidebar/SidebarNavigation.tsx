@@ -44,29 +44,71 @@ const navigationItems = [
     href: "/admin/users",
     icon: UsersIcon,
   },
+];
+
+const companyNavigationItems = [
   {
-    title: "Tax",
-    href: "/admin/tax",
-    icon: BookText,
-  },
-  {
-    title: "Reports",
-    href: "/admin/reports",
-    icon: Flag,
+    title: "Inventory",
+    href: (companyId: string | number) => `/company/${companyId}/inventory`,
+    icon: Database,
+    subItems: [
+      {
+        title: "Summary",
+        href: (companyId: string | number) =>
+          `/company/${companyId}/inventory/summary`,
+      },
+      {
+        title: "Product Batches",
+        href: (companyId: string | number) =>
+          `/company/${companyId}/inventory/batches`,
+      },
+      {
+        title: "Low Stock",
+        href: (companyId: string | number) =>
+          `/company/${companyId}/inventory/low-stock`,
+      },
+      {
+        title: "Expiring Products",
+        href: (companyId: string | number) =>
+          `/company/${companyId}/inventory/expiring`,
+      },
+      {
+        title: "Stock Transfers",
+        href: (companyId: string | number) =>
+          `/company/${companyId}/inventory/transfers`,
+      },
+    ],
   },
 ];
 
 export function SidebarNavigation() {
   const pathname = usePathname();
 
+  // Check if we're in a company route
+  const companyMatch = pathname.match(/\/company\/([^\/]+)/);
+  const companyId = companyMatch ? companyMatch[1] : null;
+
+  // Determine which navigation items to show based on the route
+  const itemsToShow = companyId ? companyNavigationItems : navigationItems;
+
   return (
     <SidebarGroup className="h-full">
       <SidebarGroupContent className="h-full">
         <SidebarMenu className="h-full">
-          {navigationItems.map((item) => {
-            const isActive = pathname.includes(item.href);
+          {itemsToShow.map((item) => {
+            const itemHref =
+              typeof item.href === "function" && companyId
+                ? item.href(companyId)
+                : item.href;
+
+            const isActive =
+              pathname === itemHref ||
+              (pathname.startsWith(itemHref) && itemHref !== "/");
+
             return (
-              <SidebarMenuItem key={item.href}>
+              <SidebarMenuItem
+                key={typeof itemHref === "string" ? itemHref : item.title}
+              >
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
@@ -75,11 +117,48 @@ export function SidebarNavigation() {
                     isActive ? "" : " "
                   )}
                 >
-                  <Link href={item.href}>
+                  <Link href={itemHref}>
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
+
+                {/* Render sub-items if they exist and the parent is active */}
+                {item.subItems && isActive && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {item.subItems.map((subItem) => {
+                      const subItemHref =
+                        typeof subItem.href === "function" && companyId
+                          ? subItem.href(companyId)
+                          : subItem.href;
+
+                      const isSubActive = pathname === subItemHref;
+
+                      return (
+                        <SidebarMenuItem
+                          key={
+                            typeof subItemHref === "string"
+                              ? subItemHref
+                              : subItem.title
+                          }
+                        >
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isSubActive}
+                            className={cn(
+                              "w-full justify-start gap-3 px-3 py-2 text-xs font-medium transition-colors",
+                              isSubActive ? "" : " "
+                            )}
+                          >
+                            <Link href={subItemHref}>
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </div>
+                )}
               </SidebarMenuItem>
             );
           })}

@@ -1,5 +1,7 @@
 import { CompanyRole, RefundStatus, SaleStatus } from "@/types/enum";
 
+export * from "./inventory";
+
 export interface BaseModel {
   id: number;
   uuid: string;

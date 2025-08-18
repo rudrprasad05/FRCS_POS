@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace FrcsPos.Models
 {
     public class Warehouse : BaseModel
@@ -11,8 +6,8 @@ namespace FrcsPos.Models
         public Company Company { get; set; } = default!;
 
         public string Name { get; set; } = default!;
-        public string? Location { get; set; }
-        public ICollection<ProductBatch> Batches { get; set; } = new List<ProductBatch>();
+        public string Location { get; set; } = string.Empty;
 
+        public ICollection<ProductBatch> ProductBatches { get; set; } = new List<ProductBatch>();
     }
 }

@@ -23,6 +23,7 @@ namespace FrcsPos.Controllers
         [HttpGet("ping")]
         public async Task<IActionResult> Ping()
         {
+            await Task.CompletedTask;
             return Ok(ApiResponse<string>.Ok("pong", "req retrieved", logger: _logger));
         }
     }

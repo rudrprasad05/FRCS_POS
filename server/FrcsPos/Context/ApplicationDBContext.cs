@@ -31,6 +31,7 @@ namespace FrcsPos.Context
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
         public DbSet<Media> Medias { get; set; }
+        public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
 
 
 
@@ -159,6 +160,26 @@ namespace FrcsPos.Context
                     .HasForeignKey(x => x.RefundRequestId).OnDelete(DeleteBehavior.Cascade);
 
                 e.HasOne(x => x.SaleItem).WithMany().HasForeignKey(x => x.SaleItemId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            b.Entity<StockTransfer>(e =>
+            {
+                e.HasOne(x => x.Company).WithMany()
+                    .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(x => x.SourceWarehouse).WithMany()
+                    .HasForeignKey(x => x.SourceWarehouseId).OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.DestinationWarehouse).WithMany()
+                    .HasForeignKey(x => x.DestinationWarehouseId).OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.Product).WithMany()
+                    .HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.TransferredByUser).WithMany()
+                    .HasForeignKey(x => x.TransferredByUserId).OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(x => new { x.CompanyId, x.CreatedOn });
             });
         }
     }
