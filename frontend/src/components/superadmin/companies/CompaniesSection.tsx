@@ -2,9 +2,9 @@
 import { GetAllCompanies } from "@/actions/Company";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
+import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,28 +13,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Company, MetaData } from "@/types/models";
-import { HousePlus, Search } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { columns } from "./CompaniesColumns";
+import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import { Company } from "@/types/models";
+import { Search } from "lucide-react";
+import { CompanyOnlyColumn } from "../../tables/CompaniesColumns";
 import NewCompanyDialoge from "./NewCompanyDialoge";
-import { createGenericDataContext } from "@/context/GenericDataTableContext";
-import { DataTable } from "@/components/global/DataTable";
 
 export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericDataContext<Company>();
+  createGenericListDataContext<Company>();
 
 export default function CompanySection() {
   return (
     <CompanyDataProvider
-      fetchFn={() =>
-        GetAllCompanies({ pageNumber: 1, pageSize: 10 }).then((res) => ({
-          data: res.data ?? [],
-          meta: res.meta,
-        }))
-      }
+      fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
     >
       <Header />
       <HandleDataSection />
@@ -87,20 +78,21 @@ function Header() {
 
 function HandleDataSection() {
   const { items, loading, pagination, setPagination } = useCompanyData();
+  const data = items as Company[];
 
   if (loading) {
     return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!items) {
+  if (!data) {
     return <>Invalid URL</>;
   }
-  if (items.length === 0) {
+  if (data.length === 0) {
     return <NoDataContainer />;
   }
   return (
     <>
-      <DataTable columns={columns} data={items as Company[]} />
+      <DataTable columns={CompanyOnlyColumn} data={data} />
       <div className="py-8">
         <PaginationSection
           pagination={pagination}

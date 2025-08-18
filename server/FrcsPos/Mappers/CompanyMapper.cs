@@ -26,6 +26,7 @@ namespace FrcsPos.Mappers
             {
                 return new CompanyDTO();
             }
+
             var dto = new CompanyDTO
             {
                 UUID = request.UUID,
@@ -34,15 +35,11 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
                 AdminUser = request.AdminUser.FromUserToDto(),
+                PosTerminals = request.PosTerminals.FromModelToDtoWithoutCompany(),
+                Warehouses = request.Warehouses.FromModelToDto(),
+                Users = request.Users.FromCompanyUserToDTO(),
+                Products = request.Products.FromModelToDto(),
             };
-
-            var posList = new List<PosTerminalDTO>();
-            foreach (var terminal in request.PosTerminals)
-            {
-                posList.Add(terminal.FromModelToDtoWithoutCompany());
-            }
-
-            dto.PosTerminals = posList;
 
             return dto;
         }

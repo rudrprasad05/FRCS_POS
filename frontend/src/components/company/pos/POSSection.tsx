@@ -17,13 +17,13 @@ import { Search } from "lucide-react";
 
 import { GetAllCompanyPosTerminals } from "@/actions/PosTerminal";
 import { DataTable } from "@/components/global/DataTable";
-import { createGenericDataContext } from "@/context/GenericDataTableContext";
+import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import NewPosDialoge from "./NewPosDialoge";
 import { columns } from "./PosTerminalDataColumns";
 import { useParams } from "next/navigation";
 
 export const { Provider: PosTerminalProvider, useGenericData: usePosTerminal } =
-  createGenericDataContext<PosTerminal>();
+  createGenericListDataContext<PosTerminal>();
 
 export default function POSSection() {
   const params = useParams();
@@ -31,13 +31,7 @@ export default function POSSection() {
   return (
     <PosTerminalProvider
       fetchFn={() =>
-        GetAllCompanyPosTerminals(
-          { pageNumber: 1, pageSize: 10 },
-          companyName
-        ).then((res) => ({
-          data: res.data ?? [],
-          meta: res.meta,
-        }))
+        GetAllCompanyPosTerminals({ pageNumber: 1, pageSize: 10 }, companyName)
       }
     >
       <Header />
@@ -47,6 +41,8 @@ export default function POSSection() {
 }
 
 function Header() {
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
   return (
     <div>
       <div className="space-b-2">
@@ -83,7 +79,7 @@ function Header() {
           </Select>
         </div>
 
-        <NewPosDialoge />
+        <NewPosDialoge companyName={companyName} />
       </div>
     </div>
   );

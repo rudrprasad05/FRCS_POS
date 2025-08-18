@@ -8,7 +8,6 @@ namespace FrcsPos.Request
     public class NewPosTerminalRequest
     {
         public string CompanyName { get; set; } = default!;
-        public string Name { get; set; } = default!;
 
     }
 }

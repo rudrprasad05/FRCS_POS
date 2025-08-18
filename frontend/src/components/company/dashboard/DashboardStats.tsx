@@ -21,7 +21,6 @@ export function CompanyDashboardStats() {
     const getData = async () => {
       const data = await GetSuperAdminDashboard();
       setdata(data.data);
-      console.dir("DashboardStatsCard", data);
       setLoading(false);
     };
     getData();

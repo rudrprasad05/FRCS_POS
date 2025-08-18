@@ -11,4 +11,10 @@ namespace FrcsPos.Request
         public string PosTerminalUUID { get; set; } = default!;
 
     }
+
+    public class CreateNewPosSession
+    {
+        public string PosTerminalUUID { get; set; } = default!;
+
+    }
 }

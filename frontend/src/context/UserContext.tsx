@@ -1,8 +1,9 @@
 "use client";
 
+import { Logout } from "@/actions/User";
 import { axiosGlobal } from "@/lib/axios";
 import { RegisterFormType } from "@/types/forms/zod";
-import { User } from "@/types/models";
+import { ApiResponse, User } from "@/types/models";
 import { LoginResponse } from "@/types/res";
 
 import { usePathname, useRouter } from "next/navigation";
@@ -40,32 +41,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     toast.success("Successfully logged in", {
       description: "Redirecting shortly",
     });
-    if (tmp.role == "Admin") {
-      router.push("/admin");
-    } else {
-      router.push("/");
-    }
+
+    router.push("/redirect");
   };
 
   const login = async (email: string, password: string, redirect?: string) => {
     let tempUser: User;
     try {
-      const res = await axiosGlobal.post<LoginResponse>("auth/login", {
-        email,
-        password,
-      });
-      localStorage.setItem("token", res.data.token);
+      const res = await axiosGlobal.post<ApiResponse<LoginResponse>>(
+        "auth/login",
+        {
+          email,
+          password,
+        }
+      );
+      let data = res.data.data;
+      if (data == undefined) {
+        return;
+      }
+      localStorage.setItem("token", data.token);
       tempUser = {
-        id: res.data.id,
-        username: res.data.username,
-        email: res.data.email,
-        token: res.data.token,
-        role: res.data.role,
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        token: data.token,
+        role: data.role,
       };
+      console.log(tempUser);
+      setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
 
       if (redirect && redirect.trim().length > 0) {
-        router.push("/" + redirect);
+        router.push("/admin" + redirect);
       } else {
         helperHandleRedirectAfterLogin(tempUser);
       }
@@ -104,8 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // 🔹 Logout function
-  const logout = (unAuth = false) => {
-    destroyCookie(null, "token");
+  const logout = async (unAuth = false) => {
+    const res = await Logout();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -127,15 +134,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (isAdmin)
       try {
-        const res = await axiosGlobal.get<LoginResponse>("auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosGlobal.get<ApiResponse<LoginResponse>>(
+          "auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        let data = res.data.data;
+        if (!data) return;
         tempUser = {
-          id: res.data.id,
-          username: res.data.username,
-          email: res.data.email,
-          token: res.data.token,
-          role: res.data.role,
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          token: data.token,
+          role: data.role,
         };
       } catch (error) {}
   }, [pathname]);

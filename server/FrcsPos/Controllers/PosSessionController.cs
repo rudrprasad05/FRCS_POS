@@ -4,11 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using FrcsPos.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
     [Route("api/pos-session")]
+    [Authorize]
     [ApiController]
     public class PosSessionController : BaseController
     {
@@ -25,8 +28,15 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCompany([FromBody] NewPosSession data)
+        public async Task<IActionResult> CreateCompany([FromBody] CreateNewPosSession request)
         {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return Unauthorized(ApiResponse<string>.Unauthorised());
+            }
+
+            var data = new NewPosSession { PosTerminalUUID = request.PosTerminalUUID, PosUserId = userId };
             var model = await _posSessionRepository.CreateNewPosSession(data);
 
             if (model == null)
@@ -36,7 +46,7 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
-        
+
         [HttpGet("get-session-by-uuid")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] string uuid)
         {

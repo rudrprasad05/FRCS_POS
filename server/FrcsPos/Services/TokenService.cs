@@ -11,7 +11,7 @@ namespace FrcsPos.Service
     public class TokenService : ITokenService
     {
         private readonly SymmetricSecurityKey _key;
-        private readonly IConfiguration _config; 
+        private readonly IConfiguration _config;
         private readonly UserManager<User> _userManager;
         public TokenService(IConfiguration config, UserManager<User> userManager)
         {
@@ -26,7 +26,7 @@ namespace FrcsPos.Service
         {
             var claims = new List<Claim>
             {
-                new("ID", user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Email, user.Email ?? throw new InvalidOperationException()),
                 new(ClaimTypes.Name, user.UserName ?? throw new InvalidOperationException()),
             };
@@ -36,7 +36,7 @@ namespace FrcsPos.Service
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
-            
+
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
             var tokenDescriptor = new SecurityTokenDescriptor
             {

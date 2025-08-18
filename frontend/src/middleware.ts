@@ -27,7 +27,6 @@ export async function middleware(req: NextRequest) {
         "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
       },
     });
-    console.dir(res, { depth: null, colors: true });
 
     if (!res.ok) {
       console.error("qqqqq Auth check failed  md.ts:", res.status);
@@ -35,7 +34,6 @@ export async function middleware(req: NextRequest) {
     }
 
     const data: ApiResponse<LoginDTO> = await res.json();
-    console.dir(data, { depth: null, colors: true });
 
     // Role check
     if (

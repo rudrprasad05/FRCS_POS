@@ -37,10 +37,49 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("add-user")]
+        public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompany request)
+        {
+            var model = await _companyRepository.AddUserToCompanyAsync(request);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _companyRepository.GetAllCompanyAsync(queryObject);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-one-by-admin-id")]
+        public async Task<IActionResult> GetCompanyByAdminUserId([FromQuery] string uuid)
+        {
+            var model = await _companyRepository.GetCompanyByAdminUserIdAsync(uuid);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-full-by-uuid")]
+        public async Task<IActionResult> GetFullCompanyByUUID([FromQuery] string uuid)
+        {
+            var model = await _companyRepository.GetFullCompanyByUUIDAsync(uuid);
 
             if (model == null)
             {

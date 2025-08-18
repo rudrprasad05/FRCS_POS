@@ -48,6 +48,44 @@ namespace FrcsPos.Mappers
             };
         }
 
+        public static List<CompanyUserDTO> FromCompanyUserToDTO(this ICollection<CompanyUser> request)
+        {
+            if (request == null || request.Count == 0)
+            {
+                return [];
+            }
+
+            var dtoList = new List<CompanyUserDTO>();
+            foreach (CompanyUser w in request)
+            {
+                var dto = w.FromModelToDto();
+                dtoList.Add(dto);
+            }
+
+            return dtoList;
+        }
+
+        public static CompanyUserDTO FromModelToDto(this CompanyUser request)
+        {
+            if (request == null)
+            {
+                return new CompanyUserDTO();
+            }
+
+            var dto = new CompanyUserDTO
+            {
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+                CompanyId = request.CompanyId,
+                UserId = request.UserId,
+                User = request.User.FromUserToDto(),
+            };
+
+            return dto;
+        }
+
         public static UserDTO FromUserToDto(this User request)
         {
             if (request == null)
@@ -69,7 +107,7 @@ namespace FrcsPos.Mappers
                 Id = request.Id,
                 Username = request.UserName ?? string.Empty,
                 Email = request.Email ?? string.Empty,
-                Token = request.PasswordHash ?? string.Empty, // or leave blank if not needed
+                Token = string.Empty, // or leave blank if not needed
             };
         }
     }

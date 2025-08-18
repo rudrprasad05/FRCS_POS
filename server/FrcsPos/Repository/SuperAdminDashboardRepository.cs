@@ -39,7 +39,7 @@ namespace FrcsPos.Repository
             var productCount = await _context.Products.CountAsync();
             var saleCount = await _context.Sales.CountAsync();
 
-            var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 8 });
+            var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 5, SortBy = ESortBy.DSC });
 
             var dto = new SuperAdminDashboardDTO
             {

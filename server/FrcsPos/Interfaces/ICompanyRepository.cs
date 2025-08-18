@@ -11,7 +11,11 @@ namespace FrcsPos.Interfaces
     public interface ICompanyRepository
     {
         public Task<ApiResponse<CompanyDTO>> CreateCompanyAsync(NewCompanyRequest request);
+        public Task<ApiResponse<CompanyDTO>> AddUserToCompanyAsync(AddUserToCompany request);
         public Task<ApiResponse<List<CompanyDTO>>> GetAllCompanyAsync(RequestQueryObject queryObject);
+        public Task<ApiResponse<CompanyDTO>> GetCompanyByAdminUserIdAsync(string uuid);
+        public Task<ApiResponse<CompanyDTO>> GetFullCompanyByUUIDAsync(string uuid);
+
         public Task<ApiResponse<CompanyDTO>> SoftDelete(string uuid);
 
     }

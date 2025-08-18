@@ -29,7 +29,6 @@ export default function PosPage({ params }: PageProps) {
 
   async function handleNewSession() {
     const res = await CreateNewPosSession({
-      posUserId: "de88907f-645a-49f2-b02e-3af064a4571a", // TODO make this current user id
       PosTerminalUUID: posId,
     });
     const url = res.data?.uuid;

@@ -10,6 +10,7 @@ using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FrcsPos.Repository
 {
@@ -17,7 +18,7 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
-        
+
         public PosSessionRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService
@@ -29,8 +30,7 @@ namespace FrcsPos.Repository
         }
         public async Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request)
         {
-            var posTerminal = await _context.PosTerminals
-                .SingleOrDefaultAsync(p => p.UUID == request.PosTerminalUUID);
+            var posTerminal = await _context.PosTerminals.SingleOrDefaultAsync(p => p.UUID == request.PosTerminalUUID);
             if (posTerminal == null)
             {
                 return ApiResponse<PosSessionDTO>.Fail();
@@ -89,7 +89,7 @@ namespace FrcsPos.Repository
                 Success = true,
                 StatusCode = 200,
                 Data = result,
-                
+
             };
         }
     }

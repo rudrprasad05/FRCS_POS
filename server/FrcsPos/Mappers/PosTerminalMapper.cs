@@ -49,5 +49,21 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
             };
         }
+
+        public static List<PosTerminalDTO> FromModelToDtoWithoutCompany(this ICollection<PosTerminal> request)
+        {
+            if (request == null || request.Count == 0)
+            {
+                return [];
+            }
+            List<PosTerminalDTO> ptdList = [];
+            foreach (PosTerminal pt in request)
+            {
+                PosTerminalDTO ptd = pt.FromModelToDtoWithoutCompany();
+                ptdList.Add(ptd);
+            }
+
+            return ptdList;
+        }
     }
 }

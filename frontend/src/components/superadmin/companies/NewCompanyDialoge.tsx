@@ -84,7 +84,7 @@ export default function NewCompanyDialoge() {
       toast.error("Error creating user", { description: res.message });
       setError(res.message);
     } else {
-      toast.success("User created");
+      toast.success("Company created");
       refresh();
       setOpen(false);
     }

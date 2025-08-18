@@ -7,6 +7,7 @@ using FrcsPos.Interfaces;
 using FrcsPos.Models;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,18 @@ namespace FrcsPos.Controllers
 
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] string? role)
+        {
+            var model = await _userRepository.GetAllUsers(role);
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-all-users-not-in-company")]
+        public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
         {
             var model = await _userRepository.GetAllUsers(role);
             if (model == null)
@@ -138,12 +151,12 @@ namespace FrcsPos.Controllers
                     Email = model.Email ?? "",
                 };
 
-                await _notificationService.CreateNotificationAsync(
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
                     title: "New user added",
                     message: "user " + model.Username + " was created",
                     isSuperAdmin: true,
                     type: NotificationType.SUCCESS
-                );
+                ));
 
                 return Ok(ApiResponse<UserDTO>.Ok(
                     data: dto,

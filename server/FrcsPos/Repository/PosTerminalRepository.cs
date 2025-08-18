@@ -9,6 +9,7 @@ using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -68,12 +69,12 @@ namespace FrcsPos.Repository
 
             var result = model.Entity.FromModelToDto();
 
-            await _notificationService.CreateNotificationAsync(
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
                 title: "New POS Terminal",
                 message: $"The terminal {result.Name} was created",
                 type: NotificationType.SUCCESS,
                 actionUrl: "/admin/pos/" + result.UUID
-            );
+            ));
 
             return new ApiResponse<PosTerminalDTO>
             {
@@ -161,5 +162,7 @@ namespace FrcsPos.Repository
             var dto = pos.FromModelToDto();
             return ApiResponse<PosTerminalDTO>.Ok(dto);
         }
+
+
     }
 }

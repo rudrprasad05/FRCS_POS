@@ -3,8 +3,8 @@
 import { NewUserForm } from "@/components/superadmin/users/NewUserDialoge";
 import { axiosGlobal } from "@/lib/axios";
 import { ApiResponse, QueryObject, User } from "@/types/models";
-// import { LoginResponse } from "@/types/schema";
-// import { SignInFormType } from "@/types/zod";
+import { cookies } from "next/headers";
+
 import https from "https";
 
 const agent = new https.Agent({
@@ -22,7 +22,27 @@ export async function GetUser() {
 export async function GetAllAdmins(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  const res = await axiosGlobal.get<ApiResponse<User[]>>("user/get-all-users");
+  const token = await GetToken();
+
+  const res = await axiosGlobal.get<ApiResponse<User[]>>("user/get-all-users", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  console.log(res.data);
+  return res.data;
+}
+
+// TODO do this. rn the add new user dialog gets all users, regardless of wheather its in company or not
+export async function GetAllAdminsNotInCompany(
+  query?: QueryObject
+): Promise<ApiResponse<User[]>> {
+  const token = await GetToken();
+
+  const res = await axiosGlobal.get<ApiResponse<User[]>>(
+    "user/get-all-users-not-in-company",
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   console.log(res.data);
   return res.data;
 }
@@ -30,11 +50,15 @@ export async function GetAllAdmins(
 export async function CreateUser(
   data: NewUserForm
 ): Promise<ApiResponse<User[]>> {
+  const token = await GetToken();
+
   try {
     const res = await axiosGlobal.post<ApiResponse<User[]>>(
       "user/create",
-      data
+      data,
+      { headers: { Authorization: `Bearer ${token}` } }
     );
+
     return res.data;
   } catch (error: any) {
     if (error.response?.data) {
@@ -52,11 +76,15 @@ export async function CreateUser(
   }
 }
 
-// export async function LoginUser(data: SignInFormType): Promise<LoginResponse> {
-//   const res = await axiosGlobal.post<LoginResponse>("auth/login", data);
+export async function Logout(): Promise<ApiResponse<string>> {
+  const token = await GetToken();
 
-//   return res.data;
-// }
+  const res = await axiosGlobal.get<ApiResponse<string>>("auth/logout", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data;
+}
 
 export async function ConfirmEmail(token: string): Promise<boolean> {
   try {
@@ -69,11 +97,11 @@ export async function ConfirmEmail(token: string): Promise<boolean> {
 }
 
 export async function GetToken(): Promise<string | undefined> {
-  //   const a = await cookies();
-  //   const token = a.get("token")?.value;
+  const a = await cookies();
+  const token = a.get("token")?.value;
 
-  //   if (!token) return undefined;
-  //   return token;
+  if (!token) return undefined;
+  return token;
   return "";
 }
 
