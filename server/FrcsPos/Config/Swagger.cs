@@ -9,12 +9,12 @@ using FrcsPos.Config;
 namespace FrcsPos.Config
 {
     public static class SwaggerConfiguration
-    {   
+    {
         public static void AddSwaggerServices(this IServiceCollection services)
         {
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "CrumbCode API", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "FRCS API", Version = "v1" });
 
                 // Add file upload operation filter
                 options.OperationFilter<SwaggerFileUploadOperationFilter>();
@@ -48,6 +48,6 @@ namespace FrcsPos.Config
             });
         }
 
-        
+
     }
 }

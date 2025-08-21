@@ -46,7 +46,7 @@ namespace FrcsPos.Services
                 Expires = DateTime.UtcNow.AddMinutes(15)
             });
 
-            return url;               
+            return url;
         }
 
         public async Task<GetObjectResponse?> GetObjectAsync(string objKey)
@@ -80,7 +80,7 @@ namespace FrcsPos.Services
                 try
                 {
                     // Generate a unique file name for the file
-                    var fileName = "crumbcode/" + guid + Path.GetExtension(file.FileName);
+                    var fileName = "frcs/" + guid + Path.GetExtension(file.FileName);
 
                     // Create a new TransferUtility instance to upload the file
                     using (var newMemoryStream = new MemoryStream())
@@ -113,7 +113,7 @@ namespace FrcsPos.Services
                 var request = new DeleteObjectRequest
                 {
                     BucketName = _bucketName,
-                    Key = "crumbcode/" + fileName
+                    Key = "frcs/" + fileName
                 };
 
                 // Delete the object from S3

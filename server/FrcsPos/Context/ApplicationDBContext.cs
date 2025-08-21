@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using FrcsPos.Models;
-using CrumbCodeBackend.Models;
 
 namespace FrcsPos.Context
 {

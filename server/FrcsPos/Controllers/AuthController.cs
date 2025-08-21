@@ -11,7 +11,7 @@ using FrcsPos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using static CrumbCodeBackend.Models.Requests.AuthRequestObject;
+using static FrcsPos.Models.Requests.AuthRequestObject;
 
 namespace FrcsPos.Controllers
 {
