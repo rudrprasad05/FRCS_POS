@@ -1,5 +1,4 @@
 "use client";
-import { GetAllCompanies } from "@/actions/Company";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
@@ -13,27 +12,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { HousePlus, PackagePlus, Search } from "lucide-react";
+// import NewCompanyDialoge from "./NewCompanyDialoge";
+import { GetAllProducts } from "@/actions/Product";
+import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { Company } from "@/types/models";
-import { Search } from "lucide-react";
-import { CompanyOnlyColumn } from "../../tables/CompaniesColumns";
-import NewCompanyDialoge from "./NewCompanyDialoge";
+import { Product } from "@/types/models";
+import { Button, buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
 
-export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericListDataContext<Company>();
+export const {
+  Provider: CompanyProductsSectionProvider,
+  useGenericData: useCompanyProductData,
+} = createGenericListDataContext<Product>();
 
 export default function CompanySection() {
   return (
-    <CompanyDataProvider
-      fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
+    <CompanyProductsSectionProvider
+      fetchFn={() => GetAllProducts({ pageNumber: 1, pageSize: 10 })}
     >
-      <CompanyDataProvider
-        fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
-      >
-        <Header />
-        <HandleDataSection />
-      </CompanyDataProvider>
-    </CompanyDataProvider>
+      <Header />
+      <HandleDataSection />
+    </CompanyProductsSectionProvider>
   );
 }
 
@@ -41,8 +41,8 @@ function Header() {
   return (
     <div>
       <div className="space-b-2">
-        <H1 className="">Companies</H1>
-        <P className="text-muted-foreground">Create and manage companies</P>
+        <H1 className="">Products</H1>
+        <P className="text-muted-foreground">Create and manage your products</P>
       </div>
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-4 flex-1">
@@ -73,36 +73,47 @@ function Header() {
             </SelectContent>
           </Select>
         </div>
-
-        <NewCompanyDialoge />
+        <Button
+          asChild
+          className={`${buttonVariants({
+            variant: "default",
+          })} text-start justify-start px-2 my-2`}
+        >
+          <Link href="products/new">
+            <PackagePlus />
+            New Product
+          </Link>
+        </Button>{" "}
       </div>
     </div>
   );
 }
 
 function HandleDataSection() {
-  const { items, loading, pagination, setPagination } = useCompanyData();
-  const data = items as Company[];
+  const { items, loading, pagination, setPagination } = useCompanyProductData();
+  const data = items as Product[];
 
   if (loading) {
-    return <TableSkeleton columns={3} rows={8} showHeader />;
+    return (
+      <div className="mt-8">
+        <TableSkeleton columns={3} rows={8} showHeader />;
+      </div>
+    );
   }
 
   if (!data) {
     return <>Invalid URL</>;
   }
-  if (data.length === 0) {
-    return <NoDataContainer />;
-  }
+
   return (
-    <>
-      <DataTable columns={CompanyOnlyColumn} data={data} />
+    <div className="mt-8">
+      <DataTable columns={ProductsOnlyColumns} data={data} />
       <div className="py-8">
         <PaginationSection
           pagination={pagination}
           setPagination={setPagination}
         />
       </div>
-    </>
+    </div>
   );
 }

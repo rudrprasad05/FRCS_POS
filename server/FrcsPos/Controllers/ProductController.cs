@@ -4,43 +4,32 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize]
     [Route("api/product")]
     [ApiController]
     public class ProductController : BaseController
     {
-        private readonly ICompanyRepository _companyRepository;
+        private readonly IProductRepository _productRepository;
 
         public ProductController(
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<ProductController> logger,
-            ICompanyRepository companyRepository
+            IProductRepository productRepository
         ) : base(configuration, tokenService, logger)
         {
-            _companyRepository = companyRepository;
+            _productRepository = productRepository;
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCompany([FromBody] NewCompanyRequest data)
+        public async Task<IActionResult> CreateProduct([FromBody] NewCompanyRequest data)
         {
-            var model = await _companyRepository.CreateCompanyAsync(data);
-
-            if (model == null)
-            {
-                return BadRequest("model not gotten");
-            }
-
-            return Ok(model);
-        }
-
-        [HttpPost("add-user")]
-        public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompany request)
-        {
-            var model = await _companyRepository.AddUserToCompanyAsync(request);
+            var model = await _productRepository.CreateProductAsync(data);
 
             if (model == null)
             {
@@ -51,22 +40,9 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
+        public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject)
         {
-            var model = await _companyRepository.GetAllCompanyAsync(queryObject);
-
-            if (model == null)
-            {
-                return BadRequest("model not gotten");
-            }
-
-            return Ok(model);
-        }
-
-        [HttpGet("get-one-by-admin-id")]
-        public async Task<IActionResult> GetCompanyByAdminUserId([FromQuery] string uuid)
-        {
-            var model = await _companyRepository.GetCompanyByAdminUserIdAsync(uuid);
+            var model = await _productRepository.GetAllProducts(queryObject);
 
             if (model == null)
             {
@@ -79,7 +55,7 @@ namespace FrcsPos.Controllers
         [HttpGet("get-full-by-uuid")]
         public async Task<IActionResult> GetFullCompanyByUUID([FromQuery] string uuid)
         {
-            var model = await _companyRepository.GetFullCompanyByUUIDAsync(uuid);
+            var model = await _productRepository.GetProductByUUID(uuid);
 
             if (model == null)
             {
@@ -92,7 +68,7 @@ namespace FrcsPos.Controllers
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] string uuid)
         {
-            var model = await _companyRepository.SoftDelete(uuid);
+            var model = await _productRepository.SoftDelete(uuid);
 
             if (model == null)
             {

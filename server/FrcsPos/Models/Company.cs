@@ -16,7 +16,6 @@ namespace FrcsPos.Models
         public ICollection<Warehouse> Warehouses { get; set; } = new List<Warehouse>();
         public ICollection<PosTerminal> PosTerminals { get; set; } = new List<PosTerminal>();
         public ICollection<Product> Products { get; set; } = new List<Product>();
-        public ICollection<TaxCategory> TaxCategories { get; set; } = new List<TaxCategory>();
 
     }
 }

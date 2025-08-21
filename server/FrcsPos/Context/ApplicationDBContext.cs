@@ -40,10 +40,10 @@ namespace FrcsPos.Context
 
             List<IdentityRole> roles = new()
             {
-                new() {Name = "superadmin", NormalizedName = "SUPERADMIN"},
-                new() {Name = "admin", NormalizedName = "ADMIN"},
-                new() {Name = "cashier", NormalizedName = "CASHIER"},
-                new() {Name = "user", NormalizedName = "USER"}
+                new() {Id="c0470664-ac71-45da-a97f-92d7d3bde4c2", Name = "superadmin", NormalizedName = "SUPERADMIN"},
+                new() {Id="f37bcdeb-02a5-4523-af63-063db424aaf3", Name = "admin", NormalizedName = "ADMIN"},
+                new() {Id="9dc4cb79-ae75-48fb-af1d-a318e53d4364", Name = "cashier", NormalizedName = "CASHIER"},
+                new() {Id="e3f1f724-cd8b-4370-a40f-a82d3ebdff01", Name = "user", NormalizedName = "USER"}
             };
             b.UseCollation("utf8mb4_general_ci");
             b.Entity<IdentityRole>().HasData(roles);
@@ -102,7 +102,6 @@ namespace FrcsPos.Context
             b.Entity<TaxCategory>(e =>
             {
                 e.Property(x => x.RatePercent).HasPrecision(5, 2); // e.g., 0, 15.00
-                e.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique();
             });
 
             b.Entity<Product>(e =>
