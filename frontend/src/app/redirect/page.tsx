@@ -14,6 +14,12 @@ export default function Redirect() {
     handleCompanyRedirect();
   }, []);
 
+  useEffect(() => {
+    console.log("prefecthed");
+    router.prefetch("/admin/dashboard");
+    router.prefetch("/companyname");
+  }, [router]);
+
   const handleCompanyRedirect = async () => {
     if (user == null) {
       console.log("1");

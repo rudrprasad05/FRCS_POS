@@ -23,8 +23,8 @@ import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -34,6 +34,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
+  const router = useRouter();
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInForm),
@@ -53,6 +54,11 @@ export default function LoginPage() {
 
     setIsLoading(false);
   }
+
+  useEffect(() => {
+    console.log("redirect prefecthed");
+    router.prefetch("/redirect");
+  }, [router]);
 
   return (
     <Suspense fallback={<div>Loading...</div>}>

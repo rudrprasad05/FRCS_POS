@@ -20,6 +20,8 @@ import { createGenericListDataContext } from "@/context/GenericDataTableContext"
 import { Product } from "@/types/models";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export const {
   Provider: CompanyProductsSectionProvider,
@@ -38,6 +40,11 @@ export default function CompanySection() {
 }
 
 function Header() {
+  const router = useRouter();
+  useEffect(() => {
+    console.log("prefecthed");
+    router.prefetch("products/new");
+  }, [router]);
   return (
     <div>
       <div className="space-b-2">
