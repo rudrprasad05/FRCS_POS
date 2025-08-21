@@ -42,6 +42,7 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserContext, UserContextService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ITaxCategoryRepository, TaxCategoryRepository>();
 builder.Services.AddScoped<IMediaRepository, MediaRepository>();
 
 

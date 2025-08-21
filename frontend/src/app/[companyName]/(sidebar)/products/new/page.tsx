@@ -32,6 +32,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast, useSonner } from "sonner";
 import { ApiResponse, TaxCategory } from "@/types/models";
+import { GetAllTaxCategories } from "@/actions/Tax";
 
 export const productSchema = z.object({
   name: z
@@ -58,24 +59,6 @@ export const productSchema = z.object({
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
-// Mock function - replace with your actual API call
-async function CHANGEMEAWAIT(): Promise<ApiResponse<Partial<TaxCategory>[]>> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return {
-    success: true,
-    statusCode: 200,
-    data: [
-      { id: 1, name: "Standard Rate (20%)", ratePercent: 20 },
-      { id: 2, name: "Reduced Rate (5%)", ratePercent: 5 },
-      { id: 3, name: "Zero Rate (0%)", ratePercent: 0 },
-      { id: 4, name: "Exempt", ratePercent: 0 },
-    ],
-    timestamp: new Date().toISOString(),
-  };
-}
-
 export default function NewProductPage() {
   const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
@@ -97,7 +80,8 @@ export default function NewProductPage() {
   useEffect(() => {
     const loadTaxCategories = async () => {
       try {
-        const response = await CHANGEMEAWAIT();
+        const response = await GetAllTaxCategories();
+        console.log(response);
         if (response.success && response.data) {
           setTaxCategories(response.data as TaxCategory[]);
         } else {
@@ -113,6 +97,10 @@ export default function NewProductPage() {
     loadTaxCategories();
   }, [toast]);
 
+  const formValues = form.watch();
+  useEffect(() => {
+    console.log("Form values changed:", formValues);
+  }, [formValues]);
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
     try {
