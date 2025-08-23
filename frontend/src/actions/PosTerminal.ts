@@ -1,7 +1,13 @@
 "use server";
 
 import { axiosGlobal } from "@/lib/axios";
-import { ApiResponse, PosTerminal, QueryObject } from "@/types/models";
+import {
+  ApiResponse,
+  PosSession,
+  PosTerminal,
+  QueryObject,
+  Sale,
+} from "@/types/models";
 import { GetToken } from "./User";
 import { buildMediaQueryParams } from "@/lib/params";
 
@@ -12,6 +18,50 @@ export async function GetPosTerminalById(
 
   const res = await axiosGlobal.get<ApiResponse<PosTerminal>>(
     `pos-terminal/get-one?uuid=${id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return res.data;
+}
+
+export async function GetPosTerminalSessions(
+  query?: QueryObject
+): Promise<ApiResponse<PosSession[]>> {
+  let a: ApiResponse<PosSession[]> = {
+    data: [],
+    success: true,
+    errors: undefined,
+    statusCode: 200,
+    timestamp: Date.now().toLocaleString(),
+  };
+  return a;
+  const token = await GetToken();
+
+  const res = await axiosGlobal.get<ApiResponse<PosSession[]>>(
+    `pos-terminal/get-one?uuid=`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return res.data;
+}
+
+export async function GetPosTerminalSales(
+  query?: QueryObject
+): Promise<ApiResponse<Sale[]>> {
+  let a: ApiResponse<Sale[]> = {
+    data: [],
+    success: true,
+    errors: undefined,
+    statusCode: 200,
+    timestamp: Date.now().toLocaleString(),
+  };
+  return a;
+  const token = await GetToken();
+
+  const res = await axiosGlobal.get<ApiResponse<Sale[]>>(
+    `pos-terminal/get-one?uuid=`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }

@@ -13,7 +13,7 @@ namespace FrcsPos.Response.DTO
 
         [Required] public string ConnectionUUID { get; set; } = default!;
         public DateTime ConnectionTimeOut { get; set; } = default!;
-
+        public List<ProductDTO> Products { get; set; } = [];
         public UserDTO PosUser { get; set; } = default!;
         public string PosUserId { get; set; } = null!;
     }

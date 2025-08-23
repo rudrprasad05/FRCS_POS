@@ -16,6 +16,7 @@ import {
   File,
   Flag,
   LayoutDashboard,
+  User,
   UsersIcon,
   Warehouse,
 } from "lucide-react";
@@ -54,6 +55,11 @@ export function CompanySidebarNavigation() {
       title: "Sales",
       href: `${base}/sales`,
       icon: Coins,
+    },
+    {
+      title: "Users",
+      href: `${base}/users`,
+      icon: User,
     },
     {
       title: "Reports",

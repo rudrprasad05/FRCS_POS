@@ -75,7 +75,7 @@ export default function PosTerminal() {
                   <ScrollArea className="h-full">
                     <div className="space-y-3 pr-4">
                       {products.length === 0 && (
-                        <div className="w-full h-48 border border-dashed rounded-lg grid place-items-center">
+                        <div className="w-full h-80 border border-dashed rounded-lg grid place-items-center">
                           <div className="text-center text-sm">
                             No Items in cart
                           </div>

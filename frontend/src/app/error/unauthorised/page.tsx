@@ -15,16 +15,16 @@ import { Suspense } from "react";
 export default function UnauthorizedPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ">
+              <AlertTriangle className="h-8 w-8 " />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <CardTitle className="text-2xl font-bold ">
               401 - Unauthorized
             </CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardDescription className="">
               You don&apos;t have permission to access this resource. Please log
               in or contact an administrator.
             </CardDescription>
@@ -32,7 +32,7 @@ export default function UnauthorizedPage() {
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-3">
               <Button asChild className="w-full">
-                <Link href="/auth/login">
+                <Link href="/login">
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In
                 </Link>
@@ -54,9 +54,9 @@ export default function UnauthorizedPage() {
                 </Link>
               </Button>
             </div>
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm">
               Need help?{" "}
-              <Link href="/contact" className="text-blue-600 hover:underline">
+              <Link href="/contact" className=" hover:underline">
                 Contact Support
               </Link>
             </div>
