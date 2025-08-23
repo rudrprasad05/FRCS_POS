@@ -20,7 +20,8 @@ interface ICheckoutData {
 }
 
 export default function PosTerminal() {
-  const { products, addProduct, checkout, removeProduct } = usePosSession();
+  const { products, data, addProduct, checkout, removeProduct } =
+    usePosSession();
   const [checkoutData, setCheckoutData] = useState<ICheckoutData>({
     taxTotal: 0,
     subtotal: 0,
@@ -54,7 +55,7 @@ export default function PosTerminal() {
 
             <ScrollArea className="flex-1 min-h-0">
               <div className="grid grid-cols-3 gap-4 pl-6 pb-4">
-                {MOCK_PRODUCTS.map((product) => (
+                {data.products.map((product) => (
                   <RecentProductCard key={product.uuid} item={product} />
                 ))}
               </div>

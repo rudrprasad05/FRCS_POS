@@ -7,17 +7,24 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace FrcsPos.Socket
 {
-    public class BarcodeHub : Hub
+    public class PosHub : Hub
     {
-        public async Task SendBardcodeToTerminal(string userId, string sku)
+        // Phone scanner sends barcode → forward to terminal
+        public async Task SendScan(string terminalId, string sku)
         {
-            await Clients.User(userId).SendAsync("ReceiveBarcode", sku);
+            await Clients.Group(terminalId).SendAsync("ReceiveScan", sku);
         }
 
-        // Broadcast to all connected users
-        public async Task BroadcastNotification(NotificationDTO notification)
+        // POS terminal joins its group
+        public async Task JoinTerminal(string terminalId)
         {
-            await Clients.All.SendAsync("ReceiveNotification", notification);
+            await Groups.AddToGroupAsync(Context.ConnectionId, terminalId);
+        }
+
+        // Scanner joins the same group
+        public async Task JoinScanner(string terminalId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, terminalId);
         }
     }
 }

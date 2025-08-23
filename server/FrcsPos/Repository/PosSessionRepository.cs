@@ -76,6 +76,7 @@ namespace FrcsPos.Repository
                 .Include(s => s.PosTerminal)
                     .ThenInclude(t => t.Company)
                         .ThenInclude(c => c.Products)
+                            .ThenInclude(p => p.Media)
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
 
             if (posSession == null)

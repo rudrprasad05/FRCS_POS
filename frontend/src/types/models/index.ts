@@ -21,8 +21,21 @@ export interface Product extends BaseModel {
   taxCategory?: TaxCategory;
   isPerishable: boolean;
 
+  media?: Media | null;
+  mediaId?: number | null;
+
   batches?: ProductBatch[];
   saleItems?: SaleItem[];
+}
+
+export interface Media extends BaseModel {
+  url: string;
+  objectKey: string;
+  altText: string;
+  fileName: string;
+  contentType: string;
+  sizeInBytes: number;
+  showInGallery: boolean;
 }
 
 export interface SaleItem extends BaseModel {
@@ -186,6 +199,10 @@ export interface PosSession extends BaseModel {
   connectionTimeOut: Date;
   sales: Sale[];
 }
+
+export type PosSessionWithProducts = PosSession & {
+  products: Product[];
+};
 
 export interface RefundRequest extends BaseModel {
   companyId: number;

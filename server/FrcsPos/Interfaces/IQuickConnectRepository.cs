@@ -10,6 +10,8 @@ namespace FrcsPos.Interfaces
     public interface IQuickConnectRepository
     {
         public Task<ApiResponse<QuickConnectDTO>> Generate(string sessionId);
-        
+        public Task<ApiResponse<QuickConnectDTO>> ValidateUUID(string uuid);
+
+
     }
 }

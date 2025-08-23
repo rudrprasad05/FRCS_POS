@@ -52,5 +52,18 @@ namespace FrcsPos.Repository
 
             return ApiResponse<QuickConnectDTO>.Ok(dto);
         }
+
+        public async Task<ApiResponse<QuickConnectDTO>> ValidateUUID(string uuid)
+        {
+
+            var exists = await _context.QuickConnect.FirstOrDefaultAsync(q => q.UUID == uuid);
+            if (exists == null)
+            {
+                return ApiResponse<QuickConnectDTO>.Fail();
+            }
+
+            var dto = exists.FromModelToDto();
+            return ApiResponse<QuickConnectDTO>.Ok(dto);
+        }
     }
 }

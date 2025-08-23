@@ -66,6 +66,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(Style.Dark);
 }
 
+app.UseRouting();
+
 app
 .UseCors("allowSpecificOrigin")
 .UseHttpsRedirection()
@@ -82,7 +84,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
 app.MapHub<NotificationHub>("/socket/notificationHub");
-app.MapHub<BarcodeHub>("/socket/barcodeHub");
+app.MapHub<PosHub>("/socket/posHub");
 
 // TODO was adding barcodes. 
 

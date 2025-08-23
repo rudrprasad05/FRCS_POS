@@ -4,6 +4,7 @@ import { axiosGlobal } from "@/lib/axios";
 import {
   ApiResponse,
   PosSession,
+  PosSessionWithProducts,
   PosTerminal,
   QuickConnect,
 } from "@/types/models";
@@ -31,10 +32,10 @@ export async function CreateNewPosSession(
 
 export async function GetPosSession(
   uuid: string
-): Promise<ApiResponse<PosSession>> {
+): Promise<ApiResponse<PosSessionWithProducts>> {
   const token = await GetToken();
 
-  const res = await axiosGlobal.get<ApiResponse<PosSession>>(
+  const res = await axiosGlobal.get<ApiResponse<PosSessionWithProducts>>(
     `pos-session/get-session-by-uuid?uuid=${uuid}`,
     {
       headers: { Authorization: `Bearer ${token}` },
@@ -59,5 +60,14 @@ export async function GenerateQr(
   return RequestWrapper<QuickConnect>(
     "GET",
     `quickconnect/generate?uuid=${uuid}`
+  );
+}
+
+export async function ValidateQr(
+  uuid: string
+): Promise<ApiResponse<QuickConnect>> {
+  return RequestWrapper<QuickConnect>(
+    "GET",
+    `quickconnect/validate?uuid=${uuid}`
   );
 }

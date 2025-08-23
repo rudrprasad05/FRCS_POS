@@ -12,8 +12,14 @@ import {
   Trash2,
   Copy,
   CheckCircle,
+  OctagonX,
+  Loader2,
 } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+import { useParams } from "next/navigation";
+import { ValidateQr } from "@/actions/PosSession";
+import * as signalR from "@microsoft/signalr";
+import { WebSocketUrl } from "@/lib/utils";
 
 interface ScannedItem {
   id: string;
@@ -23,6 +29,9 @@ interface ScannedItem {
 }
 
 export default function BarcodeScanner() {
+  const [isUUIDValidated, setIsUUIDValidated] = useState(false);
+  const [initalLoad, setInitialLoad] = useState(true);
+
   const [isScanning, setIsScanning] = useState(false);
   const [scannedItems, setScannedItems] = useState<ScannedItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -30,57 +39,100 @@ export default function BarcodeScanner() {
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const params = useParams();
+  const id = params.id as string;
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
   const beep = new Audio("/scanner-beep.mp3");
+  const [connection, setConnection] = useState<any>(null);
+
+  useEffect(() => {
+    validateUUID();
+  }, [id]);
+
+  function createConnection(terminalId: string) {
+    return new signalR.HubConnectionBuilder()
+      .withUrl(`${WebSocketUrl}/socket/posHub?terminalId=${terminalId}`)
+      .withAutomaticReconnect()
+      .build();
+  }
+
+  const validateUUID = async () => {
+    setInitialLoad(true);
+    try {
+      const res = await ValidateQr(id);
+      if (res.success) {
+        setIsUUIDValidated(true);
+
+        // setup signalR once validated
+        const conn = createConnection(id);
+        conn
+          .start()
+          .then(() => {
+            console.log("✅ Connected to SignalR hub for terminal:", id);
+          })
+          .catch((err) => console.error("SignalR connection failed", err));
+
+        // listen for server messages (e.g. terminal confirming scan)
+        conn.on("ReceiveMessage", (msg) => {
+          console.log("📩 From server:", msg);
+        });
+
+        setConnection(conn);
+      } else {
+        setIsUUIDValidated(false);
+      }
+    } catch {
+      setIsUUIDValidated(false);
+    } finally {
+      setInitialLoad(false);
+    }
+  };
 
   const startScanning = useCallback(async () => {
     try {
-      setError(null);
-
       if (!codeReader.current) {
         codeReader.current = new BrowserMultiFormatReader();
       }
 
       const videoInputDevices =
         await codeReader.current.listVideoInputDevices();
+      if (videoInputDevices.length === 0) throw new Error("No camera found");
 
-      if (videoInputDevices.length === 0) {
-        throw new Error("No camera devices found");
-      }
-
-      // Use the first available camera (usually back camera on mobile)
       const selectedDeviceId = videoInputDevices[0].deviceId;
-
       await codeReader.current.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current!,
         (result, error) => {
           if (result) {
-            const newItem: ScannedItem = {
-              id: Date.now().toString(),
-              data: result.getText(),
-              format: result.getBarcodeFormat().toString(),
-              timestamp: new Date(),
-            };
-
-            // Avoid duplicate scans
-            if (lastScanned !== newItem.data) {
+            const data = result.getText();
+            if (lastScanned !== data) {
+              const newItem = {
+                id: Date.now().toString(),
+                data,
+                format: result.getBarcodeFormat().toString(),
+                timestamp: new Date(),
+              };
               setScannedItems((prev) => [newItem, ...prev]);
-              setLastScanned(newItem.data);
+              setLastScanned(data);
+              beep.play().catch(() => {});
 
-              beep
-                .play()
-                .catch((e) => console.warn("Failed to play scan sound", e));
+              // 🔥 send scan to server via SignalR
+              connection
+                ?.invoke("SendScan", {
+                  terminalId: id,
+                  barcode: data,
+                  format: result.getBarcodeFormat().toString(),
+                })
+                .catch((err: any) => console.error("SendScan failed", err));
 
-              // Clear the last scanned after 2 seconds to allow rescanning
               setTimeout(() => setLastScanned(null), 2000);
             }
           }
-
           if (error && !(error instanceof NotFoundException)) {
-            console.error("Scanning error:", error);
+            console.error("Scan error", error);
           }
         }
       );
@@ -88,9 +140,8 @@ export default function BarcodeScanner() {
       setIsScanning(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start camera");
-      console.error("Camera error:", err);
     }
-  }, [lastScanned]);
+  }, [lastScanned, connection, id]);
 
   const stopScanning = useCallback(() => {
     if (codeReader.current) {
@@ -141,9 +192,23 @@ export default function BarcodeScanner() {
     return () => {
       if (codeReader.current) {
         codeReader.current.reset();
+        connection?.stop();
       }
     };
-  }, []);
+  }, [connection]);
+
+  if (initalLoad) {
+    return <Loader2 className="animate-spin" />;
+  }
+
+  if (!isUUIDValidated) {
+    return (
+      <div className="flex items-center gap-4">
+        <OctagonX />
+        Quick Connect Device could not be verified
+      </div>
+    );
+  }
 
   return (
     <div
