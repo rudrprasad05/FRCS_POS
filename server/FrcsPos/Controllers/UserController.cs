@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/user")]
     [ApiController]
     public class UserController : BaseController
@@ -85,9 +85,7 @@ namespace FrcsPos.Controllers
                 ));
             }
 
-            // Determine role type from email domain
-            string roleType = model.Role ??
-                              (model.Email.Contains("@procyonfiji.com") ? "Admin" : "User");
+            string roleType = model.Role ?? "USER";
 
             try
             {
@@ -154,9 +152,20 @@ namespace FrcsPos.Controllers
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(
                     title: "New user added",
                     message: "user " + model.Username + " was created",
+                    type: NotificationType.SUCCESS,
                     isSuperAdmin: true,
-                    type: NotificationType.SUCCESS
+                    actionUrl: "/admin/users/" + user.Id
                 ));
+
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                    title: "Welcome to the Tap N Go",
+                    message: "refer to our guide on how to setup your account",
+                    type: NotificationType.SUCCESS,
+                    isSuperAdmin: false,
+                    actionUrl: "/admin/users/" + user.Id,
+                    userId: user.Id
+                ));
+
 
                 return Ok(ApiResponse<UserDTO>.Ok(
                     data: dto,

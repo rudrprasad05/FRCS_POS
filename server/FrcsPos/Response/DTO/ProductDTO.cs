@@ -14,5 +14,6 @@ namespace FrcsPos.Response.DTO
         public decimal Price { get; set; }
         public int TaxCategoryId { get; set; }
         public bool IsPerishable { get; set; } = false;
+        public int MediaId { get; set; } = default!;
     }
 }

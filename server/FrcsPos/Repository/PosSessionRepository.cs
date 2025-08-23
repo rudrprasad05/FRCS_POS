@@ -75,6 +75,7 @@ namespace FrcsPos.Repository
             var posSession = await _context.PosSessions
                 .Include(s => s.PosTerminal)
                     .ThenInclude(t => t.Company)
+                        .ThenInclude(c => c.Products)
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
 
             if (posSession == null)
@@ -83,6 +84,7 @@ namespace FrcsPos.Repository
             }
 
             var result = posSession.FromModelToDTO();
+            result.Products = posSession.PosTerminal.Company.Products.FromModelToDto();
 
             return new ApiResponse<PosSessionDTO>
             {

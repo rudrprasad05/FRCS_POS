@@ -14,6 +14,14 @@ export interface SuperAdminDashboardDTO {
   notifications: Notification[];
 }
 
+export interface AdminDashboardDTO {
+  totalMedia: number;
+  totalUsers: number;
+  totalProducts: number;
+  totalSales: number;
+  notifications: Notification[];
+}
+
 export interface ICreateNewPosSession {
   PosTerminalUUID: string;
 }

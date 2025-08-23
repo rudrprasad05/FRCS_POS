@@ -12,6 +12,6 @@ namespace FrcsPos.Interfaces
     public interface INotificationRepository
     {
         public Task<ApiResponse<List<NotificationDTO>>> GetSuperAdminNotifications(RequestQueryObject queryObject);
-
+        public Task<ApiResponse<List<NotificationDTO>>> GetNotificationByUserId(RequestQueryObject queryObject, string userId);
     }
 }

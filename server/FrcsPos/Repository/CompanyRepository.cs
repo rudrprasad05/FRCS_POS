@@ -54,7 +54,19 @@ namespace FrcsPos.Repository
                 title: "New Company",
                 message: $"The company '{result.Name}' was created",
                 type: NotificationType.SUCCESS,
-                actionUrl: $"/admin/cake/{result.UUID}"
+                actionUrl: $"/admin/companies/{result.UUID}",
+                isSuperAdmin: true,
+                companyId: result.Id
+            ));
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                title: "New company",
+                message: $"You've been assigned the company " + result.Name,
+                type: NotificationType.SUCCESS,
+                actionUrl: "/",
+                isSuperAdmin: false,
+                companyId: result.Id,
+                userId: request.AdminUserId
             ));
 
 

@@ -31,6 +31,50 @@ namespace FrcsPos.Repository
 
 
         }
+
+        public async Task<ApiResponse<AdminDashboardDTO>> GetAdminDashboard(string companyName, string userId)
+        {
+            var company = await _context.Companies
+                .Include(c => c.AdminUser)
+                .Include(c => c.Users)
+                .Include(c => c.Products)
+                .Include(c => c.Warehouses)
+                .Include(c => c.PosTerminals)
+                    .ThenInclude(t => t.Sales)
+                .FirstOrDefaultAsync(c => c.Name == companyName);
+
+            if (company == null)
+            {
+                return ApiResponse<AdminDashboardDTO>.NotFound();
+            }
+
+            var userCount = company.Users.Count;
+            var productCount = company.Products.Count;
+            var warehouseCount = company.Warehouses.Count;
+            var posTerminalCount = company.PosTerminals.Count;
+            var saleCount = company.PosTerminals.Sum(t => t.Sales.Count);
+
+            var notifications = await _notificationRepository.GetNotificationByUserId(
+                new RequestQueryObject { PageSize = 5, SortBy = ESortBy.DSC },
+                userId: userId
+            );
+
+            var dto = new AdminDashboardDTO
+            {
+                TotalUsers = userCount,
+                TotalProducts = productCount,
+                TotalSales = saleCount,
+                Notifications = notifications.Data ?? [],
+            };
+
+            return new ApiResponse<AdminDashboardDTO>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = dto,
+            };
+        }
+
         public async Task<ApiResponse<SuperAdminDashboardDTO>> GetSuperAdminDashboard()
         {
             var userCount = await _context.Users.CountAsync();
