@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize(Roles = "superadmin")]
+    [Authorize]
     [Route("api/superadmin")]
     [ApiController]
     public class SuperAdminDashboardController : BaseController
@@ -31,6 +32,19 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetSuperAdminDashboard()
         {
             var model = await _superAdminDashboardRepository.GetSuperAdminDashboard();
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-admin-dashboard")]
+        public async Task<IActionResult> GetAdminDashboard([FromQuery][Required] string companyName, [FromQuery][Required] string userId)
+        {
+            var model = await _superAdminDashboardRepository.GetAdminDashboard(companyName, userId);
 
             if (model == null)
             {

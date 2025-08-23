@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { GetAllTaxCategories } from "@/actions/Tax";
+import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
+import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Form,
   FormControl,
@@ -29,12 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast, useSonner } from "sonner";
-import { ApiResponse, TaxCategory } from "@/types/models";
-import { GetAllTaxCategories } from "@/actions/Tax";
-import { Asterisk, PackagePlus } from "lucide-react";
-import { H3, LargeText, MutedText, P } from "@/components/font/HeaderFonts";
+import { TaxCategory } from "@/types/models";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Asterisk, ImageIcon, PackagePlus, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 export const productSchema = z.object({
   name: z
@@ -46,8 +41,8 @@ export const productSchema = z.object({
     .min(1, "SKU is required")
     .max(50, "SKU must be less than 50 characters"),
   barcode: z.string().optional(),
-  price: z.number().min(0, "Price must be greater than or equal to 0"),
-  taxCategoryId: z.number().optional(),
+  price: z.string().min(0, "Price must be greater than or equal to 0"),
+  taxCategoryId: z.string().optional(),
   isPerishable: z.boolean(),
   image: z
     .any()
@@ -65,6 +60,7 @@ export default function NewProductPage() {
   const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [file, setFile] = useState<File | undefined>(undefined);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -72,8 +68,8 @@ export default function NewProductPage() {
       name: "",
       sku: "",
       barcode: "",
-      price: 0,
-      taxCategoryId: 0,
+      price: "0",
+      taxCategoryId: "0",
       isPerishable: false,
     },
   });
@@ -83,7 +79,7 @@ export default function NewProductPage() {
     const loadTaxCategories = async () => {
       try {
         const response = await GetAllTaxCategories();
-        console.log(response);
+        console.log("tax", response);
         if (response.success && response.data) {
           setTaxCategories(response.data as TaxCategory[]);
         } else {
@@ -103,24 +99,17 @@ export default function NewProductPage() {
   useEffect(() => {
     console.log("Form values changed:", formValues);
   }, [formValues]);
+
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
+    data.image = file;
+
+    console.log("insubmit", data);
+
     try {
-      // Handle image file if selected
-      const imageFile = data.image?.[0];
-
-      console.log("Product data:", {
-        ...data,
-        image: imageFile ? `${imageFile.name} (${imageFile.size} bytes)` : null,
-      });
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       toast("Failed to upload");
-
-      // Reset form after successful submission
-      form.reset();
     } catch (error) {
       toast("Failed to upload");
     } finally {
@@ -255,8 +244,8 @@ export default function NewProductPage() {
                         <SelectContent>
                           {taxCategories.map((category) => (
                             <SelectItem
-                              key={category.id}
-                              value={category.id.toString()}
+                              key={category.id as number}
+                              value={String(category.id)}
                             >
                               {category.name}
                             </SelectItem>
@@ -275,26 +264,7 @@ export default function NewProductPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field: { onChange } }) => (
-                  <FormItem>
-                    <FormLabel>Product Image</FormLabel>
-                    <FormControl>
-                      {/* <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => onChange(e.target.files)}
-                      /> */}
-                    </FormControl>
-                    <FormDescription>
-                      Upload an image for this product (optional)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <AddMediaDialoge file={file} setFile={setFile} />
 
               <FormField
                 control={form.control}

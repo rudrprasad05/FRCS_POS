@@ -8,6 +8,6 @@ namespace FrcsPos.Interfaces
 {
     public interface INotificationService
     {
-        public Task CreateBackgroundNotification(string title, string message, NotificationType type = NotificationType.INFO, bool isSuperAdmin = false, string? actionUrl = null);
+        public Task CreateBackgroundNotification(string title, string message, NotificationType type = NotificationType.INFO, bool isSuperAdmin = false, string? actionUrl = null, string? userId = null, int? companyId = null);
     }
 }

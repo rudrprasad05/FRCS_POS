@@ -22,42 +22,45 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navigationItems = [
-  {
-    title: "Dashboard",
-    href: "dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Products",
-    href: "products",
-    icon: Box,
-  },
-  {
-    title: "Warehouse",
-    href: "warehouse",
-    icon: Warehouse,
-  },
-  {
-    title: "Point of Sale",
-    href: "pos",
-    icon: Computer,
-  },
-  {
-    title: "Sales",
-    href: "sales",
-    icon: Coins,
-  },
-  {
-    title: "Reports",
-    href: "reports",
-    icon: File,
-  },
-];
-
 export function CompanySidebarNavigation() {
   const pathname = usePathname();
 
+  // split path: /newworld/products/new → ["", "newworld", "products", "new"]
+  const segments = pathname.split("/").filter(Boolean);
+  const base = `/${segments[0]}`; // this will be "newworld" or any dynamic org/shop
+
+  const navigationItems = [
+    {
+      title: "Dashboard",
+      href: `${base}/dashboard`,
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Products",
+      href: `${base}/products`,
+      icon: Box,
+    },
+    {
+      title: "Warehouse",
+      href: `${base}/warehouse`,
+      icon: Warehouse,
+    },
+    {
+      title: "Point of Sale",
+      href: `${base}/pos`,
+      icon: Computer,
+    },
+    {
+      title: "Sales",
+      href: `${base}/sales`,
+      icon: Coins,
+    },
+    {
+      title: "Reports",
+      href: `${base}/reports`,
+      icon: File,
+    },
+  ];
   return (
     <SidebarGroup className="h-full">
       <SidebarGroupContent className="h-full">

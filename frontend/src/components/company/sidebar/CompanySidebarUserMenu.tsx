@@ -15,8 +15,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronUp, Settings, User, LogOut } from "lucide-react";
+import { useAuth } from "@/context/UserContext";
 
 export function CompanySidebarUserMenu() {
+  const { user } = useAuth();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -34,8 +36,8 @@ export function CompanySidebarUserMenu() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col text-left">
-                  <span className="text-sm font-medium ">Admin User</span>
-                  <span className="text-xs ">admin@switchfiji.com</span>
+                  <span className="text-sm font-medium ">{user?.username}</span>
+                  <span className="text-xs ">{user?.email}</span>
                 </div>
               </div>
               <ChevronUp className="h-4 w-4 " />

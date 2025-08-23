@@ -43,7 +43,9 @@ namespace FrcsPos.Service
             string title, string message,
             NotificationType type = NotificationType.INFO,
             bool isSuperAdmin = false,
-            string? actionUrl = null
+            string? actionUrl = null,
+            string? userId = null,
+            int? companyId = null
         )
         {
             _taskQueue.QueueBackgroundWorkItem(async token =>

@@ -27,7 +27,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateProduct([FromBody] NewCompanyRequest data)
+        public async Task<IActionResult> CreateProduct([FromForm] NewProductRequest data)
         {
             var model = await _productRepository.CreateProductAsync(data);
 

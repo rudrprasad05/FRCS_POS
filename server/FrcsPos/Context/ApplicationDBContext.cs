@@ -32,8 +32,6 @@ namespace FrcsPos.Context
         public DbSet<Media> Medias { get; set; }
         public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
 
-
-
         protected override void OnModelCreating(ModelBuilder b)
         {
             base.OnModelCreating(b);

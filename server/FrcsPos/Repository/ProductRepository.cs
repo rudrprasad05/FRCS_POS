@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
+using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -16,22 +18,74 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IMediaRepository _mediaRepository;
+
 
         public ProductRepository(
            ApplicationDbContext applicationDbContext,
-           INotificationService notificationService
+           INotificationService notificationService,
+           IMediaRepository mediaRepository
 
-       )
+        )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
-
+            _mediaRepository = mediaRepository;
 
         }
 
-        public Task<ApiResponse<ProductDTO>> CreateProductAsync(NewCompanyRequest request)
+        public async Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request)
         {
-            throw new NotImplementedException();
+            var file = request.File;
+            var mediaToBeCreated = new Media
+            {
+                AltText = file.FileName,
+                FileName = file.FileName,
+                ShowInGallery = true,
+            };
+
+            if (file != null)
+            {
+                mediaToBeCreated.SizeInBytes = file.Length;
+                mediaToBeCreated.ContentType = file.ContentType;
+            }
+
+            var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == request.CompanyName);
+
+            if (company == null || newMedia == null)
+            {
+                return ApiResponse<ProductDTO>.Fail();
+            }
+
+            var modelToBeCreated = new Product
+            {
+                Name = request.ProductName,
+                CompanyId = company.Id,
+                Sku = request.SKU,
+
+                Barcode = request.Barcode,
+                Price = request.Price,
+                TaxCategoryId = request.TaxCategoryId,
+                IsPerishable = request.IsPerishable,
+                MediaId = newMedia.Data?.Id
+            };
+
+            var model = await _context.Products.AddAsync(modelToBeCreated);
+            await _context.SaveChangesAsync();
+
+            var result = model.Entity.FromModelToDto();
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                title: "New Product",
+                message: $"The product '{result.Name}' was created",
+                type: NotificationType.SUCCESS,
+                actionUrl: $"/{company.Name}/products/{result.UUID}",
+                isSuperAdmin: false,
+                companyId: company.Id
+            ));
+
+
+            return ApiResponse<ProductDTO>.Ok(data: result);
         }
 
         public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject)

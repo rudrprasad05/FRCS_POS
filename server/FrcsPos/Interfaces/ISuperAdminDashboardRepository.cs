@@ -10,6 +10,6 @@ namespace FrcsPos.Interfaces
     public interface ISuperAdminDashboardRepository
     {
         public Task<ApiResponse<SuperAdminDashboardDTO>> GetSuperAdminDashboard();
-        
+        public Task<ApiResponse<AdminDashboardDTO>> GetAdminDashboard(string companyName, string userId);
     }
 }

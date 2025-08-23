@@ -1,10 +1,12 @@
 "use client";
 
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/UserContext";
 import { Cable, HandCoins, Wrench } from "lucide-react";
 import { useParams } from "next/navigation";
 
 export function CompanySidebarLogo() {
+  const { user } = useAuth();
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
   return (
@@ -16,7 +18,7 @@ export function CompanySidebarLogo() {
         <span className="text-sm font-semibold ">
           {companyName.toUpperCase()}
         </span>
-        <Label className="text-xs ">SuperAdmin</Label>
+        <Label className="text-xs ">{user?.role}</Label>
       </div>
     </div>
   );
