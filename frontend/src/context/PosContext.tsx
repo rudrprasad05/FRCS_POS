@@ -36,6 +36,8 @@ interface PosSessionContextType {
   isTerminalConnectedToServer: boolean;
   setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
   setIsTerminalConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
+  isScannerConnectedToServer: boolean;
+  setIsScannerConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const PosSessionContext = createContext<PosSessionContextType>({
@@ -53,6 +55,8 @@ const PosSessionContext = createContext<PosSessionContextType>({
   save: () => {},
   isTerminalConnectedToServer: false,
   setIsTerminalConnectedToServer: () => {},
+  isScannerConnectedToServer: false,
+  setIsScannerConnectedToServer: () => {},
   hasChanged: false,
   setHasChanged: () => {},
 });
@@ -68,7 +72,8 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isTerminalConnectedToServer, setIsTerminalConnectedToServer] =
     useState(false);
-
+  const [isScannerConnectedToServer, setIsScannerConnectedToServer] =
+    useState(false);
   // Track changes
   useEffect(() => {
     const currentHash = hash({ ...data, products });
@@ -188,6 +193,8 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         setHasChanged,
         setIsTerminalConnectedToServer,
         isTerminalConnectedToServer,
+        setIsScannerConnectedToServer,
+        isScannerConnectedToServer,
       }}
     >
       {children}

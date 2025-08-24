@@ -50,7 +50,7 @@ export default function Redirect() {
 
   return (
     <div className="w-screen h-screen grid grid-cols-1">
-      <div>
+      <div className="flex items-center justify-center gap-2 text-xl">
         Redirecting <Loader2 className="animate-spin" />
       </div>
     </div>

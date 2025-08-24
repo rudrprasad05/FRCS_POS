@@ -14,6 +14,7 @@ import { useParams } from "next/navigation";
 import { GenerateQr } from "@/actions/PosSession";
 import { usePosSession } from "@/context/PosContext";
 import { toast } from "sonner";
+import { MutedText } from "@/components/font/HeaderFonts";
 
 export default function PosQrCodeConnectDialoge() {
   const params = useParams();
@@ -21,6 +22,7 @@ export default function PosQrCodeConnectDialoge() {
   const [isQrGenerated, setIsQrGenerated] = useState(false);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [isGeneratingQr, setIsGeneratingQr] = useState(false);
+  const { isScannerConnectedToServer } = usePosSession();
 
   const { qr, setQr } = usePosSession();
 
@@ -65,7 +67,7 @@ export default function PosQrCodeConnectDialoge() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Instructions:</h3>
+            <MutedText className="">Instructions:</MutedText>
             <ol className="list-decimal list-inside space-y-2 text-sm ">
               <li>Download the barcode scanner app on your mobile phone</li>
               <li>Click &quot;Generate QR Code&quot; above</li>
@@ -84,6 +86,7 @@ export default function PosQrCodeConnectDialoge() {
               Cancel
             </Button>
             <Button
+              disabled={!isScannerConnectedToServer}
               className="flex-1 "
               onClick={() => {
                 alert("Barcode scanner connected successfully!");
@@ -113,14 +116,14 @@ function HandleQr({ isGenerated }: { isGenerated: boolean }) {
             className="w-64 h-64 mx-auto rounded-lg p-0.5"
           />
         </div>
-        <p className="text-sm underline text-black/60">{qr}</p>
+        <p className="text-sm underline ">{qr}</p>
       </div>
     );
   else
     return (
       <div className=" border-2 border-dashed  rounded-lg p-8 mb-4">
         <QrCode className="w-16 h-16 mx-auto mb-4" />
-        <p className="text-gray-600">QR Code will appear here</p>
+        <p className="">QR Code will appear here</p>
       </div>
     );
 }

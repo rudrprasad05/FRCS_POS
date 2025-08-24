@@ -32,7 +32,11 @@ namespace FrcsPos.Mappers
             result.UUID = session.UUID;
             result.CreatedOn = session.CreatedOn;
             result.UpdatedOn = session.UpdatedOn;
-            result.PosTerminal = session.PosTerminal.FromModelToJustModelDTO();
+
+            if (session.PosTerminal != null)
+            {
+                result.PosTerminal = session.PosTerminal.FromModelToJustModelDTO();
+            }
 
             return result;
         }

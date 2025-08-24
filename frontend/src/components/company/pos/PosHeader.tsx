@@ -18,6 +18,7 @@ import {
   Plug,
   RotateCcw,
   Settings,
+  Smartphone,
   Sun,
   Unplug,
   User,
@@ -27,7 +28,8 @@ import PosQrCodeConnectDialoge from "./PosQrCodeConnectDialoge";
 import { usePosSession } from "@/context/PosContext";
 
 export default function PosHeader() {
-  const { data, isTerminalConnectedToServer } = usePosSession();
+  const { data, isTerminalConnectedToServer, isScannerConnectedToServer } =
+    usePosSession();
 
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
 
@@ -77,6 +79,11 @@ export default function PosHeader() {
           <Plug className="w-4 h-4 text-green-500" />
         ) : (
           <Unplug className="w-4 h-4 text-rose-500" />
+        )}
+        {isScannerConnectedToServer ? (
+          <Smartphone className="w-4 h-4 text-green-500" />
+        ) : (
+          <Smartphone className="w-4 h-4 text-rose-500" />
         )}
         <PosQrCodeConnectDialoge />
         <Button variant="outline" size="sm" onClick={toggleFullscreen}>

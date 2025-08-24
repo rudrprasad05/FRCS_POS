@@ -11,7 +11,7 @@ namespace FrcsPos.Interfaces
     {
         public Task<ApiResponse<QuickConnectDTO>> Generate(string sessionId);
         public Task<ApiResponse<QuickConnectDTO>> ValidateUUID(string uuid);
-
+        public Task<ApiResponse<PosSessionDTO>> GetPosSession(string uuid);
 
     }
 }

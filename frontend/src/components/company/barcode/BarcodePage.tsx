@@ -20,6 +20,7 @@ import { useParams } from "next/navigation";
 import { ValidateQr } from "@/actions/PosSession";
 import * as signalR from "@microsoft/signalr";
 import { WebSocketUrl } from "@/lib/utils";
+import { usePosSession } from "@/context/PosContext";
 
 interface ScannedItem {
   id: string;
@@ -38,6 +39,7 @@ export default function BarcodeScanner() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { setInitialState, setIsScannerConnectedToServer } = usePosSession();
 
   const params = useParams();
   const id = params.id as string;
@@ -72,12 +74,17 @@ export default function BarcodeScanner() {
           .start()
           .then(() => {
             console.log("✅ Connected to SignalR hub for terminal:", id);
+            conn.invoke("JoinScanner", id);
           })
           .catch((err) => console.error("SignalR connection failed", err));
 
-        // listen for server messages (e.g. terminal confirming scan)
         conn.on("ReceiveMessage", (msg) => {
           console.log("📩 From server:", msg);
+        });
+
+        conn.on("ReceivedJoinScanner", (msg) => {
+          setIsScannerConnectedToServer(true);
+          console.log("📩 Scan received:", msg);
         });
 
         setConnection(conn);

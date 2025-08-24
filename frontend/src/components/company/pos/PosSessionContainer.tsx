@@ -11,8 +11,11 @@ import { WebSocketUrl } from "@/lib/utils";
 export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const [loading, setLoading] = useState(true);
   const [initialData, setIntialData] = useState<PosSessionWithProducts>();
-  const { setInitialState, setIsTerminalConnectedToServer } = usePosSession();
-  // 🔑 addScannedProduct = your context handler for new scans
+  const {
+    setInitialState,
+    setIsTerminalConnectedToServer,
+    setIsScannerConnectedToServer,
+  } = usePosSession();
 
   useEffect(() => {
     const getData = async () => {
@@ -40,8 +43,9 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     connection
       .start()
       .then(() => {
-        setIsTerminalConnectedToServer(true);
+        // setIsTerminalConnectedToServer(true);
         console.log("✅ Terminal connected to hub:", uuid);
+        connection.invoke("JoinTerminal", uuid);
       })
       .catch((err) => {
         setIsTerminalConnectedToServer(false);
@@ -52,9 +56,17 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     connection.on("ReceiveScan", (scan) => {
       console.log("📩 Scan received:", scan);
     });
+    connection.on("ReceivedJoinTerminal", (scan) => {
+      setIsTerminalConnectedToServer(true);
+      console.log("📩 Scan received:", scan);
+    });
+    connection.on("ScannerConnected", (scan) => {
+      setIsScannerConnectedToServer(true);
+      console.log("📩 Scan received:", scan);
+    });
 
     return () => {
-      //   setIsTerminalConnectedToServer(false);
+      setIsTerminalConnectedToServer(false);
       connection.stop();
     };
   }, [uuid]);
