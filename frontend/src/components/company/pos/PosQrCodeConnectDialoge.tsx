@@ -7,28 +7,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { QrCode } from "lucide-react";
+import { Loader2, QrCode } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { GenerateQr } from "@/actions/PosSession";
 import { usePosSession } from "@/context/PosContext";
+import { toast } from "sonner";
+import { MutedText } from "@/components/font/HeaderFonts";
 
 export default function PosQrCodeConnectDialoge() {
   const params = useParams();
   const sessionId = params?.sessionId as string;
   const [isQrGenerated, setIsQrGenerated] = useState(false);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [isGeneratingQr, setIsGeneratingQr] = useState(false);
+  const { isScannerConnectedToServer } = usePosSession();
 
   const { qr, setQr } = usePosSession();
 
   const generateQr = async () => {
-    const res = await GenerateQr(sessionId);
-    setIsQrGenerated(true);
-    const baseUrl = process.env.NEXT_PUBLIC_IP || "http://localhost:3000";
-    setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
-    console.log("hit");
-    console.log(res);
+    setIsGeneratingQr(true);
+    try {
+      const res = await GenerateQr(sessionId);
+      setIsQrGenerated(true);
+
+      const baseUrl = process.env.NEXT_PUBLIC_IP || "http://localhost:3000";
+      setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
+    } catch (error) {
+      toast.error("Error generating QR Code");
+    } finally {
+      setIsGeneratingQr(false);
+    }
   };
 
   return (
@@ -40,9 +50,7 @@ export default function PosQrCodeConnectDialoge() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-blue-700">
-            Connect Barcode Scanner
-          </DialogTitle>
+          <DialogTitle className="">Connect Barcode Scanner</DialogTitle>
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div className="text-center">
@@ -51,15 +59,16 @@ export default function PosQrCodeConnectDialoge() {
             <Button
               hidden={qr != undefined && qr?.length > 0}
               onClick={() => generateQr()}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className=""
             >
-              Generate QR Code
+              Generate QR Code{" "}
+              {isGeneratingQr && <Loader2 className="animate-spin" />}
             </Button>
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">Instructions:</h3>
-            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+            <MutedText className="">Instructions:</MutedText>
+            <ol className="list-decimal list-inside space-y-2 text-sm ">
               <li>Download the barcode scanner app on your mobile phone</li>
               <li>Click &quot;Generate QR Code&quot; above</li>
               <li>Scan the QR code with your mobile app</li>
@@ -77,7 +86,8 @@ export default function PosQrCodeConnectDialoge() {
               Cancel
             </Button>
             <Button
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={!isScannerConnectedToServer}
+              className="flex-1 "
               onClick={() => {
                 alert("Barcode scanner connected successfully!");
                 setIsBarcodeScannerOpen(false);
@@ -100,20 +110,20 @@ function HandleQr({ isGenerated }: { isGenerated: boolean }) {
   if (isGenerated && qr && qr?.length > 0)
     return (
       <div>
-        <div className="bg-gray-100 my-4 w-min h-min mx-auto border-2 border-dashed border-gray-300 rounded-lg">
+        <div className=" my-4 w-min h-min mx-auto border-2 border-dashed  rounded-lg">
           <QRCode
             value={qr as string}
-            className="w-64 h-64 mx-auto text-gray-400 rounded-lg p-0.5"
+            className="w-64 h-64 mx-auto rounded-lg p-0.5"
           />
         </div>
-        <p className="text-sm underline text-black/60">{qr}</p>
+        <p className="text-sm underline ">{qr}</p>
       </div>
     );
   else
     return (
-      <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4">
-        <QrCode className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-        <p className="text-gray-600">QR Code will appear here</p>
+      <div className=" border-2 border-dashed  rounded-lg p-8 mb-4">
+        <QrCode className="w-16 h-16 mx-auto mb-4" />
+        <p className="">QR Code will appear here</p>
       </div>
     );
 }

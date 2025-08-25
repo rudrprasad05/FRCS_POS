@@ -22,13 +22,31 @@ namespace FrcsPos.Controllers
         {
             _quickConnectRepository = quickConnectRepository;
         }
-        
+
         [HttpGet("generate")]
         public async Task<IActionResult> CreateCompany([FromQuery] string uuid)
         {
             var model = await _quickConnectRepository.Generate(uuid);
 
             if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("validate")]
+        public async Task<IActionResult> ValidateQCLink([FromQuery] string uuid)
+        {
+            var model = await _quickConnectRepository.ValidateUUID(uuid);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            if (model.Success != true)
             {
                 return BadRequest("model not gotten");
             }

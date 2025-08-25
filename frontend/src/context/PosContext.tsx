@@ -8,14 +8,19 @@ import React, {
 } from "react";
 import hash from "object-hash";
 import { toast } from "sonner";
-import { PosSession, SaleItem, SaleItemOmitted } from "@/types/models";
+import {
+  PosSession,
+  PosSessionWithProducts,
+  SaleItem,
+  SaleItemOmitted,
+} from "@/types/models";
 
 interface PosSessionContextType {
-  data: Partial<PosSession>;
+  data: PosSessionWithProducts;
   qr: string | undefined;
   products: SaleItemOmitted[];
   setQr: (data: string) => void;
-  setInitialState: (data: Partial<PosSession>) => void;
+  setInitialState: (data: PosSessionWithProducts) => void;
   updateValues: <K extends keyof PosSession>(
     key: K,
     value: PosSession[K]
@@ -28,11 +33,15 @@ interface PosSessionContextType {
   save: () => void;
   isSaving: boolean;
   hasChanged: boolean;
+  isTerminalConnectedToServer: boolean;
   setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsTerminalConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
+  isScannerConnectedToServer: boolean;
+  setIsScannerConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const PosSessionContext = createContext<PosSessionContextType>({
-  data: {},
+  data: {} as PosSessionWithProducts,
   qr: undefined,
   products: [],
   isSaving: false,
@@ -44,18 +53,27 @@ const PosSessionContext = createContext<PosSessionContextType>({
   removeProduct: () => {},
   checkout: async () => {},
   save: () => {},
+  isTerminalConnectedToServer: false,
+  setIsTerminalConnectedToServer: () => {},
+  isScannerConnectedToServer: false,
+  setIsScannerConnectedToServer: () => {},
   hasChanged: false,
   setHasChanged: () => {},
 });
 
 export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
-  const [data, setData] = useState<Partial<PosSession>>({});
+  const [data, setData] = useState<PosSessionWithProducts>(
+    {} as PosSessionWithProducts
+  );
   const [qr, setQr] = useState<string | undefined>();
   const [products, setProducts] = useState<SaleItemOmitted[]>([]);
   const [hasChanged, setHasChanged] = useState(false);
   const initialHashRef = useRef<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
+  const [isTerminalConnectedToServer, setIsTerminalConnectedToServer] =
+    useState(false);
+  const [isScannerConnectedToServer, setIsScannerConnectedToServer] =
+    useState(false);
   // Track changes
   useEffect(() => {
     const currentHash = hash({ ...data, products });
@@ -65,7 +83,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     setHasChanged(currentHash !== initialHashRef.current);
   }, [data, products]);
 
-  function setInitialState(inti: Partial<PosSession>) {
+  function setInitialState(inti: PosSessionWithProducts) {
     if (data === inti) return;
     setData(inti);
     initialHashRef.current = hash({ ...inti, products });
@@ -131,6 +149,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
       // TODO: implement API call to save session + sales
       console.log("Checking out", { session: data, products });
+      return;
 
       toast.success("Checkout successful!");
       setProducts([]);
@@ -173,6 +192,10 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         save,
         hasChanged,
         setHasChanged,
+        setIsTerminalConnectedToServer,
+        isTerminalConnectedToServer,
+        setIsScannerConnectedToServer,
+        isScannerConnectedToServer,
       }}
     >
       {children}

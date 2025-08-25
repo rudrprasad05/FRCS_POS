@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FrcsPos.DTO;
+using FrcsPos.Models;
 
 namespace FrcsPos.Response.DTO
 {
@@ -15,5 +17,6 @@ namespace FrcsPos.Response.DTO
         public int TaxCategoryId { get; set; }
         public bool IsPerishable { get; set; } = false;
         public int MediaId { get; set; } = default!;
+        public MediaDto? Media { get; set; } = default!;
     }
 }
