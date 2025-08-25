@@ -16,12 +16,22 @@ namespace FrcsPos.Socket
         {
             _quickConnectRepo = quickConnectRepo;
         }
-        public async Task SendScan(string terminalId, string sku)
+        public async Task SendScan(ScannerDTO scanDto)
         {
-            await Clients.Group(terminalId).SendAsync("ReceiveScan", sku);
+            var qcId = scanDto.QuickConnectId;
+            var barcode = scanDto.Barcode;
+
+            var posSession = await _quickConnectRepo.GetPosSession(qcId);
+            if (posSession == null || posSession.Data == null)
+            {
+                return;
+            }
+            Console.WriteLine("connected from scanner " + qcId + " with barcode " + barcode);
+            await Clients
+                .Group(posSession.Data.UUID)
+                .SendAsync("ReceiveScan", barcode);
         }
 
-        // POS terminal joins its group
         public async Task JoinTerminal(string terminalId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, terminalId);

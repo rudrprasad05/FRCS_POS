@@ -129,7 +129,7 @@ export default function BarcodeScanner() {
               // 🔥 send scan to server via SignalR
               connection
                 ?.invoke("SendScan", {
-                  terminalId: id,
+                  quickConnectId: id,
                   barcode: data,
                   format: result.getBarcodeFormat().toString(),
                 })

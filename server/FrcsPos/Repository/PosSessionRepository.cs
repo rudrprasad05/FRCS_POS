@@ -36,17 +36,17 @@ namespace FrcsPos.Repository
                 return ApiResponse<PosSessionDTO>.Fail();
             }
 
-            // var isAnySessionsActive = await _context.PosSessions
-            //     .Where(a => a.PosTerminal.UUID == request.PosTerminalUUID && a.IsActive == true)
-            //     .ToListAsync();
+            var isAnySessionsActive = await _context.PosSessions
+                .Where(a => a.PosTerminal.UUID == request.PosTerminalUUID && a.IsActive == true)
+                .ToListAsync();
 
-            // if (isAnySessionsActive != null && isAnySessionsActive.Count > 0)
-            // {
-            //     foreach (var s in isAnySessionsActive)
-            //     {
-            //         s.IsActive = false;   
-            //     }
-            // }
+            if (isAnySessionsActive != null && isAnySessionsActive.Count > 0)
+            {
+                foreach (var s in isAnySessionsActive)
+                {
+                    s.IsActive = false;
+                }
+            }
 
             var session = new PosSession
             {

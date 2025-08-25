@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePosSession } from "@/context/PosContext";
 import SaleItemCard from "./SaleItemCard";
 import { useEffect, useState } from "react";
+import SelectPaymentOptionDialog from "./SelectPaymentOption";
 
 interface ICheckoutData {
   taxTotal: number;
@@ -113,7 +114,7 @@ export default function PosTerminal() {
                       </span>
                     </div>
                   </div>
-
+                  {/* 
                   <Button
                     disabled={products.length == 0}
                     onClick={checkout}
@@ -121,7 +122,8 @@ export default function PosTerminal() {
                     size="lg"
                   >
                     Checkout
-                  </Button>
+                  </Button> */}
+                  <SelectPaymentOptionDialog />
                 </div>
               </div>
             </CardContent>

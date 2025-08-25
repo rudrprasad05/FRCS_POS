@@ -149,6 +149,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
       // TODO: implement API call to save session + sales
       console.log("Checking out", { session: data, products });
+      return;
 
       toast.success("Checkout successful!");
       setProducts([]);
