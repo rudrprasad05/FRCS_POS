@@ -5,7 +5,7 @@ import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { useParams } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -30,6 +30,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { CreateProduct } from "@/actions/Product";
 
 export const productSchema = z.object({
   name: z
@@ -61,6 +62,8 @@ export default function NewProductPage() {
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [file, setFile] = useState<File | undefined>(undefined);
+  const params = useParams();
+  const companyName = params.companyName;
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -104,12 +107,25 @@ export default function NewProductPage() {
     setIsSubmitting(true);
     data.image = file;
 
-    console.log("insubmit", data);
+    const formData = new FormData();
+    formData.append("ProductName", data.name);
+    formData.append("SKU", data.sku);
+    formData.append("Price", data.price.toString()); // decimal -> string
+    formData.append("Barcode", data.barcode as string);
+    formData.append("IsPerishable", data.isPerishable ? "true" : "false");
+    formData.append("TaxCategoryId", data.taxCategoryId as string);
+    formData.append("CompanyName", companyName as string);
+
+    if (data.image) {
+      formData.append("File", data.image); // IFormFile
+    }
+
+    console.log("Submitting FormData:", formData);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast("Failed to upload");
+      const res = await CreateProduct(formData);
+      console.log(res);
+      toast("Uploaded");
     } catch (error) {
       toast("Failed to upload");
     } finally {

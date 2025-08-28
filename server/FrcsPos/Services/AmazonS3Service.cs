@@ -97,8 +97,8 @@ namespace FrcsPos.Services
                 }
                 catch (AmazonS3Exception e)
                 {
-                    // Handle S3 exceptions here
-                    throw new Exception($"Error uploading file: {e.Message}", e);
+                   Console.WriteLine($"Error uploading file: {e.Message}", e);
+                   return "";
                 }
             }
 

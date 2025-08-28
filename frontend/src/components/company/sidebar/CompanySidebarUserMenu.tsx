@@ -18,7 +18,7 @@ import { ChevronUp, Settings, User, LogOut } from "lucide-react";
 import { useAuth } from "@/context/UserContext";
 
 export function CompanySidebarUserMenu() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -61,7 +61,7 @@ export function CompanySidebarUserMenu() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                alert("Logging out");
+                logout();
               }}
               className="text-red-600"
             >

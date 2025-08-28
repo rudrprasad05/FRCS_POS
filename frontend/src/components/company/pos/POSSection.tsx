@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PosTerminal } from "@/types/models";
+import { PosTerminal, UserRoles } from "@/types/models";
 import { Search } from "lucide-react";
 
 import { GetAllCompanyPosTerminals } from "@/actions/PosTerminal";
@@ -21,6 +21,7 @@ import { createGenericListDataContext } from "@/context/GenericDataTableContext"
 import NewPosDialoge from "./NewPosDialoge";
 import { columns } from "./PosTerminalDataColumns";
 import { useParams } from "next/navigation";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 
 export const { Provider: PosTerminalProvider, useGenericData: usePosTerminal } =
   createGenericListDataContext<PosTerminal>();
@@ -44,7 +45,7 @@ function Header() {
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
   return (
-    <div>
+    <div className="space-y-4 mb-6">
       <div className="space-b-2">
         <H1 className="">Pos Terminals</H1>
         <P className="text-muted-foreground">Create and manage pos terminals</P>
@@ -78,8 +79,9 @@ function Header() {
             </SelectContent>
           </Select>
         </div>
-
-        <NewPosDialoge companyName={companyName} />
+        <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+          <NewPosDialoge companyName={companyName} />
+        </RoleWrapper>
       </div>
     </div>
   );

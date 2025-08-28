@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@/types/models";
+import { QueryObject, User, UserRoles } from "@/types/models";
 import { HousePlus, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
@@ -67,7 +67,7 @@ export default function NewCompanyDialoge() {
 
   useEffect(() => {
     const getData = async () => {
-      const data = await GetAllAdmins();
+      const data = await GetAllAdmins({ role: UserRoles.ADMIN } as QueryObject);
       setAdminUsers(data.data as User[]);
 
       setLoading(false);

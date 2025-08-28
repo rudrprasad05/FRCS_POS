@@ -14,6 +14,8 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid);
         public Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject);
         public Task<ApiResponse<ProductDTO>> SoftDelete(string uuid);
+        public Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync();
+
 
     }
 }

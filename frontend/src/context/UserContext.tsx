@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         token: data.token,
         role: data.role,
       };
-      console.log(tempUser);
+
       setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
 
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
 
     toast.info("Logging out");
-    router.push("/");
+    router.push("/login");
   };
 
   const checkAuth = useCallback(async () => {
