@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FrcsPos.Models;
 using FrcsPos.Response.DTO;
 
@@ -9,42 +7,25 @@ namespace FrcsPos.Mappers
 {
     public static class WarehouseMapper
     {
-        public static WarehouseDTO FromModelToDto(this Warehouse request)
+        // Single entity → DTO
+        public static WarehouseDTO FromModelToDto(this Warehouse warehouse)
         {
-            if (request == null)
-            {
-                return new WarehouseDTO();
-            }
+            if (warehouse == null) return null;
 
-            var dto = new WarehouseDTO
+            return new WarehouseDTO
             {
-                UUID = request.UUID,
-                Id = request.Id,
-                CreatedOn = request.CreatedOn,
-                UpdatedOn = request.UpdatedOn,
-                Name = request.Name,
-                CompanyId = request.CompanyId,
-                Location = request.Location,
+                Id = warehouse.Id,
+                CompanyId = warehouse.CompanyId,
+                Name = warehouse.Name,
+                Location = warehouse.Location
             };
-
-            return dto;
         }
 
-        public static List<WarehouseDTO> FromModelToDto(this ICollection<Warehouse> request)
+        // Collection → DTO List
+        public static List<WarehouseDTO> FromModelToDto(this IEnumerable<Warehouse> warehouses)
         {
-            if (request == null || request.Count == 0)
-            {
-                return [];
-            }
-
-            var dtoList = new List<WarehouseDTO>();
-            foreach (Warehouse w in request)
-            {
-                var dto = w.FromModelToDto();
-                dtoList.Add(dto);
-            }
-
-            return dtoList;
+            return warehouses?.Select(w => w.FromModelToDto()).ToList()
+                   ?? new List<WarehouseDTO>();
         }
     }
 }

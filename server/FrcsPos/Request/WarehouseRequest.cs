@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FrcsPos.Response.DTO
+
+namespace FrcsPos.Request
 {
-    public class WarehouseDTO
+    public class WarehouseRequest
     {
-        public int Id { get; set; }      
         public int CompanyId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;

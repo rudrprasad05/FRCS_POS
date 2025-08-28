@@ -44,6 +44,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ITaxCategoryRepository, TaxCategoryRepository>();
 builder.Services.AddScoped<IMediaRepository, MediaRepository>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
