@@ -108,6 +108,7 @@ export interface QueryObject {
   isDeleted?: boolean;
   sortBy?: ESortBy;
   uuid?: string;
+  role?: UserRoles;
   isAvailable?: boolean;
 }
 
@@ -134,12 +135,18 @@ export interface Warehouse extends BaseModel {
   batches?: ProductBatch[];
 }
 
+export enum UserRoles {
+  SUPERADMIN = "SUPERADMIN",
+  ADMIN = "ADMIN",
+  CASHIER = "CASHIER",
+}
+
 export interface User {
   id: string; // corresponds to IdentityUser's string ID (usually a GUID)
   username: string;
   email: string;
   token?: string; // custom field for auth tokens, etc.
-  role?: string;
+  role?: UserRoles;
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
 }

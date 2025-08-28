@@ -12,7 +12,7 @@ namespace FrcsPos.Request
         public decimal Price { get; set; } = 0;
         public string Barcode { get; set; } = string.Empty;
         public bool IsPerishable { get; set; } = false;
-        public IFormFile File { get; set; } = null!;
+        public IFormFile? File { get; set; } = null!;
         public int TaxCategoryId { get; set; } = default!;
         public string CompanyName { get; set; } = string.Empty;
     }

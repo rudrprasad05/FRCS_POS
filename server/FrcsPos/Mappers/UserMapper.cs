@@ -65,6 +65,23 @@ namespace FrcsPos.Mappers
             return dtoList;
         }
 
+        public static List<UserDTO> FromUserListToDTO(this ICollection<User> request)
+        {
+            if (request == null || request.Count == 0)
+            {
+                return [];
+            }
+
+            var dtoList = new List<UserDTO>();
+            foreach (User w in request)
+            {
+                var dto = w.FromUserToDto();
+                dtoList.Add(dto);
+            }
+
+            return dtoList;
+        }
+
         public static CompanyUserDTO FromModelToDto(this CompanyUser request)
         {
             if (request == null)

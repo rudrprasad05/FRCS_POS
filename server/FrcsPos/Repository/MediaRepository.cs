@@ -81,12 +81,14 @@ namespace FrcsPos.Repository
                     actionUrl: "/admin/media/edit/" + newMedia.UUID
                 ));
 
+                var dto = newMedia.FromModelToDTO();
+
                 return new ApiResponse<MediaDto>
                 {
                     Success = true,
                     StatusCode = 200,
                     Message = "ok",
-                    Data = newMedia.FromModelToDTO()
+                    Data = dto
                 };
             }
             catch (Exception)

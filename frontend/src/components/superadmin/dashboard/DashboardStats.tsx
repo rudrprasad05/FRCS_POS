@@ -26,20 +26,12 @@ export function DashboardStats() {
   }, []);
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <DashboardStatsCard
           input={{
             title: "Total Companies",
             val: data?.totalCompanies,
             icon: BuildingIcon,
-            isLoading: !data,
-          }}
-        />
-        <DashboardStatsCard
-          input={{
-            title: "Total Media",
-            val: data?.totalMedia ?? 0,
-            icon: Database,
             isLoading: !data,
           }}
         />
@@ -53,17 +45,9 @@ export function DashboardStats() {
         />
         <DashboardStatsCard
           input={{
-            title: "Total Products",
-            val: data?.totalProducts ?? 0,
-            icon: Box,
-            isLoading: !data,
-          }}
-        />
-        <DashboardStatsCard
-          input={{
-            title: "Sales Last Month",
-            val: data?.totalSales ?? 0,
-            icon: Coins,
+            title: "Estimated VAT",
+            val: data?.totalUsers ?? 0,
+            icon: User,
             isLoading: !data,
           }}
         />

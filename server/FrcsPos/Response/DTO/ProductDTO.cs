@@ -19,4 +19,10 @@ namespace FrcsPos.Response.DTO
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
     }
+
+    public class InitialProductCreationData : BaseDTO
+    {
+        public string Sku { get; set; } = default!;
+        public List<TaxCategoryDTO> TaxCategories { get; set; } = default!;
+    }
 }

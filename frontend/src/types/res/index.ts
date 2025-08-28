@@ -1,4 +1,11 @@
-import { Company, PosSession, Notification } from "../models";
+import { SaleStatus } from "../enum";
+import {
+  Company,
+  PosSession,
+  Notification,
+  UserRoles,
+  SaleItem,
+} from "../models";
 
 // export interface SuperAdminDashboardDTO {
 //   users: User[];
@@ -23,6 +30,8 @@ export interface AdminDashboardDTO {
 }
 
 export interface ICreateNewPosSession {
+  email: string;
+  password: string;
   PosTerminalUUID: string;
 }
 
@@ -36,7 +45,7 @@ export type LoginResponse = {
   id: string;
   email: string;
   token: string;
-  role: "Admin" | "User";
+  role: UserRoles;
 };
 
 export type LoginDTO = {
@@ -46,3 +55,14 @@ export type LoginDTO = {
   token: string;
   role: string;
 };
+
+export interface NewCheckoutRequest {
+  companyName: string;
+  posSessionId: number;
+  cashierId: string;
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+  status: SaleStatus; // defaults to PENDING in C#
+  items: SaleItem[];
+}

@@ -36,7 +36,7 @@ export function RecentProductCard({ item }: { item: Product }) {
               <Image
                 width={100}
                 height={100}
-                src={item.media?.url || "./"}
+                src={item.media?.url as string}
                 onError={(e) => {
                   e.currentTarget.onerror = null; // prevent infinite loop
                   setIsImageValid(false);

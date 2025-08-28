@@ -239,7 +239,6 @@ export default function NewUserDialoge() {
                       <SelectItem value={"SUPERADMIN"}>superadmin</SelectItem>
                       <SelectItem value={"ADMIN"}>admin</SelectItem>
                       <SelectItem value={"CASHIER"}>cashier</SelectItem>
-                      <SelectItem value={"USER"}>user</SelectItem>
                     </SelectContent>
                   </Select>
 

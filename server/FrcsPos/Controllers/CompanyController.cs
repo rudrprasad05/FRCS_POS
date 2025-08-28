@@ -76,6 +76,19 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpGet("get-one-by-associated-admin-id")]
+        public async Task<IActionResult> GetCompanyByAssociatedAdminUserId([FromQuery] string uuid)
+        {
+            var model = await _companyRepository.GetCompanyByAssociatedAdminUserIdAsync(uuid);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
         [HttpGet("get-full-by-uuid")]
         public async Task<IActionResult> GetFullCompanyByUUID([FromQuery] string uuid)
         {

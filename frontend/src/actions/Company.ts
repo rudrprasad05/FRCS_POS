@@ -35,6 +35,15 @@ export async function GetCompanyByAdminUserId(
   );
 }
 
+export async function GetCompanyForAssociatedUsers(
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>(
+    "GET",
+    `company/get-one-by-associated-admin-id?uuid=${uuid}`
+  );
+}
+
 export async function GetFullCompanyByUUID(
   uuid: string
 ): Promise<ApiResponse<Company>> {

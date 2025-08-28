@@ -147,8 +147,8 @@ function GenericSection<T>({ props }: { props: IGenericProps<T> }) {
 
   return (
     <section className="p-4">
-      <article className="flex flex-row items-center justify-between">
-        <div>
+      <article className="flex flex-row items-center justify-between my-2">
+        <div className="space-y-1">
           <H3 className="flex items-center gap-2">{title}</H3>
           <MutedText>{desc}</MutedText>
         </div>

@@ -27,7 +27,7 @@ export default function SuperAdminDashboardPage() {
       </div>
 
       <DashboardStats />
-      <SuperAdminSalesGraph />
+      {/* <SuperAdminSalesGraph /> */}
     </div>
   );
 }
