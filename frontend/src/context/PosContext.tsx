@@ -8,12 +8,16 @@ import React, {
 } from "react";
 import hash from "object-hash";
 import { toast } from "sonner";
+import { useParams, useRouter } from "next/navigation";
 import {
   PosSession,
   PosSessionWithProducts,
   SaleItem,
   SaleItemOmitted,
 } from "@/types/models";
+import { NewCheckoutRequest } from "@/types/res";
+import { SaleStatus } from "@/types/enum";
+import { Checkout } from "@/actions/PosSession";
 
 interface PosSessionContextType {
   data: PosSessionWithProducts;
@@ -74,6 +78,9 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     useState(false);
   const [isScannerConnectedToServer, setIsScannerConnectedToServer] =
     useState(false);
+  const params = useParams();
+  const companyName = String(params.companyName);
+
   // Track changes
   useEffect(() => {
     const currentHash = hash({ ...data, products });
@@ -144,17 +151,27 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    let checkoutDataToSend: NewCheckoutRequest = {
+      companyName: companyName,
+      posSessionId: 0,
+      cashierId: "0",
+      subtotal: 0,
+      taxTotal: 0,
+      total: 0,
+      status: SaleStatus.Pending, // use enum with uppercase to match definition
+      items: products as SaleItem[],
+    };
+
     try {
       setIsSaving(true);
-
-      // TODO: implement API call to save session + sales
+      const res = await Checkout(checkoutDataToSend);
+      console.log(res);
       console.log("Checking out", { session: data, products });
-      return;
 
       toast.success("Checkout successful!");
-      setProducts([]);
-      initialHashRef.current = hash({ ...data, products: [] });
-      setHasChanged(false);
+      //   setProducts([]);
+      //   initialHashRef.current = hash({ ...data, products: [] });
+      //   setHasChanged(false);
     } catch (error) {
       toast.error("Checkout failed");
     } finally {

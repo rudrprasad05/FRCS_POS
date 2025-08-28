@@ -13,7 +13,11 @@ namespace FrcsPos.Mappers
 
         public static MediaDto FromModelToDTO(this Media? request, string? url = null)
         {
-            ArgumentNullException.ThrowIfNull(request);
+            if (request == null)
+            {
+                return new MediaDto();
+            }
+
             return new MediaDto
             {
                 Id = request.Id,

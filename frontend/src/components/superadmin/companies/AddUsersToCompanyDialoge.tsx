@@ -1,5 +1,8 @@
 "use client";
 
+import { AddUserToCompany } from "@/actions/Company";
+import { GetUnAssignedUsers } from "@/actions/User";
+import { useCompanyData } from "@/app/admin/companies/[companyId]/page";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,10 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Company, CompanyUser, User } from "@/types/models";
-import { HousePlus, Loader2, UserPlus } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -22,9 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -32,11 +29,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GetAllAdmins } from "@/actions/User";
-import { AddUserToCompany, CreateCompany } from "@/actions/Company";
+import { User } from "@/types/models";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
-import { useCompanyData } from "@/app/admin/companies/[companyId]/page";
+import { z } from "zod";
 
 const formSchema = z.object({
   adminUserId: z.string().min(1, {
@@ -63,7 +62,8 @@ export default function AddUsersToCompanyDialoge() {
 
   useEffect(() => {
     const getData = async () => {
-      const data = await GetAllAdmins();
+      const data = await GetUnAssignedUsers();
+      console.log("GetUnAssignedUsers", data);
       setAdminUsers(data.data as User[]);
 
       setLoading(false);
@@ -79,7 +79,6 @@ export default function AddUsersToCompanyDialoge() {
       values.adminUserId,
       item?.uuid as string
     );
-    console.log(res);
 
     if (!res.success) {
       toast.error("Error adding user", { description: res.message });

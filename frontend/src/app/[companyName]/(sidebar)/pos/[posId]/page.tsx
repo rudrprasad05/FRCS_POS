@@ -103,9 +103,6 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
               {posTerminal.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
-          <P className="text-muted-foreground">
-            POS Terminal Details and Activity
-          </P>
         </div>
 
         <NewSessionDialog terminalId={posTerminal.uuid.toString()} />

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
+using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
@@ -16,8 +18,12 @@ namespace FrcsPos.Controllers
     public class PosSessionController : BaseController
     {
         private readonly IPosSessionRepository _posSessionRepository;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
         public PosSessionController(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<UserController> logger,
@@ -25,18 +31,32 @@ namespace FrcsPos.Controllers
         ) : base(configuration, tokenService, logger)
         {
             _posSessionRepository = posSessionRepository;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateCompany([FromBody] CreateNewPosSession request)
         {
-            var userId = GetCurrentUserId();
-            if (userId == null)
+            // Try to find user by email
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
             {
-                return Unauthorized(ApiResponse<string>.Unauthorised());
+                return Unauthorized(ApiResponse<string>.Fail(message: "Invalid credentials"));
             }
 
-            var data = new NewPosSession { PosTerminalUUID = request.PosTerminalUUID, PosUserId = userId };
+            // Check password
+            var validPassword = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+            if (!validPassword.Succeeded)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(message: "Invalid credentials"));
+            }
+
+            var data = new NewPosSession
+            {
+                PosTerminalUUID = request.PosTerminalUUID,
+                PosUserId = user.Id
+            };
             var model = await _posSessionRepository.CreateNewPosSession(data);
 
             if (model == null)

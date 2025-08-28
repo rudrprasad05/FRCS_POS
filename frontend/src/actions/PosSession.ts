@@ -7,8 +7,13 @@ import {
   PosSessionWithProducts,
   PosTerminal,
   QuickConnect,
+  Sale,
 } from "@/types/models";
-import { ICreateNewPosSession, IPosSessionData } from "@/types/res";
+import {
+  ICreateNewPosSession,
+  IPosSessionData,
+  NewCheckoutRequest,
+} from "@/types/res";
 
 import { GetToken } from "./User";
 import { RequestWrapper } from "./RequestWrapper";
@@ -44,16 +49,6 @@ export async function GetPosSession(
   return res.data;
 }
 
-// export async function GenerateQr(
-//   uuid: string
-// ): Promise<ApiResponse<QuickConnect>> {
-//   console.log(uuid);
-//   const res = await axiosGlobal.get<ApiResponse<QuickConnect>>(
-//     `quickconnect/generate?uuid=${uuid}`
-//   );
-//   return res.data;
-// }
-
 export async function GenerateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
@@ -61,6 +56,12 @@ export async function GenerateQr(
     "GET",
     `quickconnect/generate?uuid=${uuid}`
   );
+}
+
+export async function Checkout(
+  data: NewCheckoutRequest
+): Promise<ApiResponse<Sale>> {
+  return RequestWrapper<Sale>("POST", `checkout/create`, data);
 }
 
 export async function ValidateQr(

@@ -30,12 +30,14 @@ namespace FrcsPos.Repository
         }
         public async Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request)
         {
+            // verify pos terminal exists
             var posTerminal = await _context.PosTerminals.SingleOrDefaultAsync(p => p.UUID == request.PosTerminalUUID);
             if (posTerminal == null)
             {
                 return ApiResponse<PosSessionDTO>.Fail();
             }
 
+            // check if any active sessions exists. mark as inactive
             var isAnySessionsActive = await _context.PosSessions
                 .Where(a => a.PosTerminal.UUID == request.PosTerminalUUID && a.IsActive == true)
                 .ToListAsync();

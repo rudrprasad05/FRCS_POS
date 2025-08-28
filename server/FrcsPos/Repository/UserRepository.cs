@@ -85,6 +85,46 @@ namespace FrcsPos.Repository
             throw new NotImplementedException();
         }
 
+        public async Task<ApiResponse<List<UserDTO>>> GetAllSuperAdminsNotInCompany(string? role = null)
+        {
+            var superAdminRoleId = await _context.Roles
+                .Where(r => r.NormalizedName == "SUPERADMIN")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            var query = _context.Users.AsQueryable();
+
+            query = query.Where(
+                u => !_context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == superAdminRoleId));
+
+            query = query.Where(u =>
+                !_context.CompanyUsers.Any(cu => cu.UserId == u.Id) &&
+                !_context.Companies.Any(c => c.AdminUserId == u.Id));
+
+            if (!string.IsNullOrEmpty(role))
+            {
+                var roleId = await _context.Roles
+                    .Where(r => r.NormalizedName == role.ToUpper())
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
+                query = query.Where(u => _context.UserRoles
+                    .Any(ur => ur.UserId == u.Id && ur.RoleId == roleId));
+            }
+
+            var users = await query
+                .Select(u => new UserDTO
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Username = u.UserName
+                })
+                .ToListAsync();
+
+            return ApiResponse<List<UserDTO>>.Ok(users);
+        }
+
+
         public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(string? role)
         {
             var userDtos = new List<UserDTO>();
@@ -114,8 +154,6 @@ namespace FrcsPos.Repository
 
             return ApiResponse<List<UserDTO>>.Ok(userDtos);
         }
-
-
 
         public Task<ApiResponse<UserDTO>> GetOne(string uuid)
         {

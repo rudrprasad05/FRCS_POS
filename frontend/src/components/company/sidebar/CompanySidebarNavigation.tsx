@@ -6,7 +6,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/context/UserContext";
 import { cn } from "@/lib/utils";
+import { UserRoles } from "@/types/models";
 import {
   BookText,
   Box,
@@ -16,21 +18,42 @@ import {
   File,
   Flag,
   LayoutDashboard,
+  LucideIcon,
   User,
   UsersIcon,
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import React from "react";
+
+interface INavArr {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+}
 
 export function CompanySidebarNavigation() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
-  // split path: /newworld/products/new → ["", "newworld", "products", "new"]
   const segments = pathname.split("/").filter(Boolean);
-  const base = `/${segments[0]}`; // this will be "newworld" or any dynamic org/shop
+  const base = `/${segments[0]}`;
 
-  const navigationItems = [
+  const cashierNavigationItems: INavArr[] = [
+    {
+      title: "Dashboard",
+      href: `${base}/dashboard`,
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Point of Sale",
+      href: `${base}/pos`,
+      icon: Computer,
+    },
+  ];
+
+  const adminNavigationItems = [
     {
       title: "Dashboard",
       href: `${base}/dashboard`,
@@ -67,11 +90,16 @@ export function CompanySidebarNavigation() {
       icon: File,
     },
   ];
+  console.log(user?.role);
+  let navArr =
+    user?.role?.toUpperCase() === UserRoles.ADMIN
+      ? adminNavigationItems
+      : cashierNavigationItems;
   return (
     <SidebarGroup className="h-full">
       <SidebarGroupContent className="h-full">
         <SidebarMenu className="h-full">
-          {navigationItems.map((item) => {
+          {navArr.map((item) => {
             const isActive = pathname.includes(item.href);
             return (
               <SidebarMenuItem key={item.href}>

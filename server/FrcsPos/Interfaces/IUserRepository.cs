@@ -19,5 +19,6 @@ namespace FrcsPos.Interfaces
         public Task<User?> Exists(string uuid);
         public Task<ApiResponse<UserDTO>> SafeDelete(string uuid);
         public Task<ApiResponse<double>> SumStorage();
+        public Task<ApiResponse<List<UserDTO>>> GetAllSuperAdminsNotInCompany(string? role);
     }
 }

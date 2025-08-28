@@ -8,30 +8,30 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Route("api/company")]
+    [Route("api/checkout")]
     [ApiController]
     public class CheckoutController : BaseController
     {
-        private readonly ICompanyRepository _companyRepository;
+        private readonly ICheckoutRepository _checkoutRepository;
 
         public CheckoutController(
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<UserController> logger,
-            ICompanyRepository companyRepository
+            ICheckoutRepository checkoutRepository
         ) : base(configuration, tokenService, logger)
         {
-            _companyRepository = companyRepository;
+            _checkoutRepository = checkoutRepository;
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCheckout([FromBody] NewCompanyRequest data)
+        public async Task<IActionResult> CreateCheckout([FromBody] NewCheckoutRequest data)
         {
-            var model = await _companyRepository.CreateCompanyAsync(data);
+            var model = await _checkoutRepository.CreateCheckoutAsync(data);
 
-            if (model == null)
+            if (model == null || model.Success == false)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);

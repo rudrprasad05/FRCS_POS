@@ -30,7 +30,7 @@ export async function middleware(req: NextRequest) {
 
     if (!res.ok) {
       console.error("qqqqq Auth check failed  md.ts:", res.status);
-      return NextResponse.redirect(new URL("/md", req.url));
+      return NextResponse.redirect(new URL("/login", req.url));
     }
 
     const data: ApiResponse<LoginDTO> = await res.json();

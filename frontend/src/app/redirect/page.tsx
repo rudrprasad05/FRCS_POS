@@ -2,9 +2,10 @@
 
 import { GetCompanyByAdminUserId } from "@/actions/Company";
 import { useAuth } from "@/context/UserContext";
+import { UserRoles } from "@/types/models";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export default function Redirect() {
   const { user } = useAuth();
@@ -27,23 +28,27 @@ export default function Redirect() {
       return;
     }
 
-    console.log(user);
-
-    if (user.role?.toLowerCase() == "superadmin") {
-      console.log("2");
-
+    if (user.role?.toUpperCase() == UserRoles.SUPERADMIN) {
+      console.log("su", user.role);
       router.push("/admin/dashboard");
       return;
     }
 
-    if (user.role?.toLowerCase() == "admin") {
-      console.log("3");
-
+    try {
+      console.log(user);
       const res = await GetCompanyByAdminUserId(user.id);
-      console.dir(res);
-      let name = res.data?.name;
-      console.log(name);
-      router.push(`/${name}`);
+      console.log(res);
+      if (res.success) {
+        let name = res.data?.name;
+
+        router.push(`/${name}`);
+        return;
+      } else {
+        router.push(`/error/unassigned`);
+        return;
+      }
+    } catch (error) {
+      router.push(`/error/unassigned`);
       return;
     }
   };

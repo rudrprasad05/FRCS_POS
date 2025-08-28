@@ -184,6 +184,34 @@ namespace FrcsPos.Repository
             }
             return ApiResponse<CompanyDTO>.Ok(companyToBeRetuned);
         }
+        public async Task<ApiResponse<CompanyDTO>> GetCompanyByAssociatedAdminUserIdAsync(string uuid)
+        {
+            var model = await _context.CompanyUsers.Include(cu => cu.Company).FirstOrDefaultAsync(cu => cu.UserId == uuid);
+            CompanyDTO? companyToBeRetuned = null;
+
+            if (model != null)
+            {
+                companyToBeRetuned = model.Company.FromModelToDTOWithoutPosTerminals();
+            }
+            else if (model == null)
+            {
+                var company = await _context.CompanyUsers
+                .Where(cu => cu.UserId == uuid)
+                .Select(cu => cu.Company)
+                .FirstOrDefaultAsync();
+
+                if (company != null)
+                {
+                    companyToBeRetuned = company.FromModelToDTOWithoutPosTerminals();
+                }
+            }
+
+            if (companyToBeRetuned == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail();
+            }
+            return ApiResponse<CompanyDTO>.Ok(companyToBeRetuned);
+        }
 
         public async Task<ApiResponse<CompanyDTO>> GetFullCompanyByUUIDAsync(string uuid)
         {

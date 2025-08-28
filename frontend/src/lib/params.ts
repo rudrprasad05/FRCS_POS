@@ -20,5 +20,6 @@ export function createMediaQueryObject(query?: QueryObject): QueryObject {
     pageSize: Math.min(query.pageSize ?? 10, MAX_PAGE_SIZE),
     showInGallery: query.showInGallery,
     isDeleted: query.isDeleted,
+    role: query.role,
   };
 }

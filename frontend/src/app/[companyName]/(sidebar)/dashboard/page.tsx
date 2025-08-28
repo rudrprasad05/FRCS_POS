@@ -15,7 +15,7 @@ export default function CompanyDashboardPage() {
       </div>
 
       <CompanyDashboardStats />
-      <CompanySalesGraph />
+      {/* <CompanySalesGraph /> */}
     </div>
   );
 }
