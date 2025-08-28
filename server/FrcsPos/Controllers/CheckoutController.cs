@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Route("api/company")]
+    [Route("api/checkout")]
     [ApiController]
     public class CheckoutController : BaseController
     {
