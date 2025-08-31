@@ -9,7 +9,7 @@ namespace FrcsPos.Response.DTO
     public class SuperAdminDashboardDTO
     {
         public int TotalCompanies { get; set; }
-        public int TotalMedia { get; set; }
+        public long TotalMedia { get; set; }
         public int TotalUsers { get; set; }
         public int TotalProducts { get; set; }
         public int TotalSales { get; set; }

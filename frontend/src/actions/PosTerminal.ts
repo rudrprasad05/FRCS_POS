@@ -25,50 +25,6 @@ export async function GetPosTerminalById(
   return res.data;
 }
 
-export async function GetPosTerminalSessions(
-  query?: QueryObject
-): Promise<ApiResponse<PosSession[]>> {
-  let a: ApiResponse<PosSession[]> = {
-    data: [],
-    success: true,
-    errors: undefined,
-    statusCode: 200,
-    timestamp: Date.now().toLocaleString(),
-  };
-  return a;
-  const token = await GetToken();
-
-  const res = await axiosGlobal.get<ApiResponse<PosSession[]>>(
-    `pos-terminal/get-one?uuid=`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return res.data;
-}
-
-export async function GetPosTerminalSales(
-  query?: QueryObject
-): Promise<ApiResponse<Sale[]>> {
-  let a: ApiResponse<Sale[]> = {
-    data: [],
-    success: true,
-    errors: undefined,
-    statusCode: 200,
-    timestamp: Date.now().toLocaleString(),
-  };
-  return a;
-  const token = await GetToken();
-
-  const res = await axiosGlobal.get<ApiResponse<Sale[]>>(
-    `pos-terminal/get-one?uuid=`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return res.data;
-}
-
 export async function CreatePosTerminals(
   cName: string
 ): Promise<ApiResponse<PosTerminal>> {

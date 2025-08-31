@@ -6,6 +6,7 @@ using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using Microsoft.AspNetCore.Identity;
@@ -154,6 +155,81 @@ namespace FrcsPos.Repository
 
             return ApiResponse<List<UserDTO>>.Ok(userDtos);
         }
+        public async Task<ApiResponse<List<UserDTO>>> GetUserByCompany(RequestQueryObject queryObject)
+        {
+            if (string.IsNullOrEmpty(queryObject.CompanyName))
+            {
+                return ApiResponse<List<UserDTO>>.Fail(message: "Invalid query string");
+            }
+
+            // Check if company exists
+            var company = await _context.Companies
+                .Include(c => c.Users)
+                    .ThenInclude(cu => cu.User)
+                .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
+
+            if (company == null)
+            {
+                return ApiResponse<List<UserDTO>>.Fail(message: "No company found");
+            }
+
+            // Build query: users associated with the company
+            var query = _context.Users
+                .Where(u => company.Users.Select(cu => cu.UserId).Contains(u.Id))
+                .AsQueryable();
+
+            // Filtering
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(u => u.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(u => u.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(u => u.CreatedOn),
+                _ => query.OrderByDescending(u => u.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var pagedUsers = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Map to DTOs
+            // var result = users.Select(u => u.FromUserToDto()).ToList();
+
+            var result = new List<UserDTO>();
+
+            foreach (var user in pagedUsers)
+            {
+                var dto = user.FromUserToDto();
+
+                var roles = await _userManager.GetRolesAsync(user);
+                dto.Role = roles.FirstOrDefault() ?? "USER";
+
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<UserDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
+
 
         public Task<ApiResponse<UserDTO>> GetOne(string uuid)
         {

@@ -29,7 +29,20 @@ namespace FrcsPos.Controllers
         {
             var model = await _checkoutRepository.CreateCheckoutAsync(data);
 
-            if (model == null || model.Success == false)
+            if (model == null || !model.Success || model.Success == false)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("receipt")]
+        public async Task<IActionResult> CreateCheckout([FromQuery] string uuid)
+        {
+            var model = await _checkoutRepository.GenerateReceiptPDF(uuid);
+
+            if (model == null || !model.Success || model.Success == false)
             {
                 return BadRequest(model);
             }

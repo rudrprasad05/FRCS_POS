@@ -21,26 +21,10 @@ interface ICheckoutData {
 }
 
 export default function PosTerminal() {
-  const { products, data, addProduct, checkout, removeProduct } =
+  const { products, data, moneyValues, checkout, removeProduct } =
     usePosSession();
-  const [checkoutData, setCheckoutData] = useState<ICheckoutData>({
-    taxTotal: 0,
-    subtotal: 0,
-    total: 0,
-  });
 
-  useEffect(() => {
-    console.log(products);
-    let taxTotal: number = 0,
-      subtotal: number = 0,
-      total: number = 0;
-    products.forEach((i) => {
-      taxTotal = taxTotal + i.lineTotal * i.taxRatePercent;
-      subtotal = subtotal + i.lineTotal;
-    });
-    total = taxTotal + subtotal;
-    setCheckoutData({ taxTotal, subtotal, total });
-  }, [products]);
+  const { taxTotal, total, subtotal } = moneyValues;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -99,19 +83,17 @@ export default function PosTerminal() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Subtotal:</span>
-                      <span>${checkoutData.subtotal.toFixed(2)}</span>
+                      <span>${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Tax (12.5%):</span>
-                      <span>${checkoutData.taxTotal.toFixed(2)}</span>
+                      <span>${taxTotal.toFixed(2)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
                       <span>Total:</span>
 
-                      <span className="text-primary">
-                        ${checkoutData.total.toFixed(2)}
-                      </span>
+                      <span className="text-primary">${total.toFixed(2)}</span>
                     </div>
                   </div>
                   {/* 

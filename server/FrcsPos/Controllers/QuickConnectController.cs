@@ -28,7 +28,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _quickConnectRepository.Generate(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -41,7 +41,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _quickConnectRepository.ValidateUUID(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

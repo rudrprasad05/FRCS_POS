@@ -11,6 +11,9 @@ namespace FrcsPos.Interfaces
     public interface IPosSessionRepository
     {
         public Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request);
+        public Task<ApiResponse<PosSessionDTO>> ResumePosSession(ResumePosSession request);
         public Task<ApiResponse<PosSessionDTO>> GetPosSessionByUUID(string uuid);
+        public Task<ApiResponse<List<PosSessionDTO>>> GetAllSessionsForOneTerminal(string terminalUUID);
+
     }
 }

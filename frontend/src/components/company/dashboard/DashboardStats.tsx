@@ -14,6 +14,7 @@ import { QuickActions } from "./QuickActions";
 import CompanyDashboardStatsCard from "./CompanyDashboardStatsCard";
 import { UserRoles } from "@/types/models";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { formatFileSize } from "@/lib/utils";
 
 export function CompanyDashboardStats() {
   const [data, setdata] = useState<SuperAdminDashboardDTO>();
@@ -29,12 +30,12 @@ export function CompanyDashboardStats() {
   }, []);
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="flex flex-wrap gap-6">
         <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
           <CompanyDashboardStatsCard
             input={{
               title: "Total Media",
-              val: data?.totalMedia ?? 0,
+              val: formatFileSize(data?.totalMedia ?? 0),
               icon: Database,
               isLoading: !data,
             }}

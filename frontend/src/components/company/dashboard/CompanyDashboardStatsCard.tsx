@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface IDashData {
   title: string;
-  val?: number;
+  val?: string | number;
   icon: React.ElementType;
   isLoading: boolean;
 }
@@ -19,7 +19,7 @@ export default function CompanyDashboardStatsCard({
   const Icon = input.icon;
 
   return (
-    <Card className="">
+    <Card className="flex-1 min-w-[250px] max-w-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium ">{input.title}</CardTitle>
         <Icon className="h-4 w-4 text-primary" />

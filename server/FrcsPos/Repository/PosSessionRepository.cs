@@ -71,15 +71,46 @@ namespace FrcsPos.Repository
                 Data = result,
             };
         }
+        public async Task<ApiResponse<PosSessionDTO>> ResumePosSession(ResumePosSession request)
+        {
+            var posSession = await _context.PosSessions
+                .Include(ps => ps.PosUser)
+                .FirstOrDefaultAsync(a => a.UUID == request.PosSessionId && a.IsActive == true);
+
+            if (posSession == null)
+            {
+                return ApiResponse<PosSessionDTO>.Fail(message: "no active sessions found");
+            }
+
+            var user = posSession.PosUser;
+            if (user.Id != request.PosUserId)
+            {
+                return ApiResponse<PosSessionDTO>.Fail(message: "user did not match");
+            }
+
+            var result = posSession.FromModelToDTO();
+            return new ApiResponse<PosSessionDTO>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+            };
+        }
 
         public async Task<ApiResponse<PosSessionDTO>> GetPosSessionByUUID(string uuid)
         {
             var posSession = await _context.PosSessions
+                .Include(s => s.PosUser)
+                .Include(s => s.PosTerminal)
+                    .ThenInclude(t => t.Company)
+                        .ThenInclude(c => c.Products)
+                            .ThenInclude(p => p.TaxCategory)
                 .Include(s => s.PosTerminal)
                     .ThenInclude(t => t.Company)
                         .ThenInclude(c => c.Products)
                             .ThenInclude(p => p.Media)
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
+
 
             if (posSession == null)
             {
@@ -96,6 +127,15 @@ namespace FrcsPos.Repository
                 Data = result,
 
             };
+        }
+
+        public async Task<ApiResponse<List<PosSessionDTO>>> GetAllSessionsForOneTerminal(string terminalUUID)
+        {
+            var result = await _context.PosSessions.Where(ps => ps.PosTerminal.UUID == terminalUUID).ToListAsync();
+
+            var dto = result.FromPosSessionListToPosSessionDTOList();
+
+            return ApiResponse<List<PosSessionDTO>>.Ok(dto);
         }
     }
 }

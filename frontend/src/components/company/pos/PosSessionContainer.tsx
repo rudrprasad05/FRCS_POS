@@ -10,21 +10,22 @@ import { WebSocketUrl } from "@/lib/utils";
 
 export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const [loading, setLoading] = useState(true);
-  const [initialData, setIntialData] = useState<PosSessionWithProducts>();
+
   const {
     setInitialState,
     setIsTerminalConnectedToServer,
     setIsScannerConnectedToServer,
+    addProduct,
+    products,
   } = usePosSession();
 
   useEffect(() => {
     const getData = async () => {
       const cake = await GetPosSession(uuid);
+      console.log("sessin data", cake);
       if (!cake.data) return;
 
-      setIntialData(cake.data);
       setInitialState(cake.data);
-
       setLoading(false);
     };
 
@@ -54,7 +55,8 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
 
     // Listen for scans sent from phone
     connection.on("ReceiveScan", (scan) => {
-      console.log("📩 Scan received:", scan);
+      console.log("📩 Barcode received:", scan);
+      handleProductAdd(scan);
     });
     connection.on("ReceivedJoinTerminal", (scan) => {
       setIsTerminalConnectedToServer(true);
@@ -71,8 +73,14 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     };
   }, [uuid]);
 
+  const handleProductAdd = (scan: string) => {
+    console.log("handleProductAdd");
+    console.log(products);
+    console.log(scan);
+    console.log("handleProductAdd end");
+  };
+
   if (loading) return <>loading</>;
-  if (!initialData) return <>No data</>;
 
   return <PosTerminal />;
 }

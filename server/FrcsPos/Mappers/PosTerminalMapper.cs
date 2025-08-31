@@ -33,6 +33,7 @@ namespace FrcsPos.Mappers
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
+                Sales = request.Sales.FromModelToDto(),
                 Company = request.Company.FromModelToDTOWithoutPosTerminals(),
                 Session = request.Session.FromPosSessionListToPosSessionDTOList(),
             };

@@ -243,7 +243,7 @@ namespace FrcsPos.Repository
 
             var company = await _context.Companies
                 .Include(c => c.Users) // make sure Users are loaded
-                .FirstOrDefaultAsync(c => c.UUID == request.CompanyUUID);
+                .FirstOrDefaultAsync(c => c.UUID == request.CompanyUUID || c.Name == request.CompanyUUID);
             if (company == null)
             {
                 return ApiResponse<CompanyDTO>.Fail(message: "Company not found");

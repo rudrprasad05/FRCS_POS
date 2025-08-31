@@ -7,6 +7,7 @@ export interface BaseModel {
   uuid: string;
   createdOn: string;
   updatedOn: string;
+  isDeleted: boolean;
 }
 
 export interface Product extends BaseModel {
@@ -108,6 +109,7 @@ export interface QueryObject {
   isDeleted?: boolean;
   sortBy?: ESortBy;
   uuid?: string;
+  companyName?: string;
   role?: UserRoles;
   isAvailable?: boolean;
 }
@@ -128,6 +130,8 @@ export interface Notification extends BaseModel {
 
 export interface Warehouse extends BaseModel {
   companyId: number;
+  company: Company;
+  isActive: boolean;
 
   name: string;
   location?: string;
@@ -149,6 +153,8 @@ export interface User {
   role?: UserRoles;
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
+  createdOn: string;
+  updatedOn: string;
 }
 export interface ProductBatchDTO {}
 export interface CompanyUser extends BaseModel {
@@ -178,8 +184,8 @@ export interface Sale extends BaseModel {
   companyId: number;
   company?: Company;
 
-  posTerminalId: number;
-  posTerminal?: PosTerminal;
+  posSessionId: number;
+  posSession?: PosSession;
 
   cashierId: string;
   cashier?: User;

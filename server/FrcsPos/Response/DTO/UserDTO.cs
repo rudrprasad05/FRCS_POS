@@ -10,6 +10,9 @@ namespace FrcsPos.Response.DTO
         [Required] public string Email { get; set; } = string.Empty;
         [Required] public string Token { get; set; } = string.Empty;
         [Required] public string Role { get; set; } = string.Empty;
+        [Required] public DateTime CreatedOn { get; set; } = DateTime.Now;
+        [Required] public DateTime UpdatedOn { get; set; } = DateTime.Now;
+        [Required] public bool IsDeleted { get; set; } = false;
 
     }
 

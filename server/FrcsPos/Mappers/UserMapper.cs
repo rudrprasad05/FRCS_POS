@@ -124,7 +124,9 @@ namespace FrcsPos.Mappers
                 Id = request.Id,
                 Username = request.UserName ?? string.Empty,
                 Email = request.Email ?? string.Empty,
-                Token = string.Empty, // or leave blank if not needed
+                Token = string.Empty,
+                UpdatedOn = request.UpdatedOn,
+                CreatedOn = request.CreatedOn,
             };
         }
     }

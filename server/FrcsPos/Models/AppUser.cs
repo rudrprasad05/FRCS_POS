@@ -16,4 +16,5 @@ namespace FrcsPos.Models
         [Required] public DateTime UpdatedOn { get; set; } = DateTime.Now;
         [Required] public bool IsDeleted { get; set; } = false;
     }
+
 }

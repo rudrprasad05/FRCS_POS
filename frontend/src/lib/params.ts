@@ -9,17 +9,11 @@ export const buildMediaQueryParams = (query?: QueryObject) => {
 export function createMediaQueryObject(query?: QueryObject): QueryObject {
   const MAX_PAGE_SIZE = 100;
 
-  if (!query)
-    return {
-      sortBy: ESortBy.ASC,
-    };
+  if (!query) return {};
 
   return {
-    sortBy: query.sortBy,
+    ...query,
     pageNumber: query.pageNumber ?? 1,
     pageSize: Math.min(query.pageSize ?? 10, MAX_PAGE_SIZE),
-    showInGallery: query.showInGallery,
-    isDeleted: query.isDeleted,
-    role: query.role,
   };
 }

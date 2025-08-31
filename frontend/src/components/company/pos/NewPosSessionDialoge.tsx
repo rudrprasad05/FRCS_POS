@@ -73,8 +73,10 @@ export default function NewSessionDialog({
       }
     } catch (error) {
       console.error("Failed to start session:", error);
+      toast.error("Failed to start session");
     } finally {
       setLoading(false);
+      setOpen(false);
     }
   }
 
@@ -157,16 +159,10 @@ export default function NewSessionDialog({
               <Button
                 type="submit"
                 className="w-full font-medium"
-                disabled={isLoading}
+                disabled={loading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Continue"
-                )}
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Continue
               </Button>
             </CardFooter>
           </form>

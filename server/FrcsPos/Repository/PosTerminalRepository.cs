@@ -146,19 +146,27 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<PosTerminalDTO>> GetOnePosTerminalByIdAsync(string uuid)
         {
             var pos = await _context.PosTerminals
-                .Where(p => p.UUID == uuid)
-                .Include(c => c.Session)
-                .Include(c => c.Company)
-                .Include(c => c.Sales)
-                .OrderByDescending(c => c.CreatedOn)
-                .FirstOrDefaultAsync();
+            .Where(p => p.UUID == uuid)
+            .Include(p => p.Company)
+            .Include(p => p.Session)
+                .ThenInclude(s => s.PosUser)
+            .Include(p => p.Session)
+                .ThenInclude(s => s.Sales) // sales via session
+            .AsSplitQuery()
+            .FirstOrDefaultAsync();
 
             if (pos == null)
             {
                 return ApiResponse<PosTerminalDTO>.Fail();
             }
 
-            var dto = pos.FromModelToDto();
+            var allSales = pos.Session.SelectMany(s => s.Sales).ToList();
+            List<PosSession> posSessionInOrder = [.. pos.Session.OrderByDescending(s => s.CreatedOn)];
+
+            pos.Sales = allSales;
+            pos.Session = posSessionInOrder;
+
+            var dto = pos?.FromModelToDto();
             return ApiResponse<PosTerminalDTO>.Ok(dto);
         }
 
