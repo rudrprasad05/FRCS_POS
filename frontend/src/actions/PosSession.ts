@@ -7,8 +7,13 @@ import {
   PosSessionWithProducts,
   PosTerminal,
   QuickConnect,
+  Sale,
 } from "@/types/models";
-import { ICreateNewPosSession, IPosSessionData } from "@/types/res";
+import {
+  ICreateNewPosSession,
+  IPosSessionData,
+  NewCheckoutRequest,
+} from "@/types/res";
 
 import { GetToken } from "./User";
 import { RequestWrapper } from "./RequestWrapper";
@@ -30,6 +35,15 @@ export async function CreateNewPosSession(
   return res.data;
 }
 
+export async function ResumeSession(
+  data: ICreateNewPosSession,
+  uuid: string
+): Promise<ApiResponse<PosSession>> {
+  return RequestWrapper<PosSession>("POST", `pos-session/resume?uuid=${uuid}`, {
+    data,
+  });
+}
+
 export async function GetPosSession(
   uuid: string
 ): Promise<ApiResponse<PosSessionWithProducts>> {
@@ -44,23 +58,20 @@ export async function GetPosSession(
   return res.data;
 }
 
-// export async function GenerateQr(
-//   uuid: string
-// ): Promise<ApiResponse<QuickConnect>> {
-//   console.log(uuid);
-//   const res = await axiosGlobal.get<ApiResponse<QuickConnect>>(
-//     `quickconnect/generate?uuid=${uuid}`
-//   );
-//   return res.data;
-// }
-
 export async function GenerateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
   return RequestWrapper<QuickConnect>(
     "GET",
-    `quickconnect/generate?uuid=${uuid}`
+    `quickconnect/generate?uuid=${uuid}`,
+    {}
   );
+}
+
+export async function Checkout(
+  data: NewCheckoutRequest
+): Promise<ApiResponse<Sale>> {
+  return RequestWrapper<Sale>("POST", `checkout/create`, { data });
 }
 
 export async function ValidateQr(
@@ -68,6 +79,7 @@ export async function ValidateQr(
 ): Promise<ApiResponse<QuickConnect>> {
   return RequestWrapper<QuickConnect>(
     "GET",
-    `quickconnect/validate?uuid=${uuid}`
+    `quickconnect/validate?uuid=${uuid}`,
+    {}
   );
 }

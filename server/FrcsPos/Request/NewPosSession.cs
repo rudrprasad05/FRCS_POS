@@ -11,10 +11,19 @@ namespace FrcsPos.Request
         public string PosTerminalUUID { get; set; } = default!;
 
     }
+    public class ResumePosSession
+    {
+        public string PosUserId { get; set; } = string.Empty;
+        public string PosSessionId { get; set; } = default!;
+        public string PosTerminalUUID { get; set; } = default!;
+
+
+    }
 
     public class CreateNewPosSession
     {
         public string PosTerminalUUID { get; set; } = default!;
-
+        public string Email { get; set; } = default!;
+        public string Password { get; set; } = default!;
     }
 }

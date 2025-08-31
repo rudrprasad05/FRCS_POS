@@ -1,5 +1,5 @@
-import React from "react";
+import WarehouseSection from "@/components/company/warehouse/WarehouseSection";
 
-export default function WarehouseDataPage() {
-  return <div>here we can crud warehouses</div>;
+export default function WarehousePage() {
+  return <WarehouseSection />;
 }

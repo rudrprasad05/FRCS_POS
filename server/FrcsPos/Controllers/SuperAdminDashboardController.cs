@@ -33,7 +33,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _superAdminDashboardRepository.GetSuperAdminDashboard();
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -46,7 +46,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _superAdminDashboardRepository.GetAdminDashboard(companyName, userId);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

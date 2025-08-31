@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FrcsPos.Models;
 
 namespace FrcsPos.Response.DTO
 {
@@ -12,6 +13,8 @@ namespace FrcsPos.Response.DTO
         public string LocationDescription { get; set; } = string.Empty;
         public string SerialNumber { get; set; } = string.Empty;
         public ICollection<PosSessionDTO> Session { get; set; } = [];
+        public ICollection<SaleDTO> Sales { get; set; } = [];
+
     }
 
     public class NewPosTerminalInit

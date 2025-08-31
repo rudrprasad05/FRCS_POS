@@ -8,12 +8,16 @@ import React, {
 } from "react";
 import hash from "object-hash";
 import { toast } from "sonner";
+import { useParams, useRouter } from "next/navigation";
 import {
   PosSession,
   PosSessionWithProducts,
   SaleItem,
   SaleItemOmitted,
 } from "@/types/models";
+import { NewCheckoutRequest } from "@/types/res";
+import { SaleStatus } from "@/types/enum";
+import { Checkout } from "@/actions/PosSession";
 
 interface PosSessionContextType {
   data: PosSessionWithProducts;
@@ -28,7 +32,7 @@ interface PosSessionContextType {
   addProduct: (product: SaleItemOmitted) => void;
   removeProduct: (productId: string) => void;
   deleteProduct: (productId: string) => void;
-
+  moneyValues: IMoneyValue;
   checkout: () => Promise<void>;
   save: () => void;
   isSaving: boolean;
@@ -53,6 +57,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
   removeProduct: () => {},
   checkout: async () => {},
   save: () => {},
+  moneyValues: {} as IMoneyValue,
   isTerminalConnectedToServer: false,
   setIsTerminalConnectedToServer: () => {},
   isScannerConnectedToServer: false,
@@ -61,11 +66,25 @@ const PosSessionContext = createContext<PosSessionContextType>({
   setHasChanged: () => {},
 });
 
+interface IMoneyValue {
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+}
+
 export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState<PosSessionWithProducts>(
     {} as PosSessionWithProducts
   );
   const [qr, setQr] = useState<string | undefined>();
+  const router = useRouter();
+
+  const [moneyValues, setMoneyValues] = useState<IMoneyValue>({
+    subtotal: 0,
+    taxTotal: 0,
+    total: 0,
+  });
+
   const [products, setProducts] = useState<SaleItemOmitted[]>([]);
   const [hasChanged, setHasChanged] = useState(false);
   const initialHashRef = useRef<string | null>(null);
@@ -74,6 +93,9 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     useState(false);
   const [isScannerConnectedToServer, setIsScannerConnectedToServer] =
     useState(false);
+  const params = useParams();
+  const companyName = String(params.companyName);
+
   // Track changes
   useEffect(() => {
     const currentHash = hash({ ...data, products });
@@ -99,6 +121,22 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     }));
   }
 
+  useEffect(() => {
+    let subtotal = 0,
+      taxTotal = 0,
+      total = 0;
+    for (const [index, item] of products.entries()) {
+      let unitTotal = item.unitPrice * item.quantity;
+      subtotal += unitTotal;
+      taxTotal +=
+        (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
+    }
+
+    total += taxTotal + subtotal;
+    setMoneyValues({ subtotal, taxTotal, total });
+    console.log(products);
+  }, [products]);
+
   function addProduct(product: SaleItemOmitted) {
     setProducts((prev) => {
       const existing = prev.find((p) => p.productId === product.productId);
@@ -113,7 +151,14 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
           return p.productId === product.productId ? { ...newP } : p;
         });
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [
+        ...prev,
+        {
+          ...product,
+          quantity: 1,
+          taxRatePercent: Number(product.product.taxCategory?.ratePercent),
+        },
+      ];
     });
   }
 
@@ -138,28 +183,70 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   function deleteProduct(productUUID: string) {
     setProducts((prev) => prev.filter((p) => p.product.uuid !== productUUID));
   }
+
   async function checkout() {
+    setIsSaving(true);
     if (products.length === 0) {
       toast.error("No products to checkout");
       return;
     }
 
-    try {
-      setIsSaving(true);
-
-      // TODO: implement API call to save session + sales
-      console.log("Checking out", { session: data, products });
-      return;
-
-      toast.success("Checkout successful!");
-      setProducts([]);
-      initialHashRef.current = hash({ ...data, products: [] });
-      setHasChanged(false);
-    } catch (error) {
-      toast.error("Checkout failed");
-    } finally {
-      setIsSaving(false);
+    let subtotal = 0,
+      taxTotal = 0,
+      total = 0;
+    for (const [index, item] of products.entries()) {
+      let unitTotal = item.unitPrice * item.quantity;
+      subtotal += unitTotal;
+      taxTotal +=
+        (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
+      console.log(index, subtotal, taxTotal);
     }
+
+    total += taxTotal + subtotal;
+    console.log(products);
+
+    if (
+      moneyValues.taxTotal != taxTotal ||
+      moneyValues.subtotal != subtotal ||
+      moneyValues.total != total
+    ) {
+      console.log("values dont match");
+      toast.error("Checkout failed!");
+      return;
+    }
+
+    let checkoutDataToSend: NewCheckoutRequest = {
+      companyName: companyName,
+      posSessionId: data.id,
+      cashierId: data.posUserId,
+      subtotal: subtotal,
+      taxTotal: taxTotal,
+      total: total,
+      status: SaleStatus.Pending, // use enum with uppercase to match definition
+      items: products as SaleItem[],
+    };
+
+    console.log("data to send", checkoutDataToSend);
+
+    setIsSaving(true);
+    const res = await Checkout(checkoutDataToSend);
+
+    console.log(res);
+    console.log("Checking out", { session: data, products });
+
+    if (res.success && res.data) {
+      toast.success("Checkout successful!");
+      router.push(`${data.uuid}/checkout/${res.data.uuid}`);
+    } else {
+      console.log(res.errors);
+      toast.error("Checkout failed!");
+    }
+
+    setProducts([]);
+    initialHashRef.current = hash({ ...data, products: [] });
+    setHasChanged(false);
+
+    setIsSaving(false);
   }
 
   async function save() {
@@ -180,6 +267,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       value={{
         data,
         qr,
+        moneyValues,
         products,
         setQr,
         isSaving,

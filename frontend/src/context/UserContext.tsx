@@ -6,7 +6,7 @@ import { RegisterFormType } from "@/types/forms/zod";
 import { ApiResponse, User } from "@/types/models";
 import { LoginResponse } from "@/types/res";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { destroyCookie } from "nookies";
 import {
   createContext,
@@ -33,6 +33,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
 
   // 🔹 Load session from cookies on mount
 
@@ -42,7 +44,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: "Redirecting shortly",
     });
 
-    router.push("/redirect");
+    router.push((returnUrl as string) || "/redirect");
+    // router.push("/redirect");
   };
 
   const login = async (email: string, password: string, redirect?: string) => {
@@ -67,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         token: data.token,
         role: data.role,
       };
-      console.log(tempUser);
+
       setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
 
@@ -119,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
 
     toast.info("Logging out");
-    router.push("/");
+    router.push("/login");
   };
 
   const checkAuth = useCallback(async () => {

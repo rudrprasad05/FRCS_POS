@@ -22,7 +22,7 @@ namespace FrcsPos.Mappers
 
         }
 
-        public static PosSessionDTO FromModelToDTO(this PosSession session)
+        public static PosSessionDTO FromModelToDTO(this PosSession session, bool includeSale = true)
         {
             var result = new PosSessionDTO();
 
@@ -32,10 +32,18 @@ namespace FrcsPos.Mappers
             result.UUID = session.UUID;
             result.CreatedOn = session.CreatedOn;
             result.UpdatedOn = session.UpdatedOn;
+            result.PosUser = session.PosUser.FromUserToDto();
+            result.PosUserId = session.PosUserId;
+            result.IsActive = session.IsActive;
 
             if (session.PosTerminal != null)
             {
                 result.PosTerminal = session.PosTerminal.FromModelToJustModelDTO();
+            }
+
+            if (includeSale && session.Sales != null)
+            {
+                result.Sales = session.Sales.FromModelToDto();
             }
 
             return result;

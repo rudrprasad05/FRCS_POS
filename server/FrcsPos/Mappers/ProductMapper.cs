@@ -28,7 +28,8 @@ namespace FrcsPos.Mappers
                 Barcode = request.Barcode,
                 Price = request.Price,
                 MediaId = request.MediaId ?? 0,
-                Media = request.Media.FromModelToDTO(),
+                Media = request.Media?.FromModelToDTO(),
+                TaxCategory = request.TaxCategory.FromModelToDto(),
                 TaxCategoryId = request.TaxCategoryId,
                 IsPerishable = request.IsPerishable,
             };

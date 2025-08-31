@@ -44,7 +44,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ITaxCategoryRepository, TaxCategoryRepository>();
 builder.Services.AddScoped<IMediaRepository, MediaRepository>();
-
+builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
+builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
@@ -96,9 +97,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var connection = dbContext.Database.GetDbConnection();
-        Console.WriteLine("🔍 Connection string being used:");
-        Console.WriteLine(connection.ConnectionString);
-
         dbContext.Database.OpenConnection(); // Test the connection
         dbContext.Database.CloseConnection();
         Console.WriteLine("Database connection successful.");

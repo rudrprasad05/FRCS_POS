@@ -32,7 +32,8 @@ export async function GetCompanyByAdminUserId(
 ): Promise<ApiResponse<Company>> {
   return RequestWrapper<Company>(
     "GET",
-    `company/get-one-by-admin-id?uuid=${uuid}`
+    `company/get-one-by-admin-id?uuid=${uuid}`,
+    {}
   );
 }
 
@@ -41,7 +42,8 @@ export async function GetFullCompanyByUUID(
 ): Promise<ApiResponse<Company>> {
   return RequestWrapper<Company>(
     "GET",
-    `company/get-full-by-uuid?uuid=${uuid}`
+    `company/get-full-by-uuid?uuid=${uuid}`,
+    {}
   );
 }
 
@@ -64,37 +66,20 @@ export async function AddUserToCompany(
   }
 }
 
-export async function CreateCompany(
-  data: NewCompanyFormType
-): Promise<ApiResponse<Company>> {
+export async function CreateProduct(
+  data: FormData
+): Promise<ApiResponse<Product>> {
   try {
-    const res = await axiosGlobal.post<ApiResponse<Company>>(
-      "company/create",
+    const res = await axiosGlobal.post<ApiResponse<Product>>(
+      "product/create",
       data
     );
     return res.data;
   } catch (error: any) {
     if (error.response?.data) {
-      return error.response.data as ApiResponse<Company>;
+      return error.response.data as ApiResponse<Product>;
     }
 
-    return ApiResponseFail<Company>();
-  }
-}
-
-export async function SoftDeleteCompany(
-  uuid: string
-): Promise<ApiResponse<Company>> {
-  try {
-    const res = await axiosGlobal.delete<ApiResponse<Company>>(
-      `company/soft-delete?uuid=${uuid}`
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<Company>;
-    }
-
-    return ApiResponseFail<Company>();
+    return ApiResponseFail<Product>();
   }
 }

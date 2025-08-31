@@ -79,7 +79,7 @@ namespace FrcsPos.Repository
         {
             var userCount = await _context.Users.CountAsync();
             var companyCount = await _context.Companies.CountAsync();
-            var mediaCount = await _context.Medias.CountAsync();
+            var mediaCount = await _context.Medias.SumAsync(m => m.SizeInBytes);
             var productCount = await _context.Products.CountAsync();
             var saleCount = await _context.Sales.CountAsync();
 

@@ -45,7 +45,7 @@ namespace FrcsPos.Controllers
 
         [Authorize]
         [HttpGet("logout")]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             Response.Cookies.Delete("token", new CookieOptions
             {
@@ -53,6 +53,7 @@ namespace FrcsPos.Controllers
                 Secure = true,
                 SameSite = SameSiteMode.None
             });
+
             return Ok(ApiResponse<string>.Ok(data: "ok"));
         }
 

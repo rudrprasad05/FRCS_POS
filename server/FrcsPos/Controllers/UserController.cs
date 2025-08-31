@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using FrcsPos.Services;
@@ -25,9 +26,12 @@ namespace FrcsPos.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly INotificationService _notificationService;
 
+        private readonly ICompanyRepository _companyRepository;
+
 
         public UserController(
             UserManager<User> userManager,
+            ICompanyRepository companyRepository,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
@@ -44,13 +48,15 @@ namespace FrcsPos.Controllers
             _env = env;
             _userRepository = userRepository;
             _notificationService = notificationService;
+            _companyRepository = companyRepository;
+
         }
 
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] string? role)
         {
             var model = await _userRepository.GetAllUsers(role);
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -61,16 +67,29 @@ namespace FrcsPos.Controllers
         [HttpGet("get-all-users-not-in-company")]
         public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
         {
-            var model = await _userRepository.GetAllUsers(role);
-            if (model == null)
+            var model = await _userRepository.GetAllSuperAdminsNotInCompany(role);
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
 
             return Ok(model);
         }
+
+        [HttpGet("get-user-by-company")]
+        public async Task<IActionResult> GetUserByCompany([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _userRepository.GetUserByCompany(queryObject);
+            if (model == null || !model.Success)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
         [HttpPost("create")]
-        public async Task<IActionResult> Register([FromBody] NewUserDTO model)
+        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string CompanyName)
         {
             if (!ModelState.IsValid)
             {
@@ -165,6 +184,20 @@ namespace FrcsPos.Controllers
                     actionUrl: "/admin/users/" + user.Id,
                     userId: user.Id
                 ));
+
+                if (!string.IsNullOrEmpty(CompanyName))
+                {
+                    var request = new AddUserToCompany
+                    {
+                        UserId = user.Id,
+                        CompanyUUID = CompanyName,
+                    };
+                    var company = await _companyRepository.AddUserToCompanyAsync(request);
+                    if (company.Success != true)
+                    {
+                        return BadRequest(company);
+                    }
+                }
 
 
                 return Ok(ApiResponse<UserDTO>.Ok(

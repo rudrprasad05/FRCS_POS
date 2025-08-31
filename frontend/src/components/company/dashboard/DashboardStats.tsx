@@ -12,6 +12,9 @@ import { useEffect, useState } from "react";
 
 import { QuickActions } from "./QuickActions";
 import CompanyDashboardStatsCard from "./CompanyDashboardStatsCard";
+import { UserRoles } from "@/types/models";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { formatFileSize } from "@/lib/utils";
 
 export function CompanyDashboardStats() {
   const [data, setdata] = useState<SuperAdminDashboardDTO>();
@@ -27,47 +30,41 @@ export function CompanyDashboardStats() {
   }, []);
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <CompanyDashboardStatsCard
-          input={{
-            title: "Total Companies",
-            val: data?.totalCompanies,
-            icon: BuildingIcon,
-            isLoading: !data,
-          }}
-        />
-        <CompanyDashboardStatsCard
-          input={{
-            title: "Total Media",
-            val: data?.totalMedia ?? 0,
-            icon: Database,
-            isLoading: !data,
-          }}
-        />
-        <CompanyDashboardStatsCard
-          input={{
-            title: "Total Users",
-            val: data?.totalUsers ?? 0,
-            icon: User,
-            isLoading: !data,
-          }}
-        />
-        <CompanyDashboardStatsCard
-          input={{
-            title: "Total Products",
-            val: data?.totalProducts ?? 0,
-            icon: Box,
-            isLoading: !data,
-          }}
-        />
-        <CompanyDashboardStatsCard
-          input={{
-            title: "Sales Last Month",
-            val: data?.totalSales ?? 0,
-            icon: Coins,
-            isLoading: !data,
-          }}
-        />
+      <div className="flex flex-wrap gap-6">
+        <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+          <CompanyDashboardStatsCard
+            input={{
+              title: "Total Media",
+              val: formatFileSize(data?.totalMedia ?? 0),
+              icon: Database,
+              isLoading: !data,
+            }}
+          />
+          <CompanyDashboardStatsCard
+            input={{
+              title: "Total Users",
+              val: data?.totalUsers ?? 0,
+              icon: User,
+              isLoading: !data,
+            }}
+          />
+          <CompanyDashboardStatsCard
+            input={{
+              title: "Total Products",
+              val: data?.totalProducts ?? 0,
+              icon: Box,
+              isLoading: !data,
+            }}
+          />
+          <CompanyDashboardStatsCard
+            input={{
+              title: "Sales Last Month",
+              val: data?.totalSales ?? 0,
+              icon: Coins,
+              isLoading: !data,
+            }}
+          />
+        </RoleWrapper>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className=" pb-0">
@@ -119,7 +116,9 @@ export function CompanyDashboardStats() {
             </Link>
           </div>
         </Card>
-        <QuickActions />
+        <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+          <QuickActions />
+        </RoleWrapper>
       </div>
     </div>
   );

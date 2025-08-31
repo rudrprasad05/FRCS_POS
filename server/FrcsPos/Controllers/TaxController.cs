@@ -31,7 +31,7 @@ namespace FrcsPos.Controllers
         {
             var model = await taxCategoryRepository.GetAllTaxCategories(queryObject);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

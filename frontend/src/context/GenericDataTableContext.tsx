@@ -116,6 +116,7 @@ export function createGenericListDataContext<T>() {
     const refresh = async () => {
       setLoading(true);
       const res = await fetchFn(pagination.pageNumber, pagination.pageSize);
+      console.log("fetch fn", res);
       setItems(res.data ?? []);
 
       setPagination((prev) => ({

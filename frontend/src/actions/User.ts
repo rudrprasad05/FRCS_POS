@@ -6,6 +6,8 @@ import { ApiResponse, QueryObject, User } from "@/types/models";
 import { cookies } from "next/headers";
 
 import https from "https";
+import { RequestWrapper } from "./RequestWrapper";
+import { buildMediaQueryParams } from "@/lib/params";
 
 const agent = new https.Agent({
   rejectUnauthorized: false, // Allow self-signed cert
@@ -23,28 +25,27 @@ export async function GetAllAdmins(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
   const token = await GetToken();
-
-  const res = await axiosGlobal.get<ApiResponse<User[]>>("user/get-all-users", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  console.log(res.data);
-  return res.data;
-}
-
-// TODO do this. rn the add new user dialog gets all users, regardless of wheather its in company or not
-export async function GetAllAdminsNotInCompany(
-  query?: QueryObject
-): Promise<ApiResponse<User[]>> {
-  const token = await GetToken();
+  const params = buildMediaQueryParams(query);
 
   const res = await axiosGlobal.get<ApiResponse<User[]>>(
-    "user/get-all-users-not-in-company",
+    `user/get-all-users?${params}`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }
   );
   console.log(res.data);
   return res.data;
+}
+export async function GetUsersByCompany(
+  query?: QueryObject
+): Promise<ApiResponse<User[]>> {
+  return RequestWrapper<User[]>("GET", `user/get-user-by-company`, { query });
+}
+
+export async function GetUnAssignedUsers(
+  query?: QueryObject
+): Promise<ApiResponse<User[]>> {
+  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {});
 }
 
 export async function CreateUser(

@@ -17,7 +17,7 @@ import { HousePlus, PackagePlus, Search } from "lucide-react";
 import { GetAllProducts } from "@/actions/Product";
 import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { Product } from "@/types/models";
+import { ESortBy, Product } from "@/types/models";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -31,7 +31,9 @@ export const {
 export default function CompanySection() {
   return (
     <CompanyProductsSectionProvider
-      fetchFn={() => GetAllProducts({ pageNumber: 1, pageSize: 10 })}
+      fetchFn={() =>
+        GetAllProducts({ pageNumber: 1, pageSize: 10, sortBy: ESortBy.DSC })
+      }
     >
       <Header />
       <HandleDataSection />

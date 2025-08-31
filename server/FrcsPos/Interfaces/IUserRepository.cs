@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 
@@ -19,5 +20,7 @@ namespace FrcsPos.Interfaces
         public Task<User?> Exists(string uuid);
         public Task<ApiResponse<UserDTO>> SafeDelete(string uuid);
         public Task<ApiResponse<double>> SumStorage();
+        public Task<ApiResponse<List<UserDTO>>> GetAllSuperAdminsNotInCompany(string? role);
+        public Task<ApiResponse<List<UserDTO>>> GetUserByCompany(RequestQueryObject queryObject);
     }
 }

@@ -6,6 +6,7 @@ using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using Microsoft.AspNetCore.Identity;
@@ -85,6 +86,46 @@ namespace FrcsPos.Repository
             throw new NotImplementedException();
         }
 
+        public async Task<ApiResponse<List<UserDTO>>> GetAllSuperAdminsNotInCompany(string? role = null)
+        {
+            var superAdminRoleId = await _context.Roles
+                .Where(r => r.NormalizedName == "SUPERADMIN")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            var query = _context.Users.AsQueryable();
+
+            query = query.Where(
+                u => !_context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == superAdminRoleId));
+
+            query = query.Where(u =>
+                !_context.CompanyUsers.Any(cu => cu.UserId == u.Id) &&
+                !_context.Companies.Any(c => c.AdminUserId == u.Id));
+
+            if (!string.IsNullOrEmpty(role))
+            {
+                var roleId = await _context.Roles
+                    .Where(r => r.NormalizedName == role.ToUpper())
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
+                query = query.Where(u => _context.UserRoles
+                    .Any(ur => ur.UserId == u.Id && ur.RoleId == roleId));
+            }
+
+            var users = await query
+                .Select(u => new UserDTO
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Username = u.UserName
+                })
+                .ToListAsync();
+
+            return ApiResponse<List<UserDTO>>.Ok(users);
+        }
+
+
         public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(string? role)
         {
             var userDtos = new List<UserDTO>();
@@ -114,7 +155,80 @@ namespace FrcsPos.Repository
 
             return ApiResponse<List<UserDTO>>.Ok(userDtos);
         }
+        public async Task<ApiResponse<List<UserDTO>>> GetUserByCompany(RequestQueryObject queryObject)
+        {
+            if (string.IsNullOrEmpty(queryObject.CompanyName))
+            {
+                return ApiResponse<List<UserDTO>>.Fail(message: "Invalid query string");
+            }
 
+            // Check if company exists
+            var company = await _context.Companies
+                .Include(c => c.Users)
+                    .ThenInclude(cu => cu.User)
+                .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
+
+            if (company == null)
+            {
+                return ApiResponse<List<UserDTO>>.Fail(message: "No company found");
+            }
+
+            // Build query: users associated with the company
+            var query = _context.Users
+                .Where(u => company.Users.Select(cu => cu.UserId).Contains(u.Id))
+                .AsQueryable();
+
+            // Filtering
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(u => u.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(u => u.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(u => u.CreatedOn),
+                _ => query.OrderByDescending(u => u.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var pagedUsers = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Map to DTOs
+            // var result = users.Select(u => u.FromUserToDto()).ToList();
+
+            var result = new List<UserDTO>();
+
+            foreach (var user in pagedUsers)
+            {
+                var dto = user.FromUserToDto();
+
+                var roles = await _userManager.GetRolesAsync(user);
+                dto.Role = roles.FirstOrDefault() ?? "USER";
+
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<UserDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
 
 
         public Task<ApiResponse<UserDTO>> GetOne(string uuid)

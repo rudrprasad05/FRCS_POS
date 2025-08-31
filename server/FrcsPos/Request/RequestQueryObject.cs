@@ -12,8 +12,12 @@ namespace FrcsPos.Request
         private int _pageSize = 10;
         public int PageNumber { get; set; } = 1;
         public bool? IsAvailable { get; set; }
+        public string? CompanyName { get; set; } = null;
         public bool? IsDeleted { get; set; } = false;
         public ESortBy SortBy { get; set; } = ESortBy.ASC;
+        public string? Role { get; set; } = null;
+        public string? UUID { get; set; } = null;
+
 
         public int PageSize
         {

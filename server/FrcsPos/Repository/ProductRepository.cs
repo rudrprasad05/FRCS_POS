@@ -36,7 +36,23 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request)
         {
+            var existsSKU = await _context.Products.AnyAsync(p => p.Sku == request.SKU);
+            if (existsSKU != false)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "Duplicate SKU");
+            }
+
+            var existsBarcode = await _context.Products.AnyAsync(p => p.Barcode == request.Barcode);
+            if (existsBarcode != false)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "Duplicate Barcode");
+            }
+
             var file = request.File;
+            if (file == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "Missing file");
+            }
             var mediaToBeCreated = new Media
             {
                 AltText = file.FileName,
@@ -55,7 +71,7 @@ namespace FrcsPos.Repository
 
             if (company == null || newMedia == null)
             {
-                return ApiResponse<ProductDTO>.Fail();
+                return ApiResponse<ProductDTO>.Fail(message: "null company or media");
             }
 
             var modelToBeCreated = new Product
@@ -91,7 +107,8 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject)
         {
             var query = _context.Products
-                .Include(c => c.Batches)
+                .Include(p => p.Media)
+                .Include(p => p.Batches)
                 .AsQueryable();
 
             // filtering
@@ -140,6 +157,11 @@ namespace FrcsPos.Repository
         }
 
         public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync()
         {
             throw new NotImplementedException();
         }

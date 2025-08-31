@@ -1,16 +1,15 @@
 "use client";
-import {
-  GetPosTerminalById,
-  GetPosTerminalSales,
-  GetPosTerminalSessions,
-} from "@/actions/PosTerminal";
+import { GetPosTerminalById } from "@/actions/PosTerminal";
+import NewSessionDialog from "@/components/company/pos/NewPosSessionDialoge";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, H2, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PosSessionColumns } from "@/components/tables/PosSessionColumns";
+import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,12 +20,15 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import type { PosTerminal, PosSession, Sale } from "@/types/models";
-import { Search, MapPin, Hash, Building } from "lucide-react";
-import { useState, useEffect, use } from "react";
-import NewSessionDialog from "@/components/company/pos/NewPosSessionDialoge";
-import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
-import { PosSessionColumns } from "@/components/tables/PosSessionColumns";
+import type {
+  ApiResponse,
+  PosSession,
+  PosTerminal,
+  QueryObject,
+  Sale,
+} from "@/types/models";
+import { Building, Hash, MapPin, Search } from "lucide-react";
+import { use, useEffect, useState } from "react";
 
 export const { Provider: SessionDataProvider, useGenericData: useSessionData } =
   createGenericListDataContext<PosSession>();
@@ -47,6 +49,7 @@ export default function PosTerminalPage({ params }: PageProps) {
     const fetchPosTerminal = async () => {
       try {
         const terminal = await GetPosTerminalById(posId);
+        console.log("fetchPosTerminal", terminal);
         setPosTerminal(terminal.data as PosTerminal);
       } catch (error) {
         console.error("Failed to fetch POS terminal:", error);
@@ -58,6 +61,41 @@ export default function PosTerminalPage({ params }: PageProps) {
     fetchPosTerminal();
   }, [posId]);
 
+  function GetPosTerminalSessionsMock(
+    query?: QueryObject
+  ): Promise<ApiResponse<PosSession[]>> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let a: ApiResponse<PosSession[]> = {
+          ...posTerminal,
+          success: true,
+          statusCode: 200,
+          timestamp: Date.now.toString(),
+          data: posTerminal?.session as PosSession[],
+        };
+        console.log(a);
+        resolve(a);
+      }, 0);
+    });
+  }
+
+  function GetPosTerminalSalesMock(
+    query?: QueryObject
+  ): Promise<ApiResponse<Sale[]>> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let a: ApiResponse<Sale[]> = {
+          ...posTerminal,
+          success: true,
+          statusCode: 200,
+          timestamp: Date.now.toString(),
+          data: posTerminal?.sales as Sale[],
+        };
+        resolve(a);
+      }, 0);
+    });
+  }
+
   if (loading) {
     return <TableSkeleton columns={4} rows={6} showHeader />;
   }
@@ -68,7 +106,7 @@ export default function PosTerminalPage({ params }: PageProps) {
 
       <SessionDataProvider
         fetchFn={() =>
-          GetPosTerminalSessions({
+          GetPosTerminalSessionsMock({
             pageNumber: 1,
             pageSize: 10,
           })
@@ -76,7 +114,7 @@ export default function PosTerminalPage({ params }: PageProps) {
       >
         <SalesDataProvider
           fetchFn={() =>
-            GetPosTerminalSales({
+            GetPosTerminalSalesMock({
               pageNumber: 1,
               pageSize: 10,
             })
@@ -103,9 +141,6 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
               {posTerminal.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
-          <P className="text-muted-foreground">
-            POS Terminal Details and Activity
-          </P>
         </div>
 
         <NewSessionDialog terminalId={posTerminal.uuid.toString()} />
@@ -245,6 +280,8 @@ function SalesSection() {
 function HandleSessionsData() {
   const { items, loading, pagination, setPagination } = useSessionData();
   const data = items as PosSession[];
+
+  console.log("HandleSessionsData", items);
 
   if (loading) {
     return <TableSkeleton columns={4} rows={6} showHeader />;

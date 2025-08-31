@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Mappers
@@ -24,6 +25,45 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
                 CompanyId = request.CompanyId,
+                Location = request.Location,
+                IsActive = request.IsActive
+            };
+
+            if (request.ProductBatches != null)
+            {
+                dto.ProductBatches = request.ProductBatches.FromModelToDto(false);
+            }
+
+            return dto;
+        }
+
+        public static Warehouse FromDTOToModel(this WarehouseDTO request)
+        {
+            if (request == null)
+            {
+                return new Warehouse();
+            }
+
+            var dto = new Warehouse
+            {
+                Name = request.Name,
+                CompanyId = request.CompanyId,
+                Location = request.Location ?? "",
+            };
+
+            return dto;
+        }
+
+        public static WarehouseDTO FromReqToDTO(this NewWarehouseRequest request)
+        {
+            if (request == null)
+            {
+                return new WarehouseDTO();
+            }
+
+            var dto = new WarehouseDTO
+            {
+                Name = request.Name,
                 Location = request.Location,
             };
 

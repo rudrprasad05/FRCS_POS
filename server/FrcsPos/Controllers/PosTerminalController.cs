@@ -31,7 +31,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.CreatePosTerminalAsync(data);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -44,7 +44,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(queryObject, companyName);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -57,7 +57,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.GetOnePosTerminalByIdAsync(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
