@@ -15,6 +15,7 @@ namespace FrcsPos.Request
         public string? CompanyName { get; set; } = null;
         public bool? IsDeleted { get; set; } = false;
         public ESortBy SortBy { get; set; } = ESortBy.ASC;
+        public string? Role = null;
 
         public int PageSize
         {

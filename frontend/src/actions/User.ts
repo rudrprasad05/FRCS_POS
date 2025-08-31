@@ -36,6 +36,11 @@ export async function GetAllAdmins(
   console.log(res.data);
   return res.data;
 }
+export async function GetUsersByCompany(
+  query?: QueryObject
+): Promise<ApiResponse<User[]>> {
+  return RequestWrapper<User[]>("GET", `user/get-user-by-company`, { query });
+}
 
 export async function GetUnAssignedUsers(
   query?: QueryObject

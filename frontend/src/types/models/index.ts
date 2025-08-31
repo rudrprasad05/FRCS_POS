@@ -150,6 +150,8 @@ export interface User {
   role?: UserRoles;
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
+  createdOn: string;
+  updatedOn: string;
 }
 export interface ProductBatchDTO {}
 export interface CompanyUser extends BaseModel {
