@@ -5,12 +5,9 @@ import {
   Notification,
   UserRoles,
   SaleItem,
+  Product,
+  Warehouse,
 } from "../models";
-
-// export interface SuperAdminDashboardDTO {
-//   users: User[];
-//   companies: Company[];
-// }
 
 export interface SuperAdminDashboardDTO {
   totalCompanies: number;
@@ -19,6 +16,12 @@ export interface SuperAdminDashboardDTO {
   totalProducts: number;
   totalSales: number;
   notifications: Notification[];
+}
+
+export interface ILoadPreCreationInfo {
+  company: Company;
+  products: Product[];
+  warehouses: Warehouse[];
 }
 
 export interface AdminDashboardDTO {

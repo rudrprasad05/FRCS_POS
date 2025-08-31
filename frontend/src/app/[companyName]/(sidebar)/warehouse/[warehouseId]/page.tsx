@@ -9,6 +9,7 @@ import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { WarehouseProductBatchColumn } from "@/components/tables/WarehouseProductBatchColumn";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,7 +22,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import type { ProductBatch, Warehouse } from "@/types/models";
-import { Building, MapPin, Search } from "lucide-react";
+import { Box, Boxes, Building, MapPin, Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
 export const { Provider: BatchDataProvider, useGenericData: useBatchData } =
@@ -46,7 +49,7 @@ export default function WarehousePage({ params }: PageProps) {
         const terminal = await GetOneWarehouseWithBatch({
           uuid: String(warehouseId),
         });
-        console.log("fetchPosTerminal", terminal);
+        console.log("GetOneWarehouseWithBatch", terminal);
         setWarehouse(terminal.data as Warehouse);
       } catch (error) {
         console.error("Failed to fetch POS terminal:", error);
@@ -107,7 +110,9 @@ function WarehouseInfo({ wh }: { wh: Warehouse | null }) {
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{wh.name || "N/A"}</div>
+            <div className="capitalize text-2xl font-bold">
+              {wh.name || "N/A"}
+            </div>
           </CardContent>
         </Card>
 
@@ -117,8 +122,22 @@ function WarehouseInfo({ wh }: { wh: Warehouse | null }) {
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="capitalize text-2xl font-bold">
               {wh.location || "Not specified"}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Active Batches
+            </CardTitle>
+            <Box className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="capitalize text-2xl font-bold">
+              {wh.batches?.length || "0"}
             </div>
           </CardContent>
         </Card>
@@ -132,24 +151,25 @@ function PosTerminalDataTabs({ terminalId }: { terminalId: string }) {
     <Tabs defaultValue="sessions" className="space-y-4">
       <TabsList>
         <TabsTrigger value="sessions">Sessions</TabsTrigger>
-        <TabsTrigger value="sales">Sales</TabsTrigger>
       </TabsList>
 
       <TabsContent value="sessions" className="space-y-4">
-        <SessionsSection />
+        <BatchesSection />
       </TabsContent>
     </Tabs>
   );
 }
 
-function SessionsSection() {
+function BatchesSection() {
+  const params = useParams();
+  const warehouseId = String(params.warehouseId);
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <H2>Sessions</H2>
+          <H2>Product Batches</H2>
           <P className="text-muted-foreground">
-            View all POS terminal sessions
+            View all batches in this warehouse
           </P>
         </div>
 
@@ -169,26 +189,26 @@ function SessionsSection() {
               <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
+          <Button asChild>
+            <Link href={`${warehouseId}/batch/new`} className="gap-2">
+              <Plus className="h-4 w-4" />
+              New Batch
+            </Link>
+          </Button>
         </div>
       </div>
 
-      <HandleSessionsData />
+      <HandleBatchData />
     </div>
   );
 }
 
-function HandleSessionsData() {
+function HandleBatchData() {
   const { items, loading, pagination, setPagination } = useBatchData();
   const data = items as ProductBatch[];
 
-  console.log("HandleSessionsData", items);
-
   if (loading) {
     return <TableSkeleton columns={4} rows={6} showHeader />;
-  }
-
-  if (!data || data.length === 0) {
-    return <NoDataContainer />;
   }
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 import { P } from "@/components/font/HeaderFonts";
-import { ApiResponse } from "@/types/models";
+import { ApiResponse, QueryObject } from "@/types/models";
 import {
   createContext,
   ReactNode,
@@ -98,10 +98,7 @@ export function createGenericListDataContext<T>() {
     initialPageSize = 10,
   }: {
     children: ReactNode;
-    fetchFn: (
-      pageNumber: number,
-      pageSize: number
-    ) => Promise<ApiResponse<T[]>>;
+    fetchFn: (query: QueryObject) => Promise<ApiResponse<T[]>>;
     initialPageSize?: number;
   }) => {
     const [items, setItems] = useState<T[]>([]);
@@ -115,7 +112,10 @@ export function createGenericListDataContext<T>() {
 
     const refresh = async () => {
       setLoading(true);
-      const res = await fetchFn(pagination.pageNumber, pagination.pageSize);
+      const res = await fetchFn({
+        pageNumber: pagination.pageNumber,
+        pageSize: pagination.pageSize,
+      });
       console.log("fetch fn", res);
       setItems(res.data ?? []);
 

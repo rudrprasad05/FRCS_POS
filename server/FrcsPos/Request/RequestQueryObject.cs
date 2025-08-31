@@ -8,6 +8,11 @@ namespace FrcsPos.Request
     public class RequestQueryObject
     {
 
+        public RequestQueryObject()
+        {
+
+        }
+
         private const int MaxPageSize = 100;
         private int _pageSize = 10;
         public int PageNumber { get; set; } = 1;

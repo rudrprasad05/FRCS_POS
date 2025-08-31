@@ -16,15 +16,12 @@ namespace FrcsPos.Controllers
     [Route("ws")]
     public class WebSocketController : BaseController
     {
-        private readonly IInventoryRepository _inventoryRepository;
-        
+
         public WebSocketController(
             IConfiguration configuration,
             ITokenService tokenService,
-            ILogger<WebSocketController> logger,
-            IInventoryRepository inventoryRepository) : base(configuration, tokenService, logger)
+            ILogger<WebSocketController> logger) : base(configuration, tokenService, logger)
         {
-            _inventoryRepository = inventoryRepository;
         }
 
         [HttpGet("connect")]
@@ -70,32 +67,34 @@ namespace FrcsPos.Controllers
 
                             // Process the message based on its type
                             string responseJson = "";
-                            
+
                             switch (message.Type)
                             {
                                 case WebSocketType.SCAN:
-                                    responseJson = await ProcessBarcodeScan(message);
+                                    // responseJson = await ProcessBarcodeScan(message);
                                     break;
-                                    
+
                                 case WebSocketType.PING:
                                     // Just echo back the payload for PING messages
-                                    responseJson = JsonSerializer.Serialize(new { 
-                                        type = "PING", 
+                                    responseJson = JsonSerializer.Serialize(new
+                                    {
+                                        type = "PING",
                                         payload = message.Payload,
                                         sessionId = message.SessionId
                                     });
                                     break;
-                                    
+
                                 default:
                                     // Unknown message type
-                                    responseJson = JsonSerializer.Serialize(new { 
-                                        type = "ERROR", 
+                                    responseJson = JsonSerializer.Serialize(new
+                                    {
+                                        type = "ERROR",
                                         payload = "Unknown message type",
                                         sessionId = message.SessionId
                                     });
                                     break;
                             }
-                            
+
                             // Send the response back to the client
                             var responseBytes = Encoding.UTF8.GetBytes(responseJson);
                             await webSocket.SendAsync(
@@ -109,10 +108,11 @@ namespace FrcsPos.Controllers
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Failed to process message: {ex.Message}");
-                        
+
                         // Send error response
-                        var errorJson = JsonSerializer.Serialize(new { 
-                            type = "ERROR", 
+                        var errorJson = JsonSerializer.Serialize(new
+                        {
+                            type = "ERROR",
                             payload = $"Error processing message: {ex.Message}"
                         });
                         var errorBytes = Encoding.UTF8.GetBytes(errorJson);
@@ -124,63 +124,6 @@ namespace FrcsPos.Controllers
                         );
                     }
                 }
-            }
-        }
-        
-        private async Task<string> ProcessBarcodeScan(WebSocketDTO message)
-        {
-            if (string.IsNullOrEmpty(message.Payload))
-            {
-                return JsonSerializer.Serialize(new { 
-                    type = "ERROR", 
-                    payload = "Barcode payload is empty",
-                    sessionId = message.SessionId
-                });
-            }
-            
-            // Extract session ID and barcode from the message
-            string barcode = message.Payload;
-            string sessionId = message.SessionId ?? "";
-            
-            try
-            {
-                // Get the company ID from the session
-                // For now, we'll use a default company ID of 1
-                // In a real implementation, you would get this from the session
-                int companyId = 1;
-                
-                // Find the product by barcode
-                var productResponse = await _inventoryRepository.GetProductByBarcodeAsync(companyId, barcode);
-                
-                if (productResponse.Success)
-                {
-                    // Product found, return it
-                    return JsonSerializer.Serialize(new { 
-                        type = "SCAN_RESULT", 
-                        payload = productResponse.Data,
-                        sessionId = sessionId,
-                        success = true
-                    });
-                }
-                else
-                {
-                    // Product not found
-                    return JsonSerializer.Serialize(new { 
-                        type = "SCAN_RESULT", 
-                        payload = productResponse.Message,
-                        sessionId = sessionId,
-                        success = false
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error processing barcode scan: {ex.Message}");
-                return JsonSerializer.Serialize(new { 
-                    type = "ERROR", 
-                    payload = $"Error processing barcode scan: {ex.Message}",
-                    sessionId = sessionId
-                });
             }
         }
     }
