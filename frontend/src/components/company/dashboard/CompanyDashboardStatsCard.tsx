@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 interface IDashData {
   title: string;
-  val?: number;
+  val?: string | number;
   icon: React.ElementType;
   isLoading: boolean;
 }

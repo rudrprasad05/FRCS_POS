@@ -108,7 +108,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _mediaRepository.SafeDelete(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

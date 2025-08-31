@@ -29,7 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _checkoutRepository.GetByUUIDAsync(uuid);
 
-            if (model == null || model.Success == false)
+            if (model == null || !model.Success || model.Success == false)
             {
                 return BadRequest(model);
             }

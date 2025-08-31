@@ -22,12 +22,12 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
       console.log(company);
 
       return (
-        <div className="relative aspect-square h-8  w-full rounded-t-lg overflow-hidden">
+        <div className="relative object-cover aspect-square h-16 w-full rounded-t-lg overflow-hidden">
           {isImageValid ? (
             <>
               <Image
-                width={20}
-                height={20}
+                width={100}
+                height={100}
                 src={company.media?.url as string}
                 onError={(e) => {
                   e.currentTarget.onerror = null; // prevent infinite loop

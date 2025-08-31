@@ -52,7 +52,7 @@ namespace FrcsPos.Controllers
 
             var model = await _productRepository.CreateProductAsync(data);
 
-            if (model == null || model.Success != true)
+            if (model == null || !model.Success || model.Success != true)
             {
                 return BadRequest(model);
             }
@@ -65,7 +65,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.GetAllProducts(queryObject);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -78,7 +78,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.GetProductByUUID(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -91,7 +91,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.SoftDelete(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

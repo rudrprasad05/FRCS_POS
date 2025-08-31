@@ -14,6 +14,7 @@ import { QuickActions } from "./QuickActions";
 import CompanyDashboardStatsCard from "./CompanyDashboardStatsCard";
 import { UserRoles } from "@/types/models";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { formatFileSize } from "@/lib/utils";
 
 export function CompanyDashboardStats() {
   const [data, setdata] = useState<SuperAdminDashboardDTO>();
@@ -34,7 +35,7 @@ export function CompanyDashboardStats() {
           <CompanyDashboardStatsCard
             input={{
               title: "Total Media",
-              val: data?.totalMedia ?? 0,
+              val: formatFileSize(data?.totalMedia ?? 0),
               icon: Database,
               isLoading: !data,
             }}

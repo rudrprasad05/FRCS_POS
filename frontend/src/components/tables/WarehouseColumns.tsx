@@ -6,8 +6,25 @@ import { Edit, Eye } from "lucide-react";
 
 import { Warehouse } from "@/types/models";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
+  {
+    accessorKey: "isActive",
+    header: "Status",
+    cell: ({ row }) => {
+      const isActive = row.original.isActive; // Get the entire row data (of type companyType)
+
+      return (
+        <div
+          className={cn(
+            "rounded-full w-3 h-3 ml-4",
+            isActive ? "bg-green-500" : "bg-rose-500"
+          )}
+        />
+      );
+    },
+  },
   {
     accessorKey: "name",
     header: "Name",
@@ -45,7 +62,7 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`/admin/companies/${company.uuid}`}
+              href={`warehouse/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
             >
               Edit
@@ -55,7 +72,7 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
           {/* <DeleteCompanyDialoge data={company} /> */}
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`/${encodeURI(company.name)}`}
+              href={`warehouse/${company.uuid}`}
               className="w-24 flex items-center justify-between"
             >
               View

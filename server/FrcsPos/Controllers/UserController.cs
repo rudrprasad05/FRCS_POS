@@ -56,7 +56,7 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] string? role)
         {
             var model = await _userRepository.GetAllUsers(role);
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -68,7 +68,7 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
         {
             var model = await _userRepository.GetAllSuperAdminsNotInCompany(role);
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -80,7 +80,7 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetUserByCompany([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _userRepository.GetUserByCompany(queryObject);
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

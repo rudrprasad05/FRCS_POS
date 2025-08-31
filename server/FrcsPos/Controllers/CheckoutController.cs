@@ -29,7 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _checkoutRepository.CreateCheckoutAsync(data);
 
-            if (model == null || model.Success == false)
+            if (model == null || !model.Success || model.Success == false)
             {
                 return BadRequest(model);
             }
@@ -42,7 +42,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _checkoutRepository.GenerateReceiptPDF(uuid);
 
-            if (model == null || model.Success == false)
+            if (model == null || !model.Success || model.Success == false)
             {
                 return BadRequest(model);
             }

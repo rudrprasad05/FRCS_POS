@@ -29,7 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.CreateAsync(data);
 
-            if (model == null || model.Success == false)
+            if (model == null || !model.Success || model.Success == false)
             {
                 return BadRequest(model);
             }
@@ -42,7 +42,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.GetAllAsync(queryObject);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -51,13 +51,13 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("get-full-by-uuid")]
-        public async Task<IActionResult> GetFullCompanyByUUID([FromQuery] string uuid)
+        public async Task<IActionResult> GetFullWarehouseByUUID([FromQuery] RequestQueryObject requestQueryObject)
         {
-            var model = await _warehouseRepository.GetOneAsync(uuid);
+            var model = await _warehouseRepository.GetOneAsync(requestQueryObject);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -68,7 +68,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.SoftDeleteAsync(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }

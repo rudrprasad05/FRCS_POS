@@ -13,3 +13,9 @@ export async function CreateWarehouse(
 ): Promise<ApiResponse<Warehouse>> {
   return RequestWrapper<Warehouse>("POST", `warehouse/create`, { data });
 }
+
+export async function GetOneWarehouseWithBatch(
+  query?: QueryObject
+): Promise<ApiResponse<Warehouse>> {
+  return RequestWrapper<Warehouse>("GET", `warehouse/get-one`, { query });
+}

@@ -119,9 +119,25 @@ namespace FrcsPos.Repository
             };
         }
 
-        public Task<ApiResponse<WarehouseDTO>> GetOneAsync(string uuid)
+        public async Task<ApiResponse<WarehouseDTO>> GetOneAsync(RequestQueryObject requestQueryObject)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(requestQueryObject.UUID))
+            {
+                return ApiResponse<WarehouseDTO>.Fail(message: "invalid url");
+            }
+
+            var wh = await _context.Warehouses
+                .Include(wh => wh.ProductBatches)
+                .FirstOrDefaultAsync(wh => wh.UUID == requestQueryObject.UUID);
+
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.NotFound(message: "warehouse not found");
+            }
+
+            var dto = wh.FromModelToDto();
+
+            return ApiResponse<WarehouseDTO>.Ok(dto);
         }
 
         public Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(string uuid)

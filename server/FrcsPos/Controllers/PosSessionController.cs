@@ -60,7 +60,7 @@ namespace FrcsPos.Controllers
             };
             var model = await _posSessionRepository.CreateNewPosSession(data);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -93,7 +93,7 @@ namespace FrcsPos.Controllers
             };
             var model = await _posSessionRepository.ResumePosSession(data);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -106,7 +106,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posSessionRepository.GetPosSessionByUUID(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -119,7 +119,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posSessionRepository.GetPosSessionByUUID(terminalUUID);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
 
                 return BadRequest("model not gotten");

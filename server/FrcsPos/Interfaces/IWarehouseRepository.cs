@@ -12,7 +12,7 @@ namespace FrcsPos.Interfaces
     {
         public Task<ApiResponse<WarehouseDTO>> CreateAsync(NewWarehouseRequest request);
         public Task<ApiResponse<List<WarehouseDTO>>> GetAllAsync(RequestQueryObject requestQueryObject);
-        public Task<ApiResponse<WarehouseDTO>> GetOneAsync(string uuid);
+        public Task<ApiResponse<WarehouseDTO>> GetOneAsync(RequestQueryObject requestQueryObject);
         public Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(string uuid);
 
     }

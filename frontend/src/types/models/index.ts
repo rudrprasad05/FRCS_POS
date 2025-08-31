@@ -7,6 +7,7 @@ export interface BaseModel {
   uuid: string;
   createdOn: string;
   updatedOn: string;
+  isDeleted: boolean;
 }
 
 export interface Product extends BaseModel {
@@ -129,6 +130,8 @@ export interface Notification extends BaseModel {
 
 export interface Warehouse extends BaseModel {
   companyId: number;
+  company: Company;
+  isActive: boolean;
 
   name: string;
   location?: string;

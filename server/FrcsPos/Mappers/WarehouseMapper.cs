@@ -26,7 +26,13 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 CompanyId = request.CompanyId,
                 Location = request.Location,
+                IsActive = request.IsActive
             };
+
+            if (request.ProductBatches != null)
+            {
+                dto.ProductBatches = request.ProductBatches.FromModelToDto(false);
+            }
 
             return dto;
         }

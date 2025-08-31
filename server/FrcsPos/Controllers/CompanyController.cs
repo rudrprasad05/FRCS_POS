@@ -29,7 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.CreateCompanyAsync(data);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -42,7 +42,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.AddUserToCompanyAsync(request);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -55,7 +55,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetAllCompanyAsync(queryObject);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -68,7 +68,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetCompanyByAdminUserIdAsync(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -81,7 +81,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetCompanyByAssociatedAdminUserIdAsync(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -94,7 +94,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetFullCompanyByUUIDAsync(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
@@ -107,7 +107,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.SoftDelete(uuid);
 
-            if (model == null)
+            if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
             }
