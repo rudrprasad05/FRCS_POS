@@ -8,39 +8,26 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Route("api/checkout")]
+    [Route("api/sale")]
     [ApiController]
-    public class CheckoutController : BaseController
+    public class SaleController : BaseController
     {
         private readonly ICheckoutRepository _checkoutRepository;
 
-        public CheckoutController(
+        public SaleController(
             IConfiguration configuration,
             ITokenService tokenService,
-            ILogger<UserController> logger,
+            ILogger<SaleController> logger,
             ICheckoutRepository checkoutRepository
         ) : base(configuration, tokenService, logger)
         {
             _checkoutRepository = checkoutRepository;
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateCheckout([FromBody] NewCheckoutRequest data)
-        {
-            var model = await _checkoutRepository.CreateCheckoutAsync(data);
-
-            if (model == null || model.Success == false)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
-        }
-
-        [HttpGet("receipt")]
+        [HttpGet("get-by-uuid")]
         public async Task<IActionResult> CreateCheckout([FromQuery] string uuid)
         {
-            var model = await _checkoutRepository.GenerateReceiptPDF(uuid);
+            var model = await _checkoutRepository.GetByUUIDAsync(uuid);
 
             if (model == null || model.Success == false)
             {

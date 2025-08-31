@@ -15,6 +15,7 @@ namespace FrcsPos.Response.DTO
         public string? Barcode { get; set; }
         public decimal Price { get; set; }
         public int TaxCategoryId { get; set; }
+        public TaxCategoryDTO TaxCategory { get; set; } = default!;
         public bool IsPerishable { get; set; } = false;
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;

@@ -15,7 +15,10 @@ export async function middleware(req: NextRequest) {
 
   if (!token) {
     console.error("qqqqq no token md.ts"); // ⬅️ optional debug
-    return NextResponse.redirect(new URL("/login", req.url));
+    const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
+    return NextResponse.redirect(
+      new URL(`/login?returnUrl=${encodeURIComponent(returnUrl)}`, req.url)
+    );
   }
 
   try {
@@ -30,7 +33,10 @@ export async function middleware(req: NextRequest) {
 
     if (!res.ok) {
       console.error("qqqqq Auth check failed  md.ts:", res.status);
-      return NextResponse.redirect(new URL("/login", req.url));
+      const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
+      return NextResponse.redirect(
+        new URL(`/login?returnUrl=${encodeURIComponent(returnUrl)}`, req.url)
+      );
     }
 
     const data: ApiResponse<LoginDTO> = await res.json();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
@@ -67,6 +68,39 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("resume")]
+        public async Task<IActionResult> ResumeSession([FromBody] CreateNewPosSession request, [FromQuery][Required] string uuid)
+        {
+            // Try to find user by email
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(message: "Invalid credentials"));
+            }
+
+            // Check password
+            var validPassword = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+            if (!validPassword.Succeeded)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(message: "Invalid credentials"));
+            }
+
+            var data = new ResumePosSession
+            {
+                PosTerminalUUID = request.PosTerminalUUID,
+                PosUserId = user.Id,
+                PosSessionId = uuid,
+            };
+            var model = await _posSessionRepository.ResumePosSession(data);
+
+            if (model == null)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
         [HttpGet("get-session-by-uuid")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] string uuid)
         {
@@ -74,6 +108,20 @@ namespace FrcsPos.Controllers
 
             if (model == null)
             {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-all-by-terminal-uuid")]
+        public async Task<IActionResult> GetAllSessionsForOneTerminal([FromQuery] string terminalUUID)
+        {
+            var model = await _posSessionRepository.GetPosSessionByUUID(terminalUUID);
+
+            if (model == null)
+            {
+
                 return BadRequest("model not gotten");
             }
 

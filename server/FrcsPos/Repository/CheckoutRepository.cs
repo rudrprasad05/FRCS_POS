@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using FrcsPos.Context;
@@ -35,16 +36,19 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<SaleDTO>> CreateCheckoutAsync(NewCheckoutRequest request)
         {
+            // verify company exists
             var company = await _context.Companies
                 .FirstOrDefaultAsync(c => c.Name == request.CompanyName);
             if (company == null)
                 return ApiResponse<SaleDTO>.Fail(message: "Company not found");
 
+            // verify session exists
             var session = await _context.PosSessions
                 .FirstOrDefaultAsync(ps => ps.Id == request.PosSessionId && ps.IsActive == true);
             if (session == null)
                 return ApiResponse<SaleDTO>.Fail(message: "POS session not found");
 
+            // verify cashier exists
             var cashier = await _userManager
                 .FindByIdAsync(request.CashierId);
             if (cashier == null)
@@ -79,7 +83,7 @@ namespace FrcsPos.Repository
                 Subtotal = request.Subtotal,
                 TaxTotal = request.TaxTotal,
                 Total = request.Total,
-                Status = request.Status,
+                Status = SaleStatus.PENDING,
                 Items = saleItems
             };
 
@@ -87,6 +91,32 @@ namespace FrcsPos.Repository
             await _context.SaveChangesAsync();
 
             return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+        }
+        public async Task<ApiResponse<SaleDTO>> GetByUUIDAsync(string uuid)
+        {
+            {
+                var sale = await _context.Sales
+                    .Include(s => s.Company)
+                    .Include(s => s.Items)
+                        .ThenInclude(si => si.Product)
+                            .ThenInclude(p => p.TaxCategory)
+                    .Include(s => s.PosSession)
+                        .ThenInclude(ps => ps.PosTerminal)
+                    .Include(s => s.Cashier)
+                    .FirstOrDefaultAsync(s => s.UUID == uuid);
+
+                if (sale == null)
+                    return ApiResponse<SaleDTO>.NotFound(message: "Sale not found");
+                if (sale.Company == null)
+                    return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
+
+                return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            }
+        }
+
+        public async Task<ApiResponse<string>> GenerateReceiptPDF(string uuid)
+        {
+            return ApiResponse<string>.Ok("ok");
         }
     }
 }

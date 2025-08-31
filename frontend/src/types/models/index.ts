@@ -108,6 +108,7 @@ export interface QueryObject {
   isDeleted?: boolean;
   sortBy?: ESortBy;
   uuid?: string;
+  companyName?: string;
   role?: UserRoles;
   isAvailable?: boolean;
 }
@@ -178,8 +179,8 @@ export interface Sale extends BaseModel {
   companyId: number;
   company?: Company;
 
-  posTerminalId: number;
-  posTerminal?: PosTerminal;
+  posSessionId: number;
+  posSession?: PosSession;
 
   cashierId: string;
   cashier?: User;

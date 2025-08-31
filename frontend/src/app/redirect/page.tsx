@@ -28,6 +28,8 @@ export default function Redirect() {
       return;
     }
 
+    console.log("redirect", user);
+
     if (user.role?.toUpperCase() == UserRoles.SUPERADMIN) {
       console.log("su", user.role);
       router.push("/admin/dashboard");

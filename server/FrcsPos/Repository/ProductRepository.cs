@@ -49,6 +49,10 @@ namespace FrcsPos.Repository
             }
 
             var file = request.File;
+            if (file == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "Missing file");
+            }
             var mediaToBeCreated = new Media
             {
                 AltText = file.FileName,

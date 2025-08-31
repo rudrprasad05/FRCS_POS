@@ -1,5 +1,5 @@
 "use client";
-import { CreateNewPosSession } from "@/actions/PosSession";
+import { CreateNewPosSession, ResumeSession } from "@/actions/PosSession";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,13 +30,11 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { validate as uuidValidate } from "uuid";
 
-interface NewSessionDialogProps {
-  terminalId: string;
+interface IResumeSession {
+  uuid: string;
 }
 
-export default function NewSessionDialog({
-  terminalId,
-}: NewSessionDialogProps) {
+export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -57,16 +55,19 @@ export default function NewSessionDialog({
   async function onSubmit(values: SignInFormType) {
     setLoading(true);
     try {
-      const res = await CreateNewPosSession({
-        PosTerminalUUID: terminalId,
-        email: values.email,
-        password: values.password,
-      });
+      const res = await ResumeSession(
+        {
+          PosTerminalUUID: uuid,
+          email: values.email,
+          password: values.password,
+        },
+        uuid
+      );
 
       const url = res.data?.uuid;
       if (uuidValidate(url)) {
         toast.success("Session created. Redirecting");
-        router.push(`${terminalId}/session/${url}`);
+        router.push(`${uuid}/session/${url}`);
       } else {
         toast.error("Session url was invalid");
         console.error("Invalid UUID:", url);
@@ -90,7 +91,6 @@ export default function NewSessionDialog({
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Play className="h-4 w-4" />
-          Start New Session
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

@@ -29,10 +29,12 @@ export async function GetAllCompanies(
 export async function GetCompanyByAdminUserId(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  return RequestWrapper<Company>(
-    "GET",
-    `company/get-one-by-admin-id?uuid=${uuid}`
-  );
+  let query: QueryObject = {
+    uuid: uuid,
+  };
+  return RequestWrapper<Company>("GET", `company/get-one-by-admin-id`, {
+    query,
+  });
 }
 
 export async function GetCompanyForAssociatedUsers(
@@ -40,7 +42,8 @@ export async function GetCompanyForAssociatedUsers(
 ): Promise<ApiResponse<Company>> {
   return RequestWrapper<Company>(
     "GET",
-    `company/get-one-by-associated-admin-id?uuid=${uuid}`
+    `company/get-one-by-associated-admin-id?uuid=${uuid}`,
+    {}
   );
 }
 
@@ -49,7 +52,8 @@ export async function GetFullCompanyByUUID(
 ): Promise<ApiResponse<Company>> {
   return RequestWrapper<Company>(
     "GET",
-    `company/get-full-by-uuid?uuid=${uuid}`
+    `company/get-full-by-uuid?uuid=${uuid}`,
+    {}
   );
 }
 

@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";
 
-import { Company, CompanyUser, User, Warehouse } from "@/types/models";
+import { Warehouse } from "@/types/models";
 import Link from "next/link";
-import { DeleteCompanyDialoge } from "../superadmin/companies/DeleteCompaniesDialoge";
 
 export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
   {

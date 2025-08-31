@@ -40,7 +40,7 @@ export async function GetAllAdmins(
 export async function GetUnAssignedUsers(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`);
+  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {});
 }
 
 export async function CreateUser(

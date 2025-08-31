@@ -35,6 +35,15 @@ export async function CreateNewPosSession(
   return res.data;
 }
 
+export async function ResumeSession(
+  data: ICreateNewPosSession,
+  uuid: string
+): Promise<ApiResponse<PosSession>> {
+  return RequestWrapper<PosSession>("POST", `pos-session/resume?uuid=${uuid}`, {
+    data,
+  });
+}
+
 export async function GetPosSession(
   uuid: string
 ): Promise<ApiResponse<PosSessionWithProducts>> {
@@ -54,14 +63,15 @@ export async function GenerateQr(
 ): Promise<ApiResponse<QuickConnect>> {
   return RequestWrapper<QuickConnect>(
     "GET",
-    `quickconnect/generate?uuid=${uuid}`
+    `quickconnect/generate?uuid=${uuid}`,
+    {}
   );
 }
 
 export async function Checkout(
   data: NewCheckoutRequest
 ): Promise<ApiResponse<Sale>> {
-  return RequestWrapper<Sale>("POST", `checkout/create`, data);
+  return RequestWrapper<Sale>("POST", `checkout/create`, { data });
 }
 
 export async function ValidateQr(
@@ -69,6 +79,7 @@ export async function ValidateQr(
 ): Promise<ApiResponse<QuickConnect>> {
   return RequestWrapper<QuickConnect>(
     "GET",
-    `quickconnect/validate?uuid=${uuid}`
+    `quickconnect/validate?uuid=${uuid}`,
+    {}
   );
 }

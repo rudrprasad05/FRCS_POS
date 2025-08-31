@@ -15,7 +15,6 @@ namespace FrcsPos.Request
         public decimal Subtotal { get; set; }
         public decimal TaxTotal { get; set; }
         public decimal Total { get; set; }
-        public SaleStatus Status { get; set; } = SaleStatus.PENDING;
         public List<SaleItemDTO> Items { get; set; } = [];
     }
 }
