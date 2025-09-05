@@ -79,3 +79,13 @@ export async function CreateProduct(
     return ApiResponseFail<Product>();
   }
 }
+
+export async function EditProduct(
+  data: FormData,
+  uuid: string
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("PATCH", `product/edit`, {
+    query: { uuid },
+    data: data,
+  });
+}

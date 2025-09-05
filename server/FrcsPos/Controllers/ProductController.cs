@@ -95,7 +95,9 @@ namespace FrcsPos.Controllers
             [FromForm] string Barcode,
             [FromForm] bool IsPerishable,
             IFormFile? File,
-            [FromForm] int TaxCategoryId
+            [FromForm] int TaxCategoryId,
+            [FromForm] int MediaId
+
         )
         {
             var data = new EditProductRequest
@@ -106,6 +108,7 @@ namespace FrcsPos.Controllers
                 Barcode = Barcode,
                 IsPerishable = IsPerishable,
                 File = File,
+                MediaId = MediaId,
                 TaxCategoryId = TaxCategoryId,
             };
             var model = await _productRepository.EditProductAsync(queryObject, data);

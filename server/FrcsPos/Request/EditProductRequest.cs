@@ -14,5 +14,7 @@ namespace FrcsPos.Request
         public bool IsPerishable { get; set; } = false;
         public IFormFile? File { get; set; } = null!;
         public int TaxCategoryId { get; set; } = default!;
+        public int MediaId { get; set; } = default!;
+
     }
 }

@@ -176,6 +176,31 @@ namespace FrcsPos.Repository
                 return ApiResponse<ProductDTO>.NotFound();
             }
 
+            var mediaId = 0;
+
+            if (request.File != null)
+            {
+                var mediaToBeCreated = new Media
+                {
+                    AltText = request.File.FileName,
+                    FileName = request.File.FileName,
+                    ShowInGallery = true,
+                };
+
+                mediaToBeCreated.SizeInBytes = request.File.Length;
+                mediaToBeCreated.ContentType = request.File.ContentType;
+
+
+                var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: request.File);
+                if (newMedia.Data != null)
+                {
+                    mediaId = newMedia.Data.Id;
+                }
+            }
+            else
+            {
+                mediaId = request.MediaId;
+            }
             // Update fields
             product.Name = request.ProductName;
             product.Sku = request.SKU;
@@ -183,13 +208,12 @@ namespace FrcsPos.Repository
             product.Price = request.Price;
             product.IsPerishable = request.IsPerishable;
             product.TaxCategoryId = request.TaxCategoryId;
+            product.MediaId = mediaId;
 
-            // Update audit fields if you have them
             product.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            // Map back to DTO
             var productDto = product.FromModelToDto();
 
             return ApiResponse<ProductDTO>.Ok(productDto);

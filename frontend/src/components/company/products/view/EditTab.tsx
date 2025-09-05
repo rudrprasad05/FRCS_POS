@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateProduct } from "@/actions/Product";
+import { CreateProduct, EditProduct } from "@/actions/Product";
 import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,7 @@ export function EditorTab({
   product: Product;
   taxes: TaxCategory[];
 }) {
+  console.log("pp", product);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     product?.media?.url as string
@@ -78,7 +79,7 @@ export function EditorTab({
       sku: product?.sku,
       barcode: product?.barcode as string,
       price: String(product?.price),
-      taxCategoryId: String(product?.id),
+      taxCategoryId: String(product?.taxCategoryId),
       isPerishable: product?.isPerishable,
     },
   });
@@ -109,6 +110,9 @@ export function EditorTab({
     formData.append("Barcode", data.barcode as string);
     formData.append("IsPerishable", data.isPerishable ? "true" : "false");
     formData.append("TaxCategoryId", data.taxCategoryId as string);
+    formData.append("MediaId", String(product.mediaId));
+
+    console.log("fd", formData);
 
     if (data.image) {
       formData.append("File", data.image); // IFormFile
@@ -116,15 +120,16 @@ export function EditorTab({
 
     console.log("Submitting FormData:", formData);
 
-    try {
-      const res = await CreateProduct(formData);
+    const res = await EditProduct(formData, product.uuid);
+
+    if (res.success) {
       console.log(res);
-      toast("Uploaded");
-    } catch (error) {
-      toast("Failed to upload");
-    } finally {
-      setIsSubmitting(false);
+      toast.success("Uploaded");
+    } else {
+      toast.error("Failed to upload");
     }
+
+    setIsSubmitting(false);
   };
 
   return (
