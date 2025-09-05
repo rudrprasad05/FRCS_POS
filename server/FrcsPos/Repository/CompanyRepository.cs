@@ -117,6 +117,12 @@ namespace FrcsPos.Repository
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
             }
 
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.ToLower();
+                query = query.Where(c => c.Name.ToLower().Contains(search));
+            }
+
             // Sorting
             query = queryObject.SortBy switch
             {

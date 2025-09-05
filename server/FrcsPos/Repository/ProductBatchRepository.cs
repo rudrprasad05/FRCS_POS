@@ -34,14 +34,110 @@ namespace FrcsPos.Repository
 
         }
 
-        public Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductRequest request)
+        public async Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductBatchRequest request)
         {
-            throw new NotImplementedException();
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == request.CompanyId);
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId);
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(w => w.UUID == request.WarehouseId);
+
+            if (company == null || product == null || wh == null)
+            {
+                return ApiResponse<ProductBatchDTO>.Fail();
+            }
+
+            var newModel = new ProductBatch
+            {
+                CompanyId = company.Id,
+                ProductId = product.Id,
+                WarehouseId = wh.Id,
+                Quantity = request.Quantity,
+                ExpiryDate = request.ExpiryDate,
+            };
+
+            var model = await _context.ProductBatches.AddAsync(newModel);
+            await _context.SaveChangesAsync();
+
+            var result = model.Entity.FromModelToDto();
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
+                title: "New batch",
+                message: $"A new batch for product " + product.Name + " was created",
+                type: NotificationType.INFO,
+                actionUrl: "/",
+                isSuperAdmin: false,
+                companyId: company.Id
+            ));
+
+
+            return new ApiResponse<ProductBatchDTO>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+            };
         }
 
-        public Task<ApiResponse<List<ProductBatchDTO>>> GetAllAsycn(RequestQueryObject queryObject)
+        public async Task<ApiResponse<List<ProductBatchDTO>>> GetAllAsycn(RequestQueryObject queryObject)
         {
-            throw new NotImplementedException();
+            var query = _context.ProductBatches
+                .Include(p => p.Product)
+                .Where(p => p.Warehouse.UUID == queryObject.UUID)
+                .AsQueryable();
+
+            // filtering
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.ToLower();
+                query = query.Where(c =>
+                    c.Product.Name.ToLower().Contains(search) ||
+                    c.Product.Sku.ToLower().Contains(search) ||
+                    c.Product.Barcode.ToLower().Contains(search) ||
+                    c.Product.Price.ToString().Contains(search)
+                );
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<ProductBatchDTO>();
+            foreach (var product in products)
+            {
+                var dto = product.FromModelToDto();
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<ProductBatchDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
         }
 
         public Task<ApiResponse<ProductBatchDTO>> GetByUUID(RequestQueryObject queryObject)

@@ -17,8 +17,16 @@ namespace FrcsPos.Response.DTO
         public List<SaleDTO> Sales { get; set; } = [];
 
         public UserDTO PosUser { get; set; } = default!;
-        public string PosUserId { get; set; } = null!;
+        public string PosUserId { get; set; } = default!;
         public bool IsActive { get; set; } = default!;
+
+    }
+
+    public class PosSessionWithProducts
+    {
+        public PosSessionDTO PosSession { get; set; } = default!;
+        public List<ProductDTO> Products { get; set; } = default!;
+
 
     }
 

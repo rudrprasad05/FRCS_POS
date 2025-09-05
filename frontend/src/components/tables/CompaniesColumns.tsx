@@ -58,16 +58,7 @@ export const CompanyOnlyColumn: ColumnDef<Company>[] = [
               <Edit className="" />
             </Link>
           </Button>
-          <DeleteCompanyDialoge data={company} />
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/${encodeURI(company.name)}`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
+          {/* <DeleteCompanyDialoge data={company} /> */}
         </div>
       );
     },

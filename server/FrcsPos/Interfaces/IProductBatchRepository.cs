@@ -10,7 +10,7 @@ namespace FrcsPos.Interfaces
 {
     public interface IProductBatchRepository
     {
-        public Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductRequest request);
+        public Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductBatchRequest request);
         public Task<ApiResponse<ProductBatchDTO>> GetByUUID(RequestQueryObject queryObject);
         public Task<ApiResponse<List<ProductBatchDTO>>> GetAllAsycn(RequestQueryObject queryObject);
         public Task<ApiResponse<ProductBatchDTO>> SoftDeleteAsync(RequestQueryObject queryObject);

@@ -1,29 +1,20 @@
+import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
+import { axiosGlobal } from "@/lib/axios";
 import {
   ApiResponse,
   ApiResponseFail,
   Company,
   QueryObject,
 } from "@/types/models";
-import { GetToken } from "./User";
-import { axiosGlobal } from "@/lib/axios";
-import { buildMediaQueryParams } from "@/lib/params";
-import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
 import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllCompanies(
   query?: QueryObject
 ): Promise<ApiResponse<Company[]>> {
-  const token = await GetToken();
-  const params = buildMediaQueryParams(query);
-
-  const res = await axiosGlobal.get<ApiResponse<Company[]>>(
-    `company/get-all?${params}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
-  return res.data;
+  console.log("GetAllCompanies", query);
+  return RequestWrapper<Company[]>("GET", `company/get-all`, {
+    query,
+  });
 }
 
 export async function GetCompanyByAdminUserId(
@@ -42,19 +33,17 @@ export async function GetCompanyForAssociatedUsers(
 ): Promise<ApiResponse<Company>> {
   return RequestWrapper<Company>(
     "GET",
-    `company/get-one-by-associated-admin-id?uuid=${uuid}`,
-    {}
+    `company/get-one-by-associated-admin-id`,
+    { query: { uuid } }
   );
 }
 
 export async function GetFullCompanyByUUID(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  return RequestWrapper<Company>(
-    "GET",
-    `company/get-full-by-uuid?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<Company>("GET", `company/get-full-by-uuid`, {
+    query: { uuid },
+  });
 }
 
 export async function AddUserToCompany(

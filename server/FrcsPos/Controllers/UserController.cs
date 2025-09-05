@@ -53,9 +53,9 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("get-all-users")]
-        public async Task<IActionResult> GetAllSuperAdmins([FromQuery] string? role)
+        public async Task<IActionResult> GetAllSuperAdmins([FromQuery] RequestQueryObject requestQuery)
         {
-            var model = await _userRepository.GetAllUsers(role);
+            var model = await _userRepository.GetAllUsers(requestQuery);
             if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
@@ -89,7 +89,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string CompanyName)
+        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string? CompanyName)
         {
             if (!ModelState.IsValid)
             {

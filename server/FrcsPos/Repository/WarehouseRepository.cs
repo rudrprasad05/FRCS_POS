@@ -77,7 +77,16 @@ namespace FrcsPos.Repository
             // filtering
             if (requestQueryObject.IsDeleted.HasValue)
             {
-                query = query.Where(c => c.IsDeleted == requestQueryObject.IsDeleted.Value);
+                query = query.Where(c => c.IsActive != requestQueryObject.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(requestQueryObject.Search))
+            {
+                var search = requestQueryObject.Search.ToLower();
+                query = query.Where(c =>
+                    c.Name.ToLower().Contains(search) ||
+                    c.Location.ToLower().Contains(search)
+                );
             }
 
             // Sorting

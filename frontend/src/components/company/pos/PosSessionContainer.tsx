@@ -1,12 +1,13 @@
 "use client";
 
 import { GetPosSession } from "@/actions/PosSession";
-import { PosSessionWithProducts } from "@/types/models";
-import { useEffect, useState } from "react";
-import PosTerminal from "./PosTerminal";
 import { usePosSession } from "@/context/PosContext";
-import * as signalR from "@microsoft/signalr";
 import { WebSocketUrl } from "@/lib/utils";
+import * as signalR from "@microsoft/signalr";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import PosTerminal from "./PosTerminal";
+import { Product, SaleItemOmitted } from "@/types/models";
 
 export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const [loading, setLoading] = useState(true);
@@ -64,7 +65,13 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     });
     connection.on("ScannerConnected", (scan) => {
       setIsScannerConnectedToServer(true);
+      toast.success("Scanner connected");
       console.log("📩 Scan received:", scan);
+    });
+    connection.on("ScannerDisconnected", (scan) => {
+      setIsScannerConnectedToServer(false);
+      toast.warning("Scanner disconnected");
+      console.log("📩 scanner left:", scan);
     });
 
     return () => {
@@ -73,11 +80,28 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     };
   }, [uuid]);
 
+  const productsRef = useRef<Product[]>([]);
+  useEffect(() => {
+    productsRef.current = products;
+  }, [products]);
+
   const handleProductAdd = (scan: string) => {
-    console.log("handleProductAdd");
-    console.log(products);
-    console.log(scan);
-    console.log("handleProductAdd end");
+    const product = productsRef.current.find((p) => p.barcode === scan);
+    if (!product) return;
+    handleAddProduct(product);
+  };
+
+  const handleAddProduct = (product: Product) => {
+    let sI: SaleItemOmitted = {
+      productId: product.id,
+      product: product,
+      quantity: 1,
+      unitPrice: product.price,
+      taxRatePercent: product.taxCategory?.ratePercent as number,
+      lineTotal: product.price,
+      isDeleted: false,
+    };
+    addProduct(sI);
   };
 
   if (loading) return <>loading</>;

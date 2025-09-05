@@ -60,3 +60,15 @@ export const formatFileSize = (bytes: number) => {
     Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   );
 };
+
+export const formatFullDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString([], {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};

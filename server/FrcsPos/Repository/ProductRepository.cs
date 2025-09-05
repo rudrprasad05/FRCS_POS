@@ -117,6 +117,18 @@ namespace FrcsPos.Repository
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
             }
 
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.ToLower();
+                query = query.Where(c =>
+                    c.Name.ToLower().Contains(search) ||
+                    c.Sku.ToLower().Contains(search) ||
+                    c.Barcode.ToLower().Contains(search) ||
+                    c.Price.ToString().Contains(search)
+                );
+            }
+
+
             // Sorting
             query = queryObject.SortBy switch
             {
@@ -155,6 +167,58 @@ namespace FrcsPos.Repository
                 }
             };
         }
+
+        public async Task<ApiResponse<ProductDTO>> EditProductAsync(RequestQueryObject queryObject, EditProductRequest request)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductDTO>.NotFound();
+            }
+
+            // Update fields
+            product.Name = request.ProductName;
+            product.Sku = request.SKU;
+            product.Barcode = request.Barcode;
+            product.Price = request.Price;
+            product.IsPerishable = request.IsPerishable;
+            product.TaxCategoryId = request.TaxCategoryId;
+
+            // Update audit fields if you have them
+            product.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // Map back to DTO
+            var productDto = product.FromModelToDto();
+
+            return ApiResponse<ProductDTO>.Ok(productDto);
+        }
+
+
+        public async Task<ApiResponse<ProductEditInfo>> GetProductEditPageAsync(RequestQueryObject queryObject)
+        {
+            var product = await _context.Products
+                .Include(p => p.Media)
+                .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductEditInfo>.NotFound();
+            }
+
+            var allTaxes = await _context.TaxCategories
+                .Where(t => t.IsDeleted != true)
+                .ToListAsync();
+
+            var dto = new ProductEditInfo
+            {
+                Product = product.FromModelToDto(),
+                TaxCategories = allTaxes.FromModelToDto()
+            };
+
+            return ApiResponse<ProductEditInfo>.Ok(dto);
+        }
+
 
         public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid)
         {

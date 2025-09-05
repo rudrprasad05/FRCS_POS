@@ -12,58 +12,68 @@ import { useParams, useRouter } from "next/navigation";
 import {
   PosSession,
   PosSessionWithProducts,
+  Product,
   SaleItem,
   SaleItemOmitted,
 } from "@/types/models";
 import { NewCheckoutRequest } from "@/types/res";
 import { SaleStatus } from "@/types/enum";
 import { Checkout } from "@/actions/PosSession";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 interface PosSessionContextType {
-  data: PosSessionWithProducts;
+  session: PosSession;
+  products: Product[];
   qr: string | undefined;
-  products: SaleItemOmitted[];
+  cart: SaleItemOmitted[];
+
+  moneyValues: IMoneyValue;
+  isScannerConnectedToServer: boolean;
+  isTerminalConnectedToServer: boolean;
+
+  isSaving: boolean;
+  hasChanged: boolean;
+
   setQr: (data: string) => void;
   setInitialState: (data: PosSessionWithProducts) => void;
-  updateValues: <K extends keyof PosSession>(
-    key: K,
-    value: PosSession[K]
-  ) => void;
+
   addProduct: (product: SaleItemOmitted) => void;
   removeProduct: (productId: string) => void;
   deleteProduct: (productId: string) => void;
-  moneyValues: IMoneyValue;
+
   checkout: () => Promise<void>;
-  save: () => void;
-  isSaving: boolean;
-  hasChanged: boolean;
-  isTerminalConnectedToServer: boolean;
-  setHasChanged: React.Dispatch<React.SetStateAction<boolean>>;
+
   setIsTerminalConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
-  isScannerConnectedToServer: boolean;
   setIsScannerConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
 
 const PosSessionContext = createContext<PosSessionContextType>({
-  data: {} as PosSessionWithProducts,
+  session: {} as PosSession,
+  products: {} as Product[],
   qr: undefined,
-  products: [],
+  cart: [],
+
+  moneyValues: {} as IMoneyValue,
+
+  isTerminalConnectedToServer: false,
+  isScannerConnectedToServer: false,
+
   isSaving: false,
+  hasChanged: false,
+
   setInitialState: () => {},
   setQr: () => {},
-  updateValues: () => {},
+
   deleteProduct: () => {},
   addProduct: () => {},
   removeProduct: () => {},
+
   checkout: async () => {},
-  save: () => {},
-  moneyValues: {} as IMoneyValue,
-  isTerminalConnectedToServer: false,
+
   setIsTerminalConnectedToServer: () => {},
-  isScannerConnectedToServer: false,
   setIsScannerConnectedToServer: () => {},
-  hasChanged: false,
-  setHasChanged: () => {},
+  setProducts: () => {},
 });
 
 interface IMoneyValue {
@@ -73,9 +83,9 @@ interface IMoneyValue {
 }
 
 export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
-  const [data, setData] = useState<PosSessionWithProducts>(
-    {} as PosSessionWithProducts
-  );
+  const [session, setSession] = useState<PosSession>({} as PosSession);
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [qr, setQr] = useState<string | undefined>();
   const router = useRouter();
 
@@ -85,7 +95,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     total: 0,
   });
 
-  const [products, setProducts] = useState<SaleItemOmitted[]>([]);
+  const [cart, setCart] = useState<SaleItemOmitted[]>([]);
   const [hasChanged, setHasChanged] = useState(false);
   const initialHashRef = useRef<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -98,34 +108,26 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Track changes
   useEffect(() => {
-    const currentHash = hash({ ...data, products });
+    console.log(cart, products, session);
+    const currentHash = hash({ ...cart, products });
     if (!initialHashRef.current) {
       initialHashRef.current = currentHash;
     }
     setHasChanged(currentHash !== initialHashRef.current);
-  }, [data, products]);
+  }, [cart, products, session]);
 
-  function setInitialState(inti: PosSessionWithProducts) {
-    if (data === inti) return;
-    setData(inti);
-    initialHashRef.current = hash({ ...inti, products });
-  }
-
-  function updateValues<K extends keyof PosSession>(
-    key: K,
-    value: PosSession[K]
-  ) {
-    setData((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  function setInitialState(init: PosSessionWithProducts) {
+    console.log(init);
+    setProducts(init.products); // TODO bug?
+    setSession(init.posSession);
+    initialHashRef.current = hash({ ...init, products });
   }
 
   useEffect(() => {
     let subtotal = 0,
       taxTotal = 0,
       total = 0;
-    for (const [index, item] of products.entries()) {
+    for (const [index, item] of cart.entries()) {
       let unitTotal = item.unitPrice * item.quantity;
       subtotal += unitTotal;
       taxTotal +=
@@ -134,11 +136,11 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
     total += taxTotal + subtotal;
     setMoneyValues({ subtotal, taxTotal, total });
-    console.log(products);
-  }, [products]);
+    console.log("mv", subtotal, taxTotal, total);
+  }, [cart]);
 
   function addProduct(product: SaleItemOmitted) {
-    setProducts((prev) => {
+    setCart((prev) => {
       const existing = prev.find((p) => p.productId === product.productId);
       if (existing) {
         return prev.map((p) => {
@@ -163,7 +165,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }
 
   function removeProduct(productUUID: string) {
-    setProducts((prev) => {
+    setCart((prev) => {
       const existing = prev.find((p) => p.product.uuid === productUUID);
       if (!existing) return prev; // product not found
 
@@ -181,7 +183,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }
 
   function deleteProduct(productUUID: string) {
-    setProducts((prev) => prev.filter((p) => p.product.uuid !== productUUID));
+    setCart((prev) => prev.filter((p) => p.product.uuid !== productUUID));
   }
 
   async function checkout() {
@@ -194,7 +196,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     let subtotal = 0,
       taxTotal = 0,
       total = 0;
-    for (const [index, item] of products.entries()) {
+    for (const [index, item] of cart.entries()) {
       let unitTotal = item.unitPrice * item.quantity;
       subtotal += unitTotal;
       taxTotal +=
@@ -210,6 +212,9 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       moneyValues.subtotal != subtotal ||
       moneyValues.total != total
     ) {
+      console.log(moneyValues.taxTotal, taxTotal);
+      console.log(moneyValues.subtotal, subtotal);
+      console.log(moneyValues.total, total);
       console.log("values dont match");
       toast.error("Checkout failed!");
       return;
@@ -217,13 +222,13 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
     let checkoutDataToSend: NewCheckoutRequest = {
       companyName: companyName,
-      posSessionId: data.id,
-      cashierId: data.posUserId,
+      posSessionId: session.id,
+      cashierId: session.posUserId,
       subtotal: subtotal,
       taxTotal: taxTotal,
       total: total,
       status: SaleStatus.Pending, // use enum with uppercase to match definition
-      items: products as SaleItem[],
+      items: cart as SaleItem[],
     };
 
     console.log("data to send", checkoutDataToSend);
@@ -232,58 +237,44 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     const res = await Checkout(checkoutDataToSend);
 
     console.log(res);
-    console.log("Checking out", { session: data, products });
+    console.log("Checking out", { session: session, products });
 
     if (res.success && res.data) {
       toast.success("Checkout successful!");
-      router.push(`${data.uuid}/checkout/${res.data.uuid}`);
+      router.push(`${session.uuid}/checkout/${res.data.uuid}`);
     } else {
       console.log(res.errors);
       toast.error("Checkout failed!");
     }
 
-    setProducts([]);
-    initialHashRef.current = hash({ ...data, products: [] });
+    setCart([]);
+    initialHashRef.current = hash({ ...cart, products: [] });
     setHasChanged(false);
 
     setIsSaving(false);
   }
 
-  async function save() {
-    setIsSaving(true);
-    try {
-      initialHashRef.current = hash({ ...data, products });
-      setHasChanged(false);
-      toast.success("Saved successfully");
-    } catch (error) {
-      toast.error("Error occurred. Changes not saved");
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
   return (
     <PosSessionContext.Provider
       value={{
-        data,
-        qr,
-        moneyValues,
+        session,
         products,
-        setQr,
+        qr,
+        cart,
+        moneyValues,
+        isTerminalConnectedToServer,
+        isScannerConnectedToServer,
         isSaving,
+        hasChanged,
         setInitialState,
+        setQr,
         deleteProduct,
-        updateValues,
         addProduct,
         removeProduct,
         checkout,
-        save,
-        hasChanged,
-        setHasChanged,
         setIsTerminalConnectedToServer,
-        isTerminalConnectedToServer,
         setIsScannerConnectedToServer,
-        isScannerConnectedToServer,
+        setProducts,
       }}
     >
       {children}

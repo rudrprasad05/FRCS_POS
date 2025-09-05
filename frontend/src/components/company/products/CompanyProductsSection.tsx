@@ -22,6 +22,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Header } from "@/components/global/GenericSortableHeader";
 
 export const {
   Provider: CompanyProductsSectionProvider,
@@ -30,71 +31,33 @@ export const {
 
 export default function CompanySection() {
   return (
-    <CompanyProductsSectionProvider
-      fetchFn={() =>
-        GetAllProducts({ pageNumber: 1, pageSize: 10, sortBy: ESortBy.DSC })
-      }
-    >
-      <Header />
+    <CompanyProductsSectionProvider fetchFn={(query) => GetAllProducts(query)}>
+      <Header<Product>
+        useHook={useCompanyProductData}
+        newButton={<NewButton />}
+      >
+        <H1>Products</H1>
+        <P className="text-muted-foreground">Create and manage your products</P>
+      </Header>
+
       <HandleDataSection />
     </CompanyProductsSectionProvider>
   );
 }
 
-function Header() {
-  const router = useRouter();
-  useEffect(() => {
-    console.log("prefecthed");
-    router.prefetch("products/new");
-  }, [router]);
+function NewButton() {
   return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Products</H1>
-        <P className="text-muted-foreground">Create and manage your products</P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button
-          asChild
-          className={`${buttonVariants({
-            variant: "default",
-          })} text-start justify-start px-2 my-2`}
-        >
-          <Link href="products/new">
-            <PackagePlus />
-            New Product
-          </Link>
-        </Button>{" "}
-      </div>
-    </div>
+    <Button
+      asChild
+      className={`${buttonVariants({
+        variant: "default",
+      })} text-start justify-start px-2 my-2`}
+    >
+      <Link href="products/new">
+        <PackagePlus />
+        New Product
+      </Link>
+    </Button>
   );
 }
 

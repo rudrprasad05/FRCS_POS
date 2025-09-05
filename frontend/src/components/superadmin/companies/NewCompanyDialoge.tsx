@@ -68,6 +68,7 @@ export default function NewCompanyDialoge() {
   useEffect(() => {
     const getData = async () => {
       const data = await GetAllAdmins({ role: UserRoles.ADMIN } as QueryObject);
+      console.log(data);
       setAdminUsers(data.data as User[]);
 
       setLoading(false);

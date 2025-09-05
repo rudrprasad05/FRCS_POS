@@ -7,13 +7,13 @@ namespace FrcsPos.Response.DTO
     public class ProductBatchDTO : BaseDTO
     {
         public int? CompanyId { get; set; }
-        public Company? Company { get; set; } = null;
+        public CompanyDTO? Company { get; set; } = null;
 
         public int? ProductId { get; set; }
-        public Product? Product { get; set; } = null;
+        public ProductDTO? Product { get; set; } = null;
 
         public int? WarehouseId { get; set; }
-        public Warehouse? Warehouse { get; set; } = null;
+        public WarehouseDTO? Warehouse { get; set; } = null;
 
         public int Quantity { get; set; }
         public DateTime? ExpiryDate { get; set; }

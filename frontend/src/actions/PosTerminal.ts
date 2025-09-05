@@ -10,6 +10,7 @@ import {
 } from "@/types/models";
 import { GetToken } from "./User";
 import { buildMediaQueryParams } from "@/lib/params";
+import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetPosTerminalById(
   id: string
@@ -23,6 +24,22 @@ export async function GetPosTerminalById(
     }
   );
   return res.data;
+}
+
+export async function GetPosTerminalSales(
+  query?: QueryObject
+): Promise<ApiResponse<Sale[]>> {
+  return RequestWrapper<Sale[]>("GET", `pos-terminal/get-sales`, {
+    query,
+  });
+}
+
+export async function GetPosTerminalSessions(
+  query?: QueryObject
+): Promise<ApiResponse<PosSession[]>> {
+  return RequestWrapper<PosSession[]>("GET", `pos-terminal/get-sessions`, {
+    query,
+  });
 }
 
 export async function CreatePosTerminals(

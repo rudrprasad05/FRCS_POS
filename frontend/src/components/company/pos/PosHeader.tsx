@@ -28,7 +28,7 @@ import PosQrCodeConnectDialoge from "./PosQrCodeConnectDialoge";
 import { usePosSession } from "@/context/PosContext";
 
 export default function PosHeader() {
-  const { data, isTerminalConnectedToServer, isScannerConnectedToServer } =
+  const { session, isTerminalConnectedToServer, isScannerConnectedToServer } =
     usePosSession();
 
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
@@ -62,15 +62,9 @@ export default function PosHeader() {
       <div className="flex items-center space-x-4">
         <h1 className="text-xl font-semibold text-foreground">RetailPOS</h1>
         <div className="text-sm text-muted-foreground">
-          {data.posTerminal?.name}
+          {session.posTerminal?.name}
         </div>
       </div>
-
-      {/* Center - Current page indicator */}
-      {/* <div className="flex items-center space-x-2">
-        <CreditCard className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Point of Sale</span>
-      </div> */}
 
       {/* Right side - Actions */}
       <div className="flex items-center space-x-2">

@@ -26,4 +26,10 @@ namespace FrcsPos.Response.DTO
         public string Sku { get; set; } = default!;
         public List<TaxCategoryDTO> TaxCategories { get; set; } = default!;
     }
+
+    public class ProductEditInfo
+    {
+        public ProductDTO Product { get; set; } = default!;
+        public List<TaxCategoryDTO> TaxCategories { get; set; } = default!;
+    }
 }

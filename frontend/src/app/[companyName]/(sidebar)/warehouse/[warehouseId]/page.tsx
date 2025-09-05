@@ -70,15 +70,15 @@ export default function WarehousePage({ params }: PageProps) {
       <WarehouseInfo wh={warehouse} />
 
       <BatchDataProvider
-        fetchFn={() =>
+        fetchFn={(query) =>
           GetAllBatchesByWarehouse({
-            pageNumber: 1,
-            pageSize: 10,
+            ...query,
             uuid: warehouseId,
           })
         }
       >
-        <PosTerminalDataTabs terminalId={warehouseId} />
+        {/* <PosTerminalDataTabs terminalId={warehouseId} /> */}
+        <BatchesSection />
       </BatchDataProvider>
     </div>
   );
@@ -100,7 +100,7 @@ function WarehouseInfo({ wh }: { wh: Warehouse | null }) {
           </div>
         </div>
 
-        <NewSessionDialog terminalId={wh.uuid.toString()} />
+        {/* <NewSessionDialog terminalId={wh.uuid.toString()} /> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -137,7 +137,7 @@ function WarehouseInfo({ wh }: { wh: Warehouse | null }) {
           </CardHeader>
           <CardContent>
             <div className="capitalize text-2xl font-bold">
-              {wh.batches?.length || "0"}
+              {wh.productBatches?.length || "0"}
             </div>
           </CardContent>
         </Card>

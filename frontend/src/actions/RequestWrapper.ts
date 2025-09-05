@@ -20,6 +20,8 @@ export async function RequestWrapper<T>(
   url = `${url}?${params}`;
 
   console.log(url);
+
+  console.log(url);
   console.log(params);
 
   try {

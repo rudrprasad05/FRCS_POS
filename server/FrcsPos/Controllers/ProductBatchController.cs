@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/product-batch")]
     [ApiController]
     public class ProductBatchController : BaseController
@@ -27,30 +27,22 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateProduct(
-            [FromForm] string ProductName,
-            [FromForm] string SKU,
-            [FromForm] decimal Price,
-            [FromForm] string Barcode,
-            [FromForm] bool IsPerishable,
-            IFormFile? File,
-            [FromForm] int TaxCategoryId,
-            [FromForm] string CompanyName
-        )
+        public async Task<IActionResult> CreateBatch([FromBody] NewProductBatchRequest newProductBatchRequest)
         {
-            var data = new NewProductRequest
-            {
-                ProductName = ProductName,
-                SKU = SKU,
-                Price = Price,
-                Barcode = Barcode,
-                IsPerishable = IsPerishable,
-                File = File,
-                TaxCategoryId = TaxCategoryId,
-                CompanyName = CompanyName,
-            };
+            var model = await _productBatchRepository.CreateAsync(newProductBatchRequest);
 
-            var model = await _productBatchRepository.CreateAsync(data);
+            if (model == null || !model.Success || model.Success != true)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-all-by-warehouse")]
+        public async Task<IActionResult> GetAll([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productBatchRepository.GetAllAsycn(queryObject);
 
             if (model == null || !model.Success || model.Success != true)
             {

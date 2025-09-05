@@ -37,6 +37,32 @@ namespace FrcsPos.Mappers
             return dto;
         }
 
+        public static ProductDTO FromModelToOnlyDto(this Product request)
+        {
+            if (request == null)
+            {
+                return new ProductDTO();
+            }
+
+            var dto = new ProductDTO
+            {
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+                Name = request.Name,
+                CompanyId = request.CompanyId,
+                Sku = request.Sku,
+                Barcode = request.Barcode,
+                Price = request.Price,
+                MediaId = request.MediaId ?? 0,
+                TaxCategoryId = request.TaxCategoryId,
+                IsPerishable = request.IsPerishable,
+            };
+
+            return dto;
+        }
+
         public static List<ProductDTO> FromModelToDto(this ICollection<Product> request)
         {
             if (request == null || request.Count == 0)

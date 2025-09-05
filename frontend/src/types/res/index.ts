@@ -7,6 +7,7 @@ import {
   SaleItem,
   Product,
   Warehouse,
+  TaxCategory,
 } from "../models";
 
 export interface SuperAdminDashboardDTO {
@@ -15,6 +16,7 @@ export interface SuperAdminDashboardDTO {
   totalUsers: number;
   totalProducts: number;
   totalSales: number;
+  totalVat: number;
   notifications: Notification[];
 }
 
@@ -68,4 +70,9 @@ export interface NewCheckoutRequest {
   total: number;
   status: SaleStatus; // defaults to PENDING in C#
   items: SaleItem[];
+}
+
+export interface EditProductData {
+  product: Product;
+  taxCategories: TaxCategory[];
 }

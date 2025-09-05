@@ -62,7 +62,7 @@ function Header() {
         <div className="flex items-center gap-4 flex-1">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
+            <Input placeholder="Search users..." className="pl-10 " />
           </div>
 
           <Select>

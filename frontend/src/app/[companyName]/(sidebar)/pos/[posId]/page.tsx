@@ -1,5 +1,9 @@
 "use client";
-import { GetPosTerminalById } from "@/actions/PosTerminal";
+import {
+  GetPosTerminalById,
+  GetPosTerminalSales,
+  GetPosTerminalSessions,
+} from "@/actions/PosTerminal";
 import NewSessionDialog from "@/components/company/pos/NewPosSessionDialoge";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, H2, P } from "@/components/font/HeaderFonts";
@@ -79,23 +83,6 @@ export default function PosTerminalPage({ params }: PageProps) {
     });
   }
 
-  function GetPosTerminalSalesMock(
-    query?: QueryObject
-  ): Promise<ApiResponse<Sale[]>> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let a: ApiResponse<Sale[]> = {
-          ...posTerminal,
-          success: true,
-          statusCode: 200,
-          timestamp: Date.now.toString(),
-          data: posTerminal?.sales as Sale[],
-        };
-        resolve(a);
-      }, 0);
-    });
-  }
-
   if (loading) {
     return <TableSkeleton columns={4} rows={6} showHeader />;
   }
@@ -104,25 +91,7 @@ export default function PosTerminalPage({ params }: PageProps) {
     <div className="space-y-6">
       <PosTerminalInfo posTerminal={posTerminal} />
 
-      <SessionDataProvider
-        fetchFn={() =>
-          GetPosTerminalSessionsMock({
-            pageNumber: 1,
-            pageSize: 10,
-          })
-        }
-      >
-        <SalesDataProvider
-          fetchFn={() =>
-            GetPosTerminalSalesMock({
-              pageNumber: 1,
-              pageSize: 10,
-            })
-          }
-        >
-          <PosTerminalDataTabs terminalId={posId} />
-        </SalesDataProvider>
-      </SessionDataProvider>
+      <PosTerminalDataTabs terminalId={posId} />
     </div>
   );
 }
@@ -196,11 +165,23 @@ function PosTerminalDataTabs({ terminalId }: { terminalId: string }) {
       </TabsList>
 
       <TabsContent value="sessions" className="space-y-4">
-        <SessionsSection />
+        <SessionDataProvider
+          fetchFn={(query) =>
+            GetPosTerminalSessions({ ...query, uuid: terminalId })
+          }
+        >
+          <SessionsSection />
+        </SessionDataProvider>
       </TabsContent>
 
       <TabsContent value="sales" className="space-y-4">
-        <SalesSection />
+        <SalesDataProvider
+          fetchFn={(query) =>
+            GetPosTerminalSales({ ...query, uuid: terminalId })
+          }
+        >
+          <SalesSection />
+        </SalesDataProvider>
       </TabsContent>
     </Tabs>
   );

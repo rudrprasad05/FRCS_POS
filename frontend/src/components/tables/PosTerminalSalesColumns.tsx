@@ -1,7 +1,10 @@
 "use client";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Sale } from "@/types/models";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Edit, Eye } from "lucide-react";
+
+import Link from "next/link";
 
 export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
   {
@@ -9,43 +12,62 @@ export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
     header: "Sale ID",
   },
   {
-    accessorKey: "timestamp",
-    header: "Date & Time",
+    accessorKey: "total",
+    header: "Total",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("timestamp"));
-      return date.toLocaleString();
-    },
-  },
-  {
-    accessorKey: "amount",
-    header: "Amount",
-    cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue("amount"));
+      const amount = Number.parseFloat(row.getValue("total"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency: "FJD",
       }).format(amount);
       return formatted;
     },
   },
   {
-    accessorKey: "paymentMethod",
-    header: "Payment Method",
+    accessorKey: "taxTotal",
+    header: "Tax",
     cell: ({ row }) => {
-      const method = row.getValue("paymentMethod") as string;
-      return <Badge variant="outline">{method}</Badge>;
+      const amount = Number.parseFloat(row.getValue("taxTotal"));
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "FJD",
+      }).format(amount);
+      return formatted;
+    },
+  },
+
+  {
+    accessorKey: "createdOn",
+    header: "Date & Time",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("createdOn"));
+      return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
     },
   },
   {
-    accessorKey: "customer",
-    header: "Customer",
-  },
-  {
-    accessorKey: "items",
-    header: "Items",
+    id: "actions",
+    accessorKey: "actions",
+    header: "Actions",
     cell: ({ row }) => {
-      const items = row.getValue("items") as any[];
-      return `${items?.length || 0} items`;
+      const company = row.original;
+
+      return (
+        <div className="flex gap-2">
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`/admin/companies/${company.uuid}`}
+              className="w-24 flex items-center justify-between"
+            >
+              View
+              <Eye className="" />
+            </Link>
+          </Button>
+        </div>
+      );
     },
   },
 ];
