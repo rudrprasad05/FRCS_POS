@@ -135,13 +135,13 @@ namespace FrcsPos.Controllers
         }
 
         [HttpDelete("soft-delete")]
-        public async Task<IActionResult> SoftDeleteCompany([FromQuery] string uuid)
+        public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
         {
-            var model = await _productRepository.SoftDelete(uuid);
+            var model = await _productRepository.SoftDelete(queryObject);
 
-            if (model == null || !model.Success)
+            if (!model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);

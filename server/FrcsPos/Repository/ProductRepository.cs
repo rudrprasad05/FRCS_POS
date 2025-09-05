@@ -254,9 +254,21 @@ namespace FrcsPos.Repository
             throw new NotImplementedException();
         }
 
-        public Task<ApiResponse<ProductDTO>> SoftDelete(string uuid)
+        public async Task<ApiResponse<ProductDTO>> SoftDelete(RequestQueryObject queryObject)
         {
-            throw new NotImplementedException();
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductDTO>.NotFound();
+            }
+
+            product.IsDeleted = true;
+
+            await _context.SaveChangesAsync();
+
+            var productDto = product.FromModelToDto();
+
+            return ApiResponse<ProductDTO>.Ok(productDto);
         }
     }
 }

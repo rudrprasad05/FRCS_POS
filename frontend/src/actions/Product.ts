@@ -89,3 +89,11 @@ export async function EditProduct(
     data: data,
   });
 }
+
+export async function SoftDeleteProduct(
+  uuid: string
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("DELETE", `product/soft-delete`, {
+    query: { uuid },
+  });
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { SoftDeleteProduct } from "@/actions/Product";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,16 +24,18 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
 
   async function handleDelete() {
     setIsLoading(true);
-    try {
-      //   const res = await SafeDeleteCake(uuid);
-      setIsLoading(false);
-      toast.success("Media Deleted");
-      setIsOpen(false);
-      router.push("/admin/cakes");
-    } catch (error) {
-      setIsLoading(false);
+
+    const res = await SoftDeleteProduct(uuid);
+
+    if (res.success) {
+      toast.success("Product Deleted");
+      router.back();
+    } else {
       toast.error("Error Occured");
     }
+
+    setIsOpen(false);
+    setIsLoading(false);
   }
   return (
     <Dialog>
@@ -45,7 +48,7 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
           Delete <Trash className="" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Delete Media</DialogTitle>
           <DialogDescription>
@@ -61,7 +64,7 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
           </DialogClose>
           <Button
             onClick={() => handleDelete()}
-            className="bg-rose-500 hover:bg-red-600"
+            className=""
             variant={"destructive"}
           >
             Delete

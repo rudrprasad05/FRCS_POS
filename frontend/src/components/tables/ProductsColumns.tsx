@@ -96,6 +96,21 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: "isDeleted",
+    header: "Active",
+    cell: ({ row }) => {
+      const isDeleted = row.getValue("isDeleted") as boolean;
+      return (
+        <div
+          className={cn(
+            "rounded-full w-2 h-2 mx-auto",
+            isDeleted ? "bg-rose-500" : "bg-green-500"
+          )}
+        />
+      );
+    },
+  },
+  {
     accessorKey: "createdOn",
     header: "Created On",
     cell: ({ row }) => {

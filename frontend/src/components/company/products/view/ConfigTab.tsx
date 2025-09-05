@@ -69,7 +69,7 @@ export default function ConfigTab({ product }: { product: Product }) {
           <CardHeader>
             <CardTitle>Danger Zone</CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center">
+          <CardContent className="flex items-center justify-between">
             <div>
               <Label>Delete Product</Label>
               <CardDescription>
