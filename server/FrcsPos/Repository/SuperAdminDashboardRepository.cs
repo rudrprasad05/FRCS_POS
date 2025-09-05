@@ -82,6 +82,7 @@ namespace FrcsPos.Repository
             var mediaCount = await _context.Medias.SumAsync(m => m.SizeInBytes);
             var productCount = await _context.Products.CountAsync();
             var saleCount = await _context.Sales.CountAsync();
+            var taxTotal = await _context.Sales.SumAsync(s => s.TaxTotal);
 
             var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 5, SortBy = ESortBy.DSC });
 
@@ -93,6 +94,7 @@ namespace FrcsPos.Repository
                 TotalProducts = productCount,
                 TotalSales = saleCount,
                 Notifications = notifications.Data ?? [],
+                TotalVat = (long)taxTotal,
             };
 
             return new ApiResponse<SuperAdminDashboardDTO>

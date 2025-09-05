@@ -56,5 +56,18 @@ namespace FrcsPos.Socket
                 $"📱 A new scanner joined terminal {posSession.Data.UUID}"
             );
         }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            Console.WriteLine($"Connection {Context.ConnectionId} disconnected.");
+
+            // If you need to remove from group:
+            // (you may need to map connectionId -> qcUUID somewhere)
+            // await Groups.RemoveFromGroupAsync(Context.ConnectionId, someGroupId);
+
+            await Clients.Others.SendAsync("ScannerDisconnected", Context.ConnectionId);
+
+            await base.OnDisconnectedAsync(exception);
+        }
     }
 }

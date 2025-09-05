@@ -23,12 +23,13 @@ export function RecentProductCard({ item }: { item: Product }) {
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: product.price,
+      isDeleted: false,
     };
     addProduct(sI);
   };
 
   return (
-    <Card key={item.id} className="bg-card/20">
+    <Card key={item.id} className="bg-card/20 py-0">
       <div className="w-full grow h-full">
         <div className="relative aspect-square h-48  w-full border-b border-solid rounded-t-lg overflow-hidden">
           {isImageValid ? (
@@ -73,7 +74,7 @@ export function RecentProductCard({ item }: { item: Product }) {
           </div>
         </div>
       </div>
-      <div className="px-4 mt-auto">
+      <div className="p-4 mt-auto">
         <Button
           size="sm"
           //   disabled={item.batches?.length === 0}

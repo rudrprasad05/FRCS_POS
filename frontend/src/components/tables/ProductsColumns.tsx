@@ -1,14 +1,16 @@
 "use client";
 
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, ImageIcon } from "lucide-react";
+import { Edit, Eye, ImageIcon, SquareArrowUpRight } from "lucide-react";
 
 import { Product } from "@/types/models";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import Barcode from "react-barcode";
 
 export const ProductsOnlyColumns: ColumnDef<Product>[] = [
   {
@@ -76,6 +78,15 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: "barcode",
+    header: "Barcode",
+    cell: ({ row }) => {
+      const company = row.original;
+
+      return <HandleBarcode barcode={company.barcode as string} />;
+    },
+  },
+  {
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => {
@@ -108,7 +119,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`/admin/companies/${company.uuid}`}
+              href={`products/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
             >
               Edit
@@ -118,7 +129,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
           {/* <DeleteCompanyDialoge data={company} /> */}
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`/${encodeURI(company.name)}`}
+              href={`products/${company.uuid}/view`}
               className="w-24 flex items-center justify-between"
             >
               View
@@ -130,3 +141,35 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     },
   },
 ];
+
+export function HandleBarcode({ barcode }: { barcode: string }) {
+  if (!barcode || barcode.length === 0) {
+    return (
+      <div className="border-2 border-dashed rounded-lg p-2 text-center text-muted-foreground">
+        Invalid
+      </div>
+    );
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="underline flex items-center gap-1">
+          {barcode} <SquareArrowUpRight className="w-4 h-4" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="flex flex-col items-center p-6">
+        <div className="my-4 border-2 border-dashed rounded-lg p-4 bg-white">
+          <Barcode
+            value={barcode}
+            height={80}
+            width={2}
+            displayValue={true}
+            background="#ffffff"
+          />
+        </div>
+        <p className="text-sm text-muted-foreground">{barcode}</p>
+      </DialogContent>
+    </Dialog>
+  );
+}

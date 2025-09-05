@@ -8,7 +8,7 @@ namespace FrcsPos.Models
         public Company Company { get; set; } = default!;
         public string Name { get; set; } = default!;
         public string Sku { get; set; } = default!;
-        public string? Barcode { get; set; }
+        public string Barcode { get; set; } = default!;
         public decimal Price { get; set; }
         public int TaxCategoryId { get; set; }
         public TaxCategory TaxCategory { get; set; } = default!;

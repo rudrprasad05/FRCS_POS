@@ -45,8 +45,8 @@ export function DashboardStats() {
         />
         <DashboardStatsCard
           input={{
-            title: "Estimated VAT",
-            val: data?.totalUsers ?? 0,
+            title: "Estimated VAT FJD",
+            val: data?.totalVat ?? 0,
             icon: User,
             isLoading: !data,
           }}

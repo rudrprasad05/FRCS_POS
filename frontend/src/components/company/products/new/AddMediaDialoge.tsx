@@ -63,13 +63,8 @@ export default function AddMediaDialoge({
   };
 
   const handleSubmit = () => {
-    console.log("add file handler", file);
     if (file) {
-      //   onSubmit(file);
       setIsOpen(false);
-      // Reset state
-      //   setFile(undefined);
-      setPreviewUrl(null);
     }
   };
 

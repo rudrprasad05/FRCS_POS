@@ -38,7 +38,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject)
+        public async Task<IActionResult> GetAllWarehouses([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _warehouseRepository.GetAllAsync(queryObject);
 

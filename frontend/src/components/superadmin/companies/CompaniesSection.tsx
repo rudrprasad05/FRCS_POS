@@ -13,70 +13,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { Company } from "@/types/models";
+import {
+  createGenericListDataContext,
+  GenericListDataContextType,
+} from "@/context/GenericDataTableContext";
+import { Company, ESortBy } from "@/types/models";
 import { Search } from "lucide-react";
 import { CompanyOnlyColumn } from "../../tables/CompaniesColumns";
 import NewCompanyDialoge from "./NewCompanyDialoge";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Header } from "@/components/global/GenericSortableHeader";
 
 export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
   createGenericListDataContext<Company>();
 
 export default function CompanySection() {
   return (
-    <CompanyDataProvider
-      fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
-    >
-      <CompanyDataProvider
-        fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
+    <CompanyDataProvider fetchFn={(query) => GetAllCompanies(query)}>
+      <Header<Company>
+        useHook={useCompanyData}
+        newButton={<NewCompanyDialoge />}
       >
-        <Header />
-        <HandleDataSection />
-      </CompanyDataProvider>
-    </CompanyDataProvider>
-  );
-}
-
-function Header() {
-  return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Companies</H1>
+        <H1>Companies</H1>
         <P className="text-muted-foreground">Create and manage companies</P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
+      </Header>
 
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <NewCompanyDialoge />
-      </div>
-    </div>
+      <HandleDataSection />
+    </CompanyDataProvider>
   );
 }
 
@@ -91,9 +55,7 @@ function HandleDataSection() {
   if (!data) {
     return <>Invalid URL</>;
   }
-  if (data.length === 0) {
-    return <NoDataContainer />;
-  }
+
   return (
     <>
       <DataTable columns={CompanyOnlyColumn} data={data} />

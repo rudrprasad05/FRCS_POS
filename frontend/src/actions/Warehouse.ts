@@ -17,5 +17,7 @@ export async function CreateWarehouse(
 export async function GetOneWarehouseWithBatch(
   query?: QueryObject
 ): Promise<ApiResponse<Warehouse>> {
-  return RequestWrapper<Warehouse>("GET", `warehouse/get-one`, { query });
+  return RequestWrapper<Warehouse>("GET", `warehouse/get-full-by-uuid`, {
+    query,
+  });
 }

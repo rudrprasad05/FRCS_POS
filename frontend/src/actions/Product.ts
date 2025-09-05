@@ -10,41 +10,37 @@ import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
 import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
 import { RequestWrapper } from "./RequestWrapper";
+import { EditProductData } from "@/types/res";
 
 export async function GetAllProducts(
   query?: QueryObject
 ): Promise<ApiResponse<Product[]>> {
-  const token = await GetToken();
-  const params = buildMediaQueryParams(query);
-
-  const res = await axiosGlobal.get<ApiResponse<Product[]>>(
-    `product/get-all?${params}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
-  return res.data;
+  return RequestWrapper<Product[]>("GET", `product/get-all`, {
+    query,
+  });
 }
 
 export async function GetCompanyByAdminUserId(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  return RequestWrapper<Company>(
-    "GET",
-    `company/get-one-by-admin-id?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<Company>("GET", `company/get-one-by-admin-id`, {
+    query: { uuid },
+  });
 }
 
 export async function GetFullCompanyByUUID(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  return RequestWrapper<Company>(
-    "GET",
-    `company/get-full-by-uuid?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<Company>("GET", `company/get-full-by-uuid`, {
+    query: { uuid },
+  });
+}
+export async function GetEditProductData(
+  uuid: string
+): Promise<ApiResponse<EditProductData>> {
+  return RequestWrapper<EditProductData>("GET", `product/get-edit-page-info`, {
+    query: { uuid },
+  });
 }
 
 export async function AddUserToCompany(

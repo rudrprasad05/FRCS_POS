@@ -31,6 +31,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { CreateProduct } from "@/actions/Product";
+import Image from "next/image";
 
 export const productSchema = z.object({
   name: z
@@ -61,6 +62,8 @@ export default function NewProductPage() {
   const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const [file, setFile] = useState<File | undefined>(undefined);
   const params = useParams();
   const companyName = params.companyName;
@@ -97,6 +100,15 @@ export default function NewProductPage() {
 
     loadTaxCategories();
   }, [toast]);
+
+  useEffect(() => {
+    if (file && file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl("");
+    }
+  }, [file]);
 
   const formValues = form.watch();
   useEffect(() => {
@@ -240,10 +252,10 @@ export default function NewProductPage() {
                     <FormLabel>
                       Tax Category <RedStar />
                     </FormLabel>
-                    <div className=" gap-2 flex items-center">
+                    <div className="gap-2 flex items-center">
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value ? field.value.toString() : undefined}
+                        value={field.value ? field.value.toString() : ""}
                         disabled={isLoadingTaxCategories}
                       >
                         <FormControl>
@@ -252,7 +264,7 @@ export default function NewProductPage() {
                               placeholder={
                                 isLoadingTaxCategories
                                   ? "Loading tax categories..."
-                                  : "Select a tax category"
+                                  : "Select VAT"
                               }
                             />
                           </SelectTrigger>
@@ -281,6 +293,17 @@ export default function NewProductPage() {
               />
 
               <AddMediaDialoge file={file} setFile={setFile} />
+              {previewUrl && (
+                <div className="w-[200px]">
+                  <Image
+                    width={100}
+                    height={100}
+                    src={previewUrl! || "/placeholder.svg"}
+                    alt="Preview"
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              )}
 
               <FormField
                 control={form.control}

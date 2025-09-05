@@ -23,6 +23,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
 import NewWarehouseDialoge from "./NewWarehouseDialoge";
+import { Header } from "@/components/global/GenericSortableHeader";
 
 export const {
   Provider: WarehouseSectionProvider,
@@ -34,67 +35,21 @@ export default function WarehouseSection() {
   const companyName = String(param.companyName);
   return (
     <WarehouseSectionProvider
-      fetchFn={() =>
-        GetAllWarehouses({
-          pageNumber: 1,
-          pageSize: 10,
-          sortBy: ESortBy.DSC,
-          companyName: companyName,
-        })
+      fetchFn={(query) =>
+        GetAllWarehouses({ ...query, companyName: companyName })
       }
     >
-      <Header />
+      <Header<Warehouse>
+        useHook={useWarehouseData}
+        newButton={<NewWarehouseDialoge />}
+      >
+        <H1>Warehouses</H1>
+        <P className="text-muted-foreground">
+          Create and manage your warehouses
+        </P>
+      </Header>
       <HandleDataSection />
     </WarehouseSectionProvider>
-  );
-}
-
-function Header() {
-  const router = useRouter();
-  useEffect(() => {
-    console.log("prefecthed");
-    router.prefetch("products/new");
-  }, [router]);
-  return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Warehouses</H1>
-        <P className="text-muted-foreground">
-          Create and manage your warehouses here
-        </P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <NewWarehouseDialoge />
-      </div>
-    </div>
   );
 }
 

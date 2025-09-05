@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MOCK_PRODUCTS } from "@/lib/data";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Search, Trash2 } from "lucide-react";
 import PosHeader from "./PosHeader";
 import { RecentProductCard } from "./RecentProductCard";
 import { Product, SaleItem, SaleItemOmitted } from "@/types/models";
@@ -13,6 +13,7 @@ import { usePosSession } from "@/context/PosContext";
 import SaleItemCard from "./SaleItemCard";
 import { useEffect, useState } from "react";
 import SelectPaymentOptionDialog from "./SelectPaymentOption";
+import { Input } from "@/components/ui/input";
 
 interface ICheckoutData {
   taxTotal: number;
@@ -21,7 +22,7 @@ interface ICheckoutData {
 }
 
 export default function PosTerminal() {
-  const { products, data, moneyValues, checkout, removeProduct } =
+  const { cart, products, moneyValues, checkout, removeProduct } =
     usePosSession();
 
   const { taxTotal, total, subtotal } = moneyValues;
@@ -34,13 +35,17 @@ export default function PosTerminal() {
         {/* Product List */}
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <Card className="bg-transparent border-none flex flex-col flex-1 min-h-0">
-            <CardHeader className="flex-shrink-0">
+            <CardHeader className="flex-shrink-0 flex items-center w-full gap-6">
               <CardTitle className="text-primary">Product Catalog</CardTitle>
+              <div className="flex items-center gap-2 grow">
+                <Input placeholder="Search by barcode or SKU" />
+                <Search />
+              </div>
             </CardHeader>
 
             <ScrollArea className="flex-1 min-h-0">
               <div className="grid grid-cols-3 gap-4 pl-6 pb-4">
-                {data.products.map((product) => (
+                {products.map((product) => (
                   <RecentProductCard key={product.uuid} item={product} />
                 ))}
               </div>
@@ -68,8 +73,8 @@ export default function PosTerminal() {
                         </div>
                       )}
 
-                      {products.length > 0 &&
-                        products.map((item) => (
+                      {cart.length > 0 &&
+                        cart.map((item) => (
                           <SaleItemCard key={item.product.uuid} item={item} />
                         ))}
                     </div>

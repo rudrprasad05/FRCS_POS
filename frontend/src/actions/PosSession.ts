@@ -39,8 +39,9 @@ export async function ResumeSession(
   data: ICreateNewPosSession,
   uuid: string
 ): Promise<ApiResponse<PosSession>> {
-  return RequestWrapper<PosSession>("POST", `pos-session/resume?uuid=${uuid}`, {
+  return RequestWrapper<PosSession>("POST", `pos-session/resume`, {
     data,
+    query: { uuid },
   });
 }
 
@@ -61,11 +62,9 @@ export async function GetPosSession(
 export async function GenerateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
-  return RequestWrapper<QuickConnect>(
-    "GET",
-    `quickconnect/generate?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<QuickConnect>("GET", `quickconnect/generate`, {
+    query: { uuid },
+  });
 }
 
 export async function Checkout(
@@ -77,9 +76,7 @@ export async function Checkout(
 export async function ValidateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
-  return RequestWrapper<QuickConnect>(
-    "GET",
-    `quickconnect/validate?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<QuickConnect>("GET", `quickconnect/validate`, {
+    query: { uuid },
+  });
 }

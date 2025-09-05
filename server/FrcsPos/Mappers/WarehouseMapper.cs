@@ -37,6 +37,28 @@ namespace FrcsPos.Mappers
             return dto;
         }
 
+        public static WarehouseDTO FromModelToOnlyDto(this Warehouse request)
+        {
+            if (request == null)
+            {
+                return new WarehouseDTO();
+            }
+
+            var dto = new WarehouseDTO
+            {
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+                Name = request.Name,
+                CompanyId = request.CompanyId,
+                Location = request.Location,
+                IsActive = request.IsActive
+            };
+
+            return dto;
+        }
+
         public static Warehouse FromDTOToModel(this WarehouseDTO request)
         {
             if (request == null)

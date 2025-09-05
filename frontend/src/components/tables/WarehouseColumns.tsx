@@ -60,7 +60,7 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
+          {/* <Button variant={"outline"} asChild className="w-24">
             <Link
               href={`warehouse/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
@@ -68,7 +68,7 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
               Edit
               <Edit className="" />
             </Link>
-          </Button>
+          </Button> */}
           {/* <DeleteCompanyDialoge data={company} /> */}
           <Button variant={"outline"} asChild className="w-24">
             <Link

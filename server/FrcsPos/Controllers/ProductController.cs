@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/product")]
     [ApiController]
     public class ProductController : BaseController
@@ -64,6 +64,51 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _productRepository.GetAllProducts(queryObject);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-edit-page-info")]
+        public async Task<IActionResult> GetProductEditPage([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productRepository.GetProductEditPageAsync(queryObject);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpPatch("edit")]
+        public async Task<IActionResult> EditProduct(
+            [FromQuery] RequestQueryObject queryObject,
+            [FromForm] string ProductName,
+            [FromForm] string SKU,
+            [FromForm] decimal Price,
+            [FromForm] string Barcode,
+            [FromForm] bool IsPerishable,
+            IFormFile? File,
+            [FromForm] int TaxCategoryId
+        )
+        {
+            var data = new EditProductRequest
+            {
+                ProductName = ProductName,
+                SKU = SKU,
+                Price = Price,
+                Barcode = Barcode,
+                IsPerishable = IsPerishable,
+                File = File,
+                TaxCategoryId = TaxCategoryId,
+            };
+            var model = await _productRepository.EditProductAsync(queryObject, data);
 
             if (model == null || !model.Success)
             {

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/UserContext";
+import TanstackProvider from "@/context/TanstackProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,10 +74,12 @@ export default function RootLayout({
           defaultTheme="dark" // ✅ default to dark
           enableSystem={false} // ❌ don't follow OS preference
         >
-          <AuthProvider>
-            <Toaster />
-            {children}
-          </AuthProvider>
+          <TanstackProvider>
+            <AuthProvider>
+              <Toaster />
+              {children}
+            </AuthProvider>
+          </TanstackProvider>
         </ThemeProvider>
       </body>
     </html>

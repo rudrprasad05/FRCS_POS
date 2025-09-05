@@ -2,16 +2,14 @@
 
 import { GetFullCompanyByUUID } from "@/actions/Company";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H1, H3, MutedText } from "@/components/font/HeaderFonts";
+import { H3, MutedText } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
-import { LoadingCard } from "@/components/global/LoadingContainer";
 import AddUsersToCompanyDialoge from "@/components/superadmin/companies/AddUsersToCompanyDialoge";
 import NewCompanyDialoge from "@/components/superadmin/companies/NewCompanyDialoge";
 import { CompanyUserColumn } from "@/components/tables/CompaniesColumns";
 import { PosTerminalOnlyColumns } from "@/components/tables/PosTerminalColumns";
 import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
 import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,32 +17,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
-import {
-  Company,
-  CompanyUser,
-  PosTerminal,
-  Product,
-  Warehouse,
-} from "@/types/models";
+import { Company } from "@/types/models";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  Building2,
-  Monitor,
-  Package,
-  Plus,
-  Users,
-  Warehouse as WarehouseIcon,
-} from "lucide-react";
-import { use, useCallback, useEffect, useState } from "react";
+import { Building2 } from "lucide-react";
+import { use } from "react";
 
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;
@@ -86,7 +63,7 @@ function DataSection() {
           desc: "List of warehouses owned by the company",
           items: item.warehouses || [],
           columns: WarehouseOnlyColumns,
-          dialog: <NewCompanyDialoge />,
+          //   dialog: <NewCompanyDialoge />,
         }}
       />
 
@@ -96,7 +73,7 @@ function DataSection() {
           desc: "List of terminals owned by the company",
           items: item.posTerminals || [],
           columns: PosTerminalOnlyColumns,
-          dialog: <NewCompanyDialoge />,
+          //   dialog: <NewCompanyDialoge />,
         }}
       />
 
@@ -106,7 +83,7 @@ function DataSection() {
           desc: "List of top products owned by the company",
           items: item.products || [],
           columns: ProductsOnlyColumns,
-          dialog: <NewCompanyDialoge />,
+          //   dialog: <NewCompanyDialoge />,
         }}
       />
     </div>

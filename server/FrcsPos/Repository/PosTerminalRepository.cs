@@ -170,6 +170,126 @@ namespace FrcsPos.Repository
             return ApiResponse<PosTerminalDTO>.Ok(dto);
         }
 
+        public async Task<ApiResponse<List<PosSessionDTO>>> GetPosTerminalSessionAsync(RequestQueryObject queryObject)
+        {
+            var terminal = await _context.PosTerminals
+                .FirstOrDefaultAsync(t => t.UUID == queryObject.UUID);
 
+            if (terminal == null)
+            {
+                return ApiResponse<List<PosSessionDTO>>.Fail();
+            }
+
+            var query = _context.PosSessions
+                .AsQueryable();
+
+            // filtering
+
+            query = query.Where(c => c.PosTerminal.UUID == queryObject.UUID);
+
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<PosSessionDTO>();
+            foreach (var product in products)
+            {
+                var dto = product.FromModelToDTO();
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<PosSessionDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
+
+        public async Task<ApiResponse<List<SaleDTO>>> GetPosTerminalSalesAsync(RequestQueryObject queryObject)
+        {
+            var terminal = await _context.PosTerminals
+                .FirstOrDefaultAsync(t => t.UUID == queryObject.UUID);
+
+            if (terminal == null)
+            {
+                return ApiResponse<List<SaleDTO>>.Fail();
+            }
+
+            var query = _context.Sales
+                .AsQueryable();
+
+            // filtering
+
+            query = query.Where(c => c.PosSession.PosTerminal.UUID == queryObject.UUID);
+
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<SaleDTO>();
+            foreach (var product in products)
+            {
+                var dto = product.FromModelToDto();
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<SaleDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
     }
 }

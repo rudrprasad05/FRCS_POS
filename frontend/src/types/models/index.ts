@@ -112,6 +112,7 @@ export interface QueryObject {
   companyName?: string;
   role?: UserRoles;
   isAvailable?: boolean;
+  search?: string;
 }
 
 export enum ESortBy {
@@ -136,7 +137,7 @@ export interface Warehouse extends BaseModel {
   name: string;
   location?: string;
 
-  batches?: ProductBatch[];
+  productBatches?: ProductBatch[];
 }
 
 export enum UserRoles {
@@ -213,7 +214,8 @@ export interface PosSession extends BaseModel {
   sales: Sale[];
 }
 
-export type PosSessionWithProducts = PosSession & {
+export type PosSessionWithProducts = {
+  posSession: PosSession;
   products: Product[];
 };
 

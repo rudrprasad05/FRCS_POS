@@ -1,6 +1,6 @@
 "use client";
 import { P } from "@/components/font/HeaderFonts";
-import { ApiResponse } from "@/types/models";
+import { ApiResponse, ESortBy, QueryObject } from "@/types/models";
 import {
   createContext,
   ReactNode,
@@ -15,7 +15,20 @@ export interface MetaData {
   pageSize: number;
   totalCount: number;
   totalPages: number;
+  search?: string;
+  sortBy?: ESortBy;
+  isDeleted?: boolean;
 }
+
+export const DefaultMetaData: MetaData = {
+  pageNumber: 1,
+  pageSize: 10,
+  totalCount: 10,
+  totalPages: 1,
+  search: undefined,
+  sortBy: undefined,
+  isDeleted: undefined,
+};
 
 // --- Single item context ---
 export interface GenericSingleDataContextType<T> {
@@ -86,7 +99,7 @@ export function createGenericListDataContext<T>() {
   const Context = createContext<GenericListDataContextType<T>>({
     items: [],
     loading: true,
-    pagination: { pageNumber: 1, pageSize: 10, totalCount: 0, totalPages: 0 },
+    pagination: DefaultMetaData,
     setPagination: () => {},
     refresh: async () => {},
     setItems: () => {},
@@ -98,10 +111,7 @@ export function createGenericListDataContext<T>() {
     initialPageSize = 10,
   }: {
     children: ReactNode;
-    fetchFn: (
-      pageNumber: number,
-      pageSize: number
-    ) => Promise<ApiResponse<T[]>>;
+    fetchFn: (query: QueryObject) => Promise<ApiResponse<T[]>>;
     initialPageSize?: number;
   }) => {
     const [items, setItems] = useState<T[]>([]);
@@ -111,11 +121,20 @@ export function createGenericListDataContext<T>() {
       pageSize: initialPageSize,
       totalCount: 0,
       totalPages: 0,
+      search: "",
     });
 
     const refresh = async () => {
+      console.log("hit refesh");
       setLoading(true);
-      const res = await fetchFn(pagination.pageNumber, pagination.pageSize);
+      console.log(pagination);
+      const res = await fetchFn({
+        pageNumber: pagination.pageNumber,
+        pageSize: pagination.pageSize,
+        search: pagination.search,
+        isDeleted: pagination.isDeleted,
+        sortBy: pagination.sortBy,
+      });
       console.log("fetch fn", res);
       setItems(res.data ?? []);
 
@@ -132,7 +151,13 @@ export function createGenericListDataContext<T>() {
 
     useEffect(() => {
       refresh();
-    }, [pagination.pageNumber, pagination.pageSize]);
+    }, [
+      pagination.pageNumber,
+      pagination.pageSize,
+      pagination.search,
+      pagination.sortBy,
+      pagination.isDeleted,
+    ]);
 
     return (
       <Context.Provider

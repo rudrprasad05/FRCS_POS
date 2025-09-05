@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateUser } from "@/actions/User";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,31 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@/types/models";
-import {
-  Copy,
-  CopyCheck,
-  File,
-  HousePlus,
-  Loader2,
-  RotateCcw,
-  RotateCw,
-  UserPlus,
-} from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -41,11 +27,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateUser, GetAllAdmins } from "@/actions/User";
-import { generateStrongPassword } from "@/lib/utils";
-import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
 import { useUsers } from "@/context/UserDataContext";
+import { generateStrongPassword } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Copy,
+  CopyCheck,
+  File,
+  Loader2,
+  RotateCw,
+  UserPlus,
+} from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const formSchema = z.object({
   username: z.string().min(1, {

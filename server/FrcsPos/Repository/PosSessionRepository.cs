@@ -97,7 +97,7 @@ namespace FrcsPos.Repository
             };
         }
 
-        public async Task<ApiResponse<PosSessionDTO>> GetPosSessionByUUID(string uuid)
+        public async Task<ApiResponse<PosSessionWithProducts>> GetPosSessionByUUID(string uuid)
         {
             var posSession = await _context.PosSessions
                 .Include(s => s.PosUser)
@@ -114,13 +114,16 @@ namespace FrcsPos.Repository
 
             if (posSession == null)
             {
-                return ApiResponse<PosSessionDTO>.Fail();
+                return ApiResponse<PosSessionWithProducts>.Fail();
             }
 
-            var result = posSession.FromModelToDTO();
+            var result = new PosSessionWithProducts
+            {
+                PosSession = posSession.FromModelToDTO(),
+            };
             result.Products = posSession.PosTerminal.Company.Products.FromModelToDto();
 
-            return new ApiResponse<PosSessionDTO>
+            return new ApiResponse<PosSessionWithProducts>
             {
                 Success = true,
                 StatusCode = 200,

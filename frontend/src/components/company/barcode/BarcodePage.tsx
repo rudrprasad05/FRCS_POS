@@ -54,6 +54,22 @@ export default function BarcodeScanner() {
     validateUUID();
   }, [id]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: any) => {
+      event.preventDefault();
+      connection
+        ?.invoke("SendScan", id)
+        .catch((err: any) => console.error("SendScan failed", err));
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   function createConnection(terminalId: string) {
     return new signalR.HubConnectionBuilder()
       .withUrl(`${WebSocketUrl}/socket/posHub?terminalId=${terminalId}`)

@@ -33,7 +33,7 @@ export default function PosQrCodeConnectDialoge() {
       console.log(res);
       setIsQrGenerated(true);
 
-      const baseUrl = process.env.NEXT_PUBLIC_IP || "http://localhost:3000";
+      const baseUrl = "https://localhost:3000"; // CHANGE ME
       setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
     } catch (error) {
       toast.error("Error generating QR Code");

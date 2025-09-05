@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/pos-terminal")]
     [ApiController]
     public class PosTerminalController : BaseController
@@ -60,6 +60,32 @@ namespace FrcsPos.Controllers
             if (model == null || !model.Success)
             {
                 return BadRequest("model not gotten");
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-sales")]
+        public async Task<IActionResult> GetPosTerminalSales([FromQuery] RequestQueryObject requestQuery)
+        {
+            var model = await _posTerminalRepository.GetPosTerminalSalesAsync(requestQuery);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-sessions")]
+        public async Task<IActionResult> GetPosTerminalSessions([FromQuery] RequestQueryObject requestQuery)
+        {
+            var model = await _posTerminalRepository.GetPosTerminalSessionAsync(requestQuery);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
             }
 
             return Ok(model);
