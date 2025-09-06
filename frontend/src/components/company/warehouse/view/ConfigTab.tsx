@@ -14,8 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Warehouse } from "@/types/models";
 import { Check, Trash } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function ConfigTab({ warehouse }: { warehouse: Warehouse }) {
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
+
   const dateFormatOptions: Intl.DateTimeFormatOptions = {
     day: "2-digit",
     month: "2-digit",
@@ -90,7 +94,10 @@ export default function ConfigTab({ warehouse }: { warehouse: Warehouse }) {
                 errorMessage="Error Occurred"
                 buttonVariant="destructive"
                 buttonIcon={<Trash />}
-                queryKeys={[["editWarehouse", warehouse.uuid]]}
+                queryKeys={[
+                  ["warehouse", companyName],
+                  ["editWarehouse", warehouse.uuid],
+                ]}
                 onConfirm={async (uuid) => {
                   return await SoftDeleteWarehouse({ uuid });
                 }}
@@ -122,7 +129,10 @@ export default function ConfigTab({ warehouse }: { warehouse: Warehouse }) {
                 errorMessage="Error Occurred"
                 buttonVariant="default"
                 buttonIcon={<Check />}
-                queryKeys={[["editWarehouse", warehouse.uuid]]}
+                queryKeys={[
+                  ["warehouse", companyName],
+                  ["editWarehouse", warehouse.uuid],
+                ]}
                 onConfirm={async (uuid) => {
                   return await ActivateWarehouse({ uuid });
                 }}

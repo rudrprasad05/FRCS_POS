@@ -1,8 +1,9 @@
 "use client";
 
-import { CreateProduct, EditProduct } from "@/actions/Product";
+import { EditProduct } from "@/actions/Product";
 import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
+import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -326,8 +327,4 @@ export function EditorTab({
       </div>
     </div>
   );
-}
-
-function RedStar() {
-  return <Asterisk className="w-2 h-2 text-rose-500 mb-auto ml-0 mr-auto" />;
 }

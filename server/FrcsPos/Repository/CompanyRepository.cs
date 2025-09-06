@@ -88,6 +88,9 @@ namespace FrcsPos.Repository
             }
 
             model.IsDeleted = true;
+            model.UpdatedOn = DateTime.UtcNow;
+
+
             await _context.SaveChangesAsync();
 
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(

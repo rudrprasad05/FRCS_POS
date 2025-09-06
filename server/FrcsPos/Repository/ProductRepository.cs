@@ -109,6 +109,7 @@ namespace FrcsPos.Repository
             var query = _context.Products
                 .Include(p => p.Media)
                 .Include(p => p.Batches)
+                .Where(p => p.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
 
             // filtering
@@ -263,6 +264,8 @@ namespace FrcsPos.Repository
             }
 
             product.IsDeleted = true;
+            product.UpdatedOn = DateTime.UtcNow;
+
 
             await _context.SaveChangesAsync();
 
@@ -280,6 +283,7 @@ namespace FrcsPos.Repository
             }
 
             product.IsDeleted = false;
+            product.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

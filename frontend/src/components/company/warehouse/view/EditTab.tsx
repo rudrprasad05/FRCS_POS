@@ -1,15 +1,12 @@
 "use client";
 
-import { CreateProduct, EditProduct } from "@/actions/Product";
 import { EditWarehouse } from "@/actions/Warehouse";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
+import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,18 +14,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Product, TaxCategory, Warehouse } from "@/types/models";
+import { Warehouse } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Asterisk } from "lucide-react";
-import Image from "next/image";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,7 +39,8 @@ export type WarehouseEditData = z.infer<typeof productSchema>;
 
 export function EditorTab({ product }: { product: Warehouse }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
   const queryClient = useQueryClient();
 
   const form = useForm<WarehouseEditData>({
@@ -74,6 +65,10 @@ export function EditorTab({ product }: { product: Warehouse }) {
     if (res.success) {
       queryClient.invalidateQueries({
         queryKey: ["editWarehouse", product.uuid],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["warehouse", companyName],
+        exact: false,
       });
       toast.success("Uploaded");
     } else {
@@ -152,8 +147,4 @@ export function EditorTab({ product }: { product: Warehouse }) {
       </div>
     </div>
   );
-}
-
-function RedStar() {
-  return <Asterisk className="w-2 h-2 text-rose-500 mb-auto ml-0 mr-auto" />;
 }

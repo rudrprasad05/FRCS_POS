@@ -177,6 +177,7 @@ namespace FrcsPos.Repository
 
             wh.IsDeleted = true;
             wh.IsActive = false;
+            wh.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -195,6 +196,8 @@ namespace FrcsPos.Repository
 
             wh.IsDeleted = false;
             wh.IsActive = true;
+            wh.UpdatedOn = DateTime.UtcNow;
+
 
             await _context.SaveChangesAsync();
 
