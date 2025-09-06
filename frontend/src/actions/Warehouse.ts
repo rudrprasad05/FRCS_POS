@@ -1,6 +1,7 @@
 import { ApiResponse, QueryObject, Warehouse } from "@/types/models";
 import { RequestWrapper } from "./RequestWrapper";
 import { NewWarehouseType } from "@/components/company/warehouse/NewWarehouseDialoge";
+import { WarehouseEditData } from "@/components/company/warehouse/view/EditTab";
 
 export async function GetAllWarehouses(
   query?: QueryObject
@@ -19,5 +20,30 @@ export async function GetOneWarehouseWithBatch(
 ): Promise<ApiResponse<Warehouse>> {
   return RequestWrapper<Warehouse>("GET", `warehouse/get-full-by-uuid`, {
     query,
+  });
+}
+
+export async function SoftDeleteWarehouse(
+  query?: QueryObject
+): Promise<ApiResponse<Warehouse>> {
+  return RequestWrapper<Warehouse>("DELETE", `warehouse/soft-delete`, {
+    query,
+  });
+}
+export async function ActivateWarehouse(
+  query?: QueryObject
+): Promise<ApiResponse<Warehouse>> {
+  return RequestWrapper<Warehouse>("DELETE", `warehouse/activate`, {
+    query,
+  });
+}
+
+export async function EditWarehouse(
+  data: WarehouseEditData,
+  uuid: string
+): Promise<ApiResponse<Warehouse>> {
+  return RequestWrapper<Warehouse>("PATCH", `warehouse/edit`, {
+    query: { uuid },
+    data: data,
   });
 }

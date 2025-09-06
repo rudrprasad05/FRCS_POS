@@ -63,6 +63,24 @@ namespace FrcsPos.Repository
             return ApiResponse<WarehouseDTO>.Ok(model.FromModelToDto());
         }
 
+        public async Task<ApiResponse<WarehouseDTO>> EditAsync(EditWarehouseData request, RequestQueryObject queryObject)
+        {
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(w => w.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.Fail(message: "warehouse not found");
+            }
+
+            wh.Location = request.Location;
+            wh.Name = request.Name;
+            wh.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var whDTO = wh.FromModelToDto();
+            return ApiResponse<WarehouseDTO>.Ok(whDTO);
+        }
+
         public async Task<ApiResponse<List<WarehouseDTO>>> GetAllAsync(RequestQueryObject requestQueryObject)
         {
             if (string.IsNullOrWhiteSpace(requestQueryObject.CompanyName))
@@ -149,9 +167,40 @@ namespace FrcsPos.Repository
             return ApiResponse<WarehouseDTO>.Ok(dto);
         }
 
-        public Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(string uuid)
+        public async Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(RequestQueryObject queryObject)
         {
-            throw new NotImplementedException();
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.NotFound();
+            }
+
+            wh.IsDeleted = true;
+            wh.IsActive = false;
+
+            await _context.SaveChangesAsync();
+
+            var warehouseDTO = wh.FromModelToDto();
+
+            return ApiResponse<WarehouseDTO>.Ok(warehouseDTO);
+        }
+
+        public async Task<ApiResponse<WarehouseDTO>> Activate(RequestQueryObject queryObject)
+        {
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.NotFound();
+            }
+
+            wh.IsDeleted = false;
+            wh.IsActive = true;
+
+            await _context.SaveChangesAsync();
+
+            var warehouseDTO = wh.FromModelToDto();
+
+            return ApiResponse<WarehouseDTO>.Ok(warehouseDTO);
         }
     }
 }

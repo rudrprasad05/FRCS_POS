@@ -24,6 +24,7 @@ import { useEffect } from "react";
 import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
 import NewWarehouseDialoge from "./NewWarehouseDialoge";
 import { Header } from "@/components/global/GenericSortableHeader";
+import { useQuery } from "@tanstack/react-query";
 
 export const {
   Provider: WarehouseSectionProvider,
@@ -33,6 +34,7 @@ export const {
 export default function WarehouseSection() {
   const param = useParams();
   const companyName = String(param.companyName);
+
   return (
     <WarehouseSectionProvider
       fetchFn={(query) =>

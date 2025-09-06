@@ -142,7 +142,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
               <Edit className="" />
             </Link>
           </Button>
-          {/* <DeleteCompanyDialoge data={company} /> */}
+
           <Button variant={"outline"} asChild className="w-24">
             <Link
               href={`products/${company.uuid}/view`}
