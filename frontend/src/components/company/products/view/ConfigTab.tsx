@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Product } from "@/types/models";
 import { SoftDeleteDialoge } from "./SoftDeleteDialoge";
+import { ActivateDialoge } from "./ActivateDialoge";
 
 export default function ConfigTab({ product }: { product: Product }) {
   const dateFormatOptions: Intl.DateTimeFormatOptions = {
@@ -65,21 +66,41 @@ export default function ConfigTab({ product }: { product: Product }) {
           />
         </div>
 
-        <Card className="flex flex-col border border-dashed border-rose-400 rounded-lg">
-          <CardHeader>
-            <CardTitle>Danger Zone</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-between">
-            <div>
-              <Label>Delete Product</Label>
-              <CardDescription>
-                This action is reversable but will remove the item from user
-                view
-              </CardDescription>
-            </div>
-            <SoftDeleteDialoge uuid={product.uuid as string} />
-          </CardContent>
-        </Card>
+        {!product.isDeleted && (
+          <Card className="flex flex-col border border-dashed border-rose-400 rounded-lg">
+            <CardHeader>
+              <CardTitle>Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
+              <div>
+                <Label>Delete Product</Label>
+                <CardDescription>
+                  This action is reversable but will remove the item from user
+                  view
+                </CardDescription>
+              </div>
+              <SoftDeleteDialoge uuid={product.uuid as string} />
+            </CardContent>
+          </Card>
+        )}
+
+        {product.isDeleted && (
+          <Card className="flex flex-col border border-dashed border-green-400 rounded-lg">
+            <CardHeader>
+              <CardTitle>Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
+              <div>
+                <Label>Activate Product</Label>
+                <CardDescription>
+                  This action is reversable but will include the item to user
+                  view
+                </CardDescription>
+              </div>
+              <ActivateDialoge uuid={product.uuid as string} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

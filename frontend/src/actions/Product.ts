@@ -97,3 +97,11 @@ export async function SoftDeleteProduct(
     query: { uuid },
   });
 }
+
+export async function ActivateProduct(
+  uuid: string
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("DELETE", `product/activate`, {
+    query: { uuid },
+  });
+}

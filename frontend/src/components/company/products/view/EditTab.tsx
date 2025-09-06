@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Asterisk } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -70,6 +71,7 @@ export function EditorTab({
     product?.media?.url as string
   );
 
+  const queryClient = useQueryClient();
   const [file, setFile] = useState<File | undefined>(undefined);
 
   const form = useForm<ProductFormData>({
@@ -123,7 +125,9 @@ export function EditorTab({
     const res = await EditProduct(formData, product.uuid);
 
     if (res.success) {
-      console.log(res);
+      queryClient.invalidateQueries({
+        queryKey: ["editProduct", product.uuid],
+      });
       toast.success("Uploaded");
     } else {
       toast.error("Failed to upload");

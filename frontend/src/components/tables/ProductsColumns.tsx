@@ -14,6 +14,21 @@ import Barcode from "react-barcode";
 
 export const ProductsOnlyColumns: ColumnDef<Product>[] = [
   {
+    accessorKey: "isDeleted",
+    header: "Active",
+    cell: ({ row }) => {
+      const isDeleted = row.getValue("isDeleted") as boolean;
+      return (
+        <div
+          className={cn(
+            "rounded-full w-2 h-2 mx-auto",
+            isDeleted ? "bg-rose-500" : "bg-green-500"
+          )}
+        />
+      );
+    },
+  },
+  {
     accessorKey: "image",
     header: "Image",
     cell: ({ row }) => {
@@ -24,7 +39,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
       console.log(company);
 
       return (
-        <div className="relative object-cover aspect-square h-16 w-full rounded-t-lg overflow-hidden">
+        <div className="relative object-cover aspect-square h-16 w-full rounded-md overflow-hidden">
           {isImageValid ? (
             <>
               <Image
@@ -95,21 +110,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
       return <div className="flex gap-2">{company.price}</div>;
     },
   },
-  {
-    accessorKey: "isDeleted",
-    header: "Active",
-    cell: ({ row }) => {
-      const isDeleted = row.getValue("isDeleted") as boolean;
-      return (
-        <div
-          className={cn(
-            "rounded-full w-2 h-2 mx-auto",
-            isDeleted ? "bg-rose-500" : "bg-green-500"
-          )}
-        />
-      );
-    },
-  },
+
   {
     accessorKey: "createdOn",
     header: "Created On",

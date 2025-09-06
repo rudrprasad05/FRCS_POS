@@ -1,6 +1,6 @@
 "use client";
 
-import { SoftDeleteProduct } from "@/actions/Product";
+import { ActivateProduct, SoftDeleteProduct } from "@/actions/Product";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Trash } from "lucide-react";
+import { Check, Loader2, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
+export function ActivateDialoge({ uuid }: { uuid: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmation, setConfirmation] = useState("");
@@ -29,10 +29,10 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
   async function handleDelete() {
     setIsLoading(true);
 
-    const res = await SoftDeleteProduct(uuid);
+    const res = await ActivateProduct(uuid);
 
     if (res.success) {
-      toast.success("Product Deleted");
+      toast.success("Product Activated");
       queryClient.invalidateQueries({
         queryKey: ["editProduct", uuid],
       });
@@ -54,7 +54,7 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
           onClick={() => setIsOpen(true)}
           className="w-24 flex items-center justify-between"
         >
-          Delete <Trash className="" />
+          Activate <Check className="" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -62,13 +62,15 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
           <DialogTitle>Delete Product</DialogTitle>
           <DialogDescription>
             This action cannot be undone. To confirm, please type{" "}
-            <span className="font-semibold text-muted-foreground">delete</span>{" "}
+            <span className="font-semibold text-muted-foreground">
+              activate
+            </span>{" "}
             below.
           </DialogDescription>
         </DialogHeader>
 
         <Input
-          placeholder="Type delete to confirm"
+          placeholder="Type activate to confirm"
           value={confirmation}
           onChange={(e) => setConfirmation(e.target.value)}
           className="mt-2"
@@ -89,15 +91,15 @@ export function SoftDeleteDialoge({ uuid }: { uuid: string }) {
           <Button
             onClick={handleDelete}
             className=""
-            variant="destructive"
-            disabled={confirmation !== "delete" || isLoading}
+            variant="default"
+            disabled={confirmation !== "activate" || isLoading}
           >
             {isLoading ? (
               <>
-                <Loader2 className="animate-spin mr-2" /> Deleting
+                <Loader2 className="animate-spin mr-2" /> Activating
               </>
             ) : (
-              "Delete"
+              "Activate"
             )}
           </Button>
         </DialogFooter>

@@ -147,5 +147,18 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpDelete("activate")]
+        public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productRepository.Activate(queryObject);
+
+            if (!model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
     }
 }

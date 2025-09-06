@@ -270,5 +270,22 @@ namespace FrcsPos.Repository
 
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
+
+        public async Task<ApiResponse<ProductDTO>> Activate(RequestQueryObject queryObject)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductDTO>.NotFound();
+            }
+
+            product.IsDeleted = false;
+
+            await _context.SaveChangesAsync();
+
+            var productDto = product.FromModelToDto();
+
+            return ApiResponse<ProductDTO>.Ok(productDto);
+        }
     }
 }
