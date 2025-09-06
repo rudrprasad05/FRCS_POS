@@ -90,7 +90,7 @@ export default function ConfigTab({ warehouse }: { warehouse: Warehouse }) {
                 errorMessage="Error Occurred"
                 buttonVariant="destructive"
                 buttonIcon={<Trash />}
-                queryKey={["editWarehouse", warehouse.uuid]}
+                queryKeys={[["editWarehouse", warehouse.uuid]]}
                 onConfirm={async (uuid) => {
                   return await SoftDeleteWarehouse({ uuid });
                 }}
@@ -122,7 +122,7 @@ export default function ConfigTab({ warehouse }: { warehouse: Warehouse }) {
                 errorMessage="Error Occurred"
                 buttonVariant="default"
                 buttonIcon={<Check />}
-                queryKey={["editWarehouse", warehouse.uuid]}
+                queryKeys={[["editWarehouse", warehouse.uuid]]}
                 onConfirm={async (uuid) => {
                   return await ActivateWarehouse({ uuid });
                 }}

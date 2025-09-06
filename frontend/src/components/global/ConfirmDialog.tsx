@@ -28,7 +28,7 @@ type ConfirmDialogProps = {
   errorMessage: string;
   buttonIcon?: React.ReactNode;
   buttonVariant?: "default" | "destructive" | "outline";
-  queryKey?: (string | number)[];
+  queryKeys?: Array<(string | number)[]>;
   onConfirm: (uuid: string) => Promise<{ success: boolean }>;
 };
 
@@ -42,7 +42,7 @@ export function ConfirmDialog({
   errorMessage,
   buttonIcon,
   buttonVariant = "default",
-  queryKey,
+  queryKeys,
   onConfirm,
 }: ConfirmDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,8 +57,10 @@ export function ConfirmDialog({
 
     if (res.success) {
       toast.success(successMessage);
-      if (queryKey) {
-        queryClient.invalidateQueries({ queryKey });
+      if (queryKeys) {
+        queryKeys.forEach((key) =>
+          queryClient.invalidateQueries({ queryKey: key })
+        );
       }
       router.back();
     } else {

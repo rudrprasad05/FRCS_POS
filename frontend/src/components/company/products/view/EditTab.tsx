@@ -28,6 +28,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Asterisk } from "lucide-react";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -65,7 +66,8 @@ export function EditorTab({
   product: Product;
   taxes: TaxCategory[];
 }) {
-  console.log("pp", product);
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     product?.media?.url as string
@@ -73,6 +75,7 @@ export function EditorTab({
 
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | undefined>(undefined);
+  const router = useRouter();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -128,7 +131,12 @@ export function EditorTab({
       queryClient.invalidateQueries({
         queryKey: ["editProduct", product.uuid],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["products", companyName], // optionally include pagination
+        exact: false,
+      });
       toast.success("Uploaded");
+      router.back();
     } else {
       toast.error("Failed to upload");
     }

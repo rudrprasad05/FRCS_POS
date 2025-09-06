@@ -66,18 +66,11 @@ export async function GetPosTerminalSessions(
 export async function CreatePosTerminals(
   cName: string
 ): Promise<ApiResponse<PosTerminal>> {
-  const token = await GetToken();
-
-  const res = await axiosGlobal.post<ApiResponse<PosTerminal>>(
-    `pos-terminal/create`,
-    {
+  return RequestWrapper<PosTerminal>("POST", `pos-terminal/create`, {
+    data: {
       companyName: cName,
     },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return res.data;
+  });
 }
 
 export async function GetAllCompanyPosTerminals(

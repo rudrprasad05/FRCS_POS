@@ -13,10 +13,11 @@ import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 
 export const columns: ColumnDef<PosTerminal>[] = [
   {
-    accessorKey: "number",
+    accessorKey: "id",
     header: "#",
     cell: ({ row }) => {
-      return <div className="flex gap-2">{+row.id + 1}</div>;
+      const isDeleted = row.getValue("id") as string;
+      return <div className="flex gap-2">{isDeleted}</div>;
     },
   },
   {

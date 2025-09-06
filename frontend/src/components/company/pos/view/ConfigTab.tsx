@@ -89,7 +89,7 @@ export default function ConfigTab({ terminal }: { terminal: PosTerminal }) {
                 errorMessage="Error Occurred"
                 buttonVariant="destructive"
                 buttonIcon={<Trash />}
-                queryKey={["editTerminal", terminal.uuid]}
+                queryKeys={[["editTerminal", terminal.uuid]]}
                 onConfirm={async (uuid) => {
                   return await SoftDeleteTerminal({ uuid });
                 }}
@@ -121,7 +121,7 @@ export default function ConfigTab({ terminal }: { terminal: PosTerminal }) {
                 errorMessage="Error Occurred"
                 buttonVariant="default"
                 buttonIcon={<Check />}
-                queryKey={["editTerminal", terminal.uuid]}
+                queryKeys={[["editTerminal", terminal.uuid]]}
                 onConfirm={async (uuid) => {
                   return await ActivateTerminal({ uuid });
                 }}

@@ -11,10 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Product } from "@/types/models";
-import { SoftDeleteDialoge } from "./SoftDeleteDialoge";
-import { ActivateDialoge } from "./ActivateDialoge";
+import { ActivateProduct, SoftDeleteProduct } from "@/actions/Product";
+import { ConfirmDialog } from "@/components/global/ConfirmDialog";
+import { Check, Trash } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function ConfigTab({ product }: { product: Product }) {
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
   const dateFormatOptions: Intl.DateTimeFormatOptions = {
     day: "2-digit",
     month: "2-digit",
@@ -79,7 +83,24 @@ export default function ConfigTab({ product }: { product: Product }) {
                   view
                 </CardDescription>
               </div>
-              <SoftDeleteDialoge uuid={product.uuid as string} />
+              <ConfirmDialog
+                uuid={product.uuid}
+                title="Delete Product"
+                description="This action cannot be undone."
+                confirmWord="delete"
+                actionLabel="Delete"
+                successMessage="Product Deleted"
+                errorMessage="Error Occurred"
+                buttonVariant="destructive"
+                buttonIcon={<Trash />}
+                queryKeys={[
+                  ["products", companyName],
+                  ["editProduct", product.uuid],
+                ]}
+                onConfirm={async (uuid) => {
+                  return await SoftDeleteProduct(product.uuid);
+                }}
+              />
             </CardContent>
           </Card>
         )}
@@ -97,7 +118,24 @@ export default function ConfigTab({ product }: { product: Product }) {
                   view
                 </CardDescription>
               </div>
-              <ActivateDialoge uuid={product.uuid as string} />
+              <ConfirmDialog
+                uuid={product.uuid}
+                title="Activate Product"
+                description="This will make the Product visible again."
+                confirmWord="activate"
+                actionLabel="Activate"
+                successMessage="Product Activated"
+                errorMessage="Error Occurred"
+                buttonVariant="default"
+                buttonIcon={<Check />}
+                queryKeys={[
+                  ["products", companyName],
+                  ["editProduct", product.uuid],
+                ]}
+                onConfirm={async (uuid) => {
+                  return await ActivateProduct(product.uuid);
+                }}
+              />
             </CardContent>
           </Card>
         )}
