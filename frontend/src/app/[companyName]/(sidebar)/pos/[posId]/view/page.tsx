@@ -13,6 +13,7 @@ import PaginationSection from "@/components/global/PaginationSection";
 import { PosSessionColumns } from "@/components/tables/PosSessionColumns";
 import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import type {
   ApiResponse,
   PosSession,
@@ -31,8 +33,11 @@ import type {
   QueryObject,
   Sale,
 } from "@/types/models";
-import { Building, Hash, MapPin, Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Building, Hash, Loader2, MapPin, PenBox, Search } from "lucide-react";
+import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const { Provider: SessionDataProvider, useGenericData: useSessionData } =
   createGenericListDataContext<PosSession>();
@@ -45,52 +50,26 @@ type PageProps = {
 };
 
 export default function PosTerminalPage({ params }: PageProps) {
-  const [posTerminal, setPosTerminal] = useState<PosTerminal | null>(null);
-  const [loading, setLoading] = useState(true);
   const { posId } = use(params);
 
-  useEffect(() => {
-    const fetchPosTerminal = async () => {
-      try {
-        const terminal = await GetPosTerminalById(posId);
-        console.log("fetchPosTerminal", terminal);
-        setPosTerminal(terminal.data as PosTerminal);
-      } catch (error) {
-        console.error("Failed to fetch POS terminal:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["editTerminal", posId],
+    queryFn: () => GetPosTerminalById(posId),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
 
-    fetchPosTerminal();
-  }, [posId]);
-
-  function GetPosTerminalSessionsMock(
-    query?: QueryObject
-  ): Promise<ApiResponse<PosSession[]>> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let a: ApiResponse<PosSession[]> = {
-          ...posTerminal,
-          success: true,
-          statusCode: 200,
-          timestamp: Date.now.toString(),
-          data: posTerminal?.session as PosSession[],
-        };
-        console.log(a);
-        resolve(a);
-      }, 0);
-    });
+  if (isLoading) {
+    return <Loader2 className="animate-spin" />;
   }
 
-  if (loading) {
-    return <TableSkeleton columns={4} rows={6} showHeader />;
+  if (error || !data?.success || !data.data) {
+    toast.error("Failed to fetch product data");
+    return <NoDataContainer />;
   }
 
   return (
     <div className="space-y-6">
-      <PosTerminalInfo posTerminal={posTerminal} />
-
+      <PosTerminalInfo posTerminal={data.data} />
       <PosTerminalDataTabs terminalId={posId} />
     </div>
   );
@@ -106,12 +85,17 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <H1>{posTerminal.name}</H1>
-            <Badge variant={posTerminal.isActive ? "default" : "secondary"}>
-              {posTerminal.isActive ? "Active" : "Inactive"}
+            <Badge variant={!posTerminal.isActive ? "default" : "secondary"}>
+              {!posTerminal.isDeleted ? "Active" : "Inactive"}
             </Badge>
           </div>
         </div>
-
+        <Button variant={"secondary"} className="ml-auto mr-2" asChild>
+          <Link href={`edit`}>
+            <PenBox />
+            Edit Terminal
+          </Link>
+        </Button>
         <NewSessionDialog terminalId={posTerminal.uuid.toString()} />
       </div>
 

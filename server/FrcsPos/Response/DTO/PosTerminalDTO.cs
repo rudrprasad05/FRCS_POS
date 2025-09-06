@@ -10,6 +10,7 @@ namespace FrcsPos.Response.DTO
     {
         public CompanyDTO Company { get; set; } = default!;
         public string Name { get; set; } = default!;
+        public bool IsActive { get; set; } = default!;
         public string LocationDescription { get; set; } = string.Empty;
         public string SerialNumber { get; set; } = string.Empty;
         public ICollection<PosSessionDTO> Session { get; set; } = [];
@@ -23,5 +24,12 @@ namespace FrcsPos.Response.DTO
         public string Name { get; set; } = default!;
         public bool IsActive { get; set; } = true;
         public CompanyDTO Company { get; set; } = null!;
+    }
+    public class EditTerminal
+    {
+        public string Name { get; set; } = null!;
+        public string Location { get; set; } = null!;
+        public string SerialNumber { get; set; } = null!;
+
     }
 }
