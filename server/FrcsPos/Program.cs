@@ -12,6 +12,7 @@ using FrcsPos.Repository;
 using Microsoft.AspNetCore.Authorization;
 using FrcsPos.Background;
 using FrcsPos.Socket;
+using StackExchange.Redis;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +48,7 @@ builder.Services.AddScoped<IMediaRepository, MediaRepository>();
 builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
@@ -54,11 +56,15 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAutho
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = builder.Configuration.GetConnectionString("Redis") ?? throw new InvalidOperationException();
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
 builder.Services.AddSignalR();
 
-builder.WebHost
-    .UseUrls(builder.Configuration["Backend:Url"]
-             ?? throw new InvalidOperationException());
+builder.WebHost.UseUrls(builder.Configuration["Backend:Url"] ?? throw new InvalidOperationException());
 
 var app = builder.Build();
 
@@ -108,5 +114,18 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Database connection failed: {ex.Message}");
     }
 }
-
+using (var scope = app.Services.CreateScope())
+{
+    var redis = scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
+    try
+    {
+        var db = redis.GetDatabase();
+        var pong = db.Ping(); // synchronous ping
+        Console.WriteLine($"Redis connection successful. Ping: {pong.TotalMilliseconds} ms");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Redis connection failed: {ex.Message}");
+    }
+}
 app.Run();

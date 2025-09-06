@@ -20,18 +20,21 @@ namespace FrcsPos.Repository
         private readonly INotificationService _notificationService;
         private readonly IMediaRepository _mediaRepository;
 
+        private readonly IRedisCacheService _redisCacheService;
+
 
         public ProductRepository(
            ApplicationDbContext applicationDbContext,
            INotificationService notificationService,
-           IMediaRepository mediaRepository
+           IMediaRepository mediaRepository,
+           IRedisCacheService redisCacheService
 
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
-
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request)
@@ -223,6 +226,15 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductEditInfo>> GetProductEditPageAsync(RequestQueryObject queryObject)
         {
+            var cacheKey = $"product:{queryObject.UUID}";
+            var cached = await _redisCacheService.GetAsync<ProductEditInfo>(cacheKey);
+            if (cached != null)
+            {
+                Console.WriteLine("cache hit");
+                return ApiResponse<ProductEditInfo>.Ok(cached);
+            }
+
+
             var product = await _context.Products
                 .Include(p => p.Media)
                 .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
@@ -240,6 +252,9 @@ namespace FrcsPos.Repository
                 Product = product.FromModelToDto(),
                 TaxCategories = allTaxes.FromModelToDto()
             };
+
+            FireAndForget.Run(_redisCacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5)));
+            Console.WriteLine("cache writtern");
 
             return ApiResponse<ProductEditInfo>.Ok(dto);
         }
