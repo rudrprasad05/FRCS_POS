@@ -87,9 +87,9 @@ export function EditorTab({ product }: { product: Warehouse }) {
     <div className="min-h-screen bg-background pt-4">
       <div className="space-y-4">
         <div>
-          <LargeText>Product Information</LargeText>
+          <LargeText>Warehouse Information</LargeText>
           <MutedText>
-            Fill in the details below to create a new product
+            Fill in the details below to edit an existing warehouse
           </MutedText>
         </div>
         <div>
@@ -102,7 +102,7 @@ export function EditorTab({ product }: { product: Warehouse }) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="">
-                        Product Name <RedStar />
+                        Warehouse Name <RedStar />
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Enter product name" {...field} />

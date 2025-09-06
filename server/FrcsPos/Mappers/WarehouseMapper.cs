@@ -26,7 +26,8 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 CompanyId = request.CompanyId,
                 Location = request.Location,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                IsDeleted = request.IsDeleted
             };
 
             if (request.ProductBatches != null)
@@ -53,7 +54,9 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 CompanyId = request.CompanyId,
                 Location = request.Location,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                IsDeleted = request.IsDeleted
+
             };
 
             return dto;
