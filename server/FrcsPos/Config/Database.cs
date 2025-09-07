@@ -19,6 +19,6 @@ namespace FrcsPos.Config
                 )
             );
         }
-        
+
     }
 }

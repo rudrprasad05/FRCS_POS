@@ -27,11 +27,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export const {
-  Provider: CompanyProductsSectionProvider,
-  useGenericData: useCompanyProductData,
-} = createGenericListDataContext<Product>();
-
 export default function CompanySection() {
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);

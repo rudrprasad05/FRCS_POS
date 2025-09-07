@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QueryObject, User, UserRoles } from "@/types/models";
-import { HousePlus, Loader2 } from "lucide-react";
+import { HousePlus, Loader2, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import {
@@ -37,6 +37,9 @@ import { useCompanyData } from "./CompaniesSection";
 import { CreateCompany } from "@/actions/Company";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import NewUserDialoge from "../users/NewUserDialoge";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -51,6 +54,8 @@ export type NewCompanyFormType = z.infer<typeof formSchema>;
 
 export default function NewCompanyDialoge() {
   const { refresh } = useCompanyData();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,9 +66,24 @@ export default function NewCompanyDialoge() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      adminUserId: "",
+      adminUserId: searchParams.get("selectedUser") || "",
     },
   });
+  useEffect(() => {
+    console.log(searchParams.get("open_create"));
+    if (searchParams.get("open_create") === "true") {
+      setOpen(true);
+    }
+  }, [searchParams]);
+
+  function handleOpenChange(value: boolean) {
+    setOpen(value);
+    if (!value) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("open_create");
+      router.replace(`${window.location.pathname}?${params.toString()}`);
+    }
+  }
 
   useEffect(() => {
     const getData = async () => {
@@ -86,15 +106,18 @@ export default function NewCompanyDialoge() {
       setError(res.message);
     } else {
       toast.success("Company created");
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("selectedUser");
+      router.replace(`${window.location.pathname}?${params.toString()}`);
       refresh();
-      setOpen(false);
+      handleOpenChange(false);
     }
 
     setLoading(false);
   }
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogTrigger>
         <div
           className={`${buttonVariants({
@@ -132,7 +155,7 @@ export default function NewCompanyDialoge() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="adminUserId"
               render={({ field }) => (
@@ -159,7 +182,50 @@ export default function NewCompanyDialoge() {
                   <FormMessage />
                 </FormItem>
               )}
+            /> */}
+            <FormField
+              control={form.control}
+              name="adminUserId"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Select Admin</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl className="w-full">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an admin" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="w-full">
+                      {loading && <Loader2 className="animate-spin" />}
+                      {adminUsers.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.username ?? user.email}
+                        </SelectItem>
+                      ))}
+
+                      <Link
+                        href={{
+                          pathname: "/admin/users",
+                          query: {
+                            open_create: "true",
+                            returnUrl: "/admin/companies",
+                          },
+                        }}
+                      >
+                        <div className="hover:bg-accent focus:bg-accent focus:text-accent-foreground  relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none ">
+                          <Plus className="w-4 h-4" /> New User
+                        </div>
+                      </Link>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Choose an admin for this company.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
+
             {error && <Label className="text-rose-400">{error}</Label>}
             <Button type="submit" disabled={loading}>
               Submit {loading && <Loader2 className="animate-spin" />}

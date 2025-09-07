@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FrcsPos.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -326,10 +326,11 @@ namespace FrcsPos.Migrations
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
                     Sku = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    Barcode = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_general_ci"),
+                    Barcode = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TaxCategoryId = table.Column<int>(type: "int", nullable: false),
                     IsPerishable = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    MediaId = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -344,6 +345,11 @@ namespace FrcsPos.Migrations
                         principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Products_Medias_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Medias",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Products_TaxCategories_TaxCategoryId",
                         column: x => x.TaxCategoryId,
@@ -362,6 +368,7 @@ namespace FrcsPos.Migrations
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     Location = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -437,6 +444,8 @@ namespace FrcsPos.Migrations
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    ProductId1 = table.Column<int>(type: "int", nullable: true),
+                    WarehouseId1 = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -450,19 +459,29 @@ namespace FrcsPos.Migrations
                         column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ProductBatches_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_Products_ProductId1",
+                        column: x => x.ProductId1,
+                        principalTable: "Products",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_ProductBatches_Warehouses_WarehouseId",
                         column: x => x.WarehouseId,
                         principalTable: "Warehouses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_Warehouses_WarehouseId1",
+                        column: x => x.WarehouseId1,
+                        principalTable: "Warehouses",
+                        principalColumn: "Id");
                 })
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
@@ -699,6 +718,7 @@ namespace FrcsPos.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TaxRatePercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     LineTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ProductId1 = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -712,7 +732,12 @@ namespace FrcsPos.Migrations
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_SaleItems_Products_ProductId1",
+                        column: x => x.ProductId1,
+                        principalTable: "Products",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_SaleItems_Sales_SaleId",
                         column: x => x.SaleId,
@@ -919,6 +944,11 @@ namespace FrcsPos.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductBatches_ProductId1",
+                table: "ProductBatches",
+                column: "ProductId1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductBatches_UUID",
                 table: "ProductBatches",
                 column: "UUID",
@@ -928,6 +958,11 @@ namespace FrcsPos.Migrations
                 name: "IX_ProductBatches_WarehouseId",
                 table: "ProductBatches",
                 column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductBatches_WarehouseId1",
+                table: "ProductBatches",
+                column: "WarehouseId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CompanyId_Barcode",
@@ -941,6 +976,11 @@ namespace FrcsPos.Migrations
                 table: "Products",
                 columns: new[] { "CompanyId", "Sku" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_MediaId",
+                table: "Products",
+                column: "MediaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_TaxCategoryId",
@@ -1024,6 +1064,11 @@ namespace FrcsPos.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SaleItems_ProductId1",
+                table: "SaleItems",
+                column: "ProductId1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SaleItems_SaleId",
                 table: "SaleItems",
                 column: "SaleId");
@@ -1044,6 +1089,11 @@ namespace FrcsPos.Migrations
                 table: "Sales",
                 columns: new[] { "CompanyId", "InvoiceNumber" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_InvoiceNumber",
+                table: "Sales",
+                column: "InvoiceNumber");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sales_PosSessionId",
@@ -1130,9 +1180,6 @@ namespace FrcsPos.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Medias");
-
-            migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
@@ -1167,6 +1214,9 @@ namespace FrcsPos.Migrations
 
             migrationBuilder.DropTable(
                 name: "Sales");
+
+            migrationBuilder.DropTable(
+                name: "Medias");
 
             migrationBuilder.DropTable(
                 name: "TaxCategories");

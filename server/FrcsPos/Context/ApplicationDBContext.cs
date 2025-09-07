@@ -112,6 +112,20 @@ namespace FrcsPos.Context
             b.Entity<ProductBatch>(e =>
             {
                 e.HasIndex(x => new { x.CompanyId, x.ProductId, x.WarehouseId });
+                e.HasOne(x => x.Company)
+                    .WithMany()
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.Product)
+                    .WithMany()
+                    .HasForeignKey(x => x.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.Warehouse)
+                    .WithMany()
+                    .HasForeignKey(x => x.WarehouseId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             b.Entity<Sale>(e =>
@@ -140,6 +154,15 @@ namespace FrcsPos.Context
                 e.Property(x => x.UnitPrice).HasPrecision(18, 2);
                 e.Property(x => x.TaxRatePercent).HasPrecision(5, 2);
                 e.Property(x => x.LineTotal).HasPrecision(18, 2);
+                e.HasOne(x => x.Product)
+                    .WithMany()
+                    .HasForeignKey(x => x.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict); // ✅ Changed
+
+                e.HasOne(x => x.Sale)
+                    .WithMany(x => x.Items)
+                    .HasForeignKey(x => x.SaleId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             b.Entity<RefundRequest>(e =>

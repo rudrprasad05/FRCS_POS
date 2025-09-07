@@ -18,8 +18,8 @@ import { createGenericListDataContext } from "@/context/GenericDataTableContext"
 import { ESortBy, User } from "@/types/models";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import NewWarehouseDialoge from "./NewUserDialoge";
 import { GetUsersByCompany } from "@/actions/User";
+import NewWarehouseDialoge from "../warehouse/NewWarehouseDialoge";
 
 export const { Provider: UserSectionProvider, useGenericData: useUserData } =
   createGenericListDataContext<User>();

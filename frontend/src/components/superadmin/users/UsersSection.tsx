@@ -1,29 +1,18 @@
 "use client";
-import { GetAllCompanies } from "@/actions/Company";
-import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Company, MetaData, User } from "@/types/models";
-import { Search } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { User } from "@/types/models";
 // import { columns } from "./CompaniesColumns";
 // import { DataTable } from "./CompaniesDataTable";
-import NewUserDialoge from "./NewUserDialoge";
 import { GetAllAdmins } from "@/actions/User";
-import { columns } from "./UserColumns";
 import { DataTable } from "@/components/global/DataTable";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { Header } from "@/components/global/GenericSortableHeader";
+import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import NewUserDialoge from "./NewUserDialoge";
+import { columns } from "./UserColumns";
+import { buttonVariants } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
 
 export const { Provider: UserDataProvider, useGenericData: useUser } =
   createGenericListDataContext<User>();
@@ -31,12 +20,27 @@ export const { Provider: UserDataProvider, useGenericData: useUser } =
 export default function UsersSection() {
   return (
     <UserDataProvider fetchFn={(query) => GetAllAdmins(query)}>
-      <Header<User> useHook={useUser} newButton={<NewUserDialoge />}>
+      <Header<User> useHook={useUser} newButton={<NewUserButton />}>
         <H1>Users</H1>
         <P className="text-muted-foreground">Create and manage users</P>
       </Header>
       <HandleDataSection />
     </UserDataProvider>
+  );
+}
+
+function NewUserButton() {
+  return (
+    <NewUserDialoge>
+      <div
+        className={`${buttonVariants({
+          variant: "default",
+        })} w-full text-start justify-start px-2 my-2`}
+      >
+        <UserPlus />
+        New User
+      </div>
+    </NewUserDialoge>
   );
 }
 

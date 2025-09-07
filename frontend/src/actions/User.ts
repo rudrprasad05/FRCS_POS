@@ -53,31 +53,8 @@ export async function GetUnAssignedUsers(
 
 export async function CreateUser(
   data: NewUserForm
-): Promise<ApiResponse<User[]>> {
-  const token = await GetToken();
-
-  try {
-    const res = await axiosGlobal.post<ApiResponse<User[]>>(
-      "user/create",
-      data,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<User[]>;
-    }
-
-    return {
-      success: false,
-      statusCode: 500,
-      data: [],
-      errors: ["Network error"],
-      message: "Unable to reach the server",
-      timestamp: Date.now.toString(),
-    };
-  }
+): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("POST", `user/create`, { data });
 }
 
 export async function Logout(): Promise<ApiResponse<string>> {
