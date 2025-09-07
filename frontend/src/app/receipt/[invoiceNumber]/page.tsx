@@ -1,6 +1,10 @@
 "use client";
 
-import { DownloadRecieptFromServer, GetSaleByUUID } from "@/actions/Sale";
+import {
+  DownloadRecieptFromServer,
+  GetSaleByReceipt,
+  GetSaleByUUID,
+} from "@/actions/Sale";
 import { XSmallText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,12 +40,6 @@ const formatDateTime = (dateString: string) => {
   };
 };
 
-const handleDownloadReceipt = () => {
-  // In a real implementation, this would generate and download a PDF
-  console.log("Downloading receipt...");
-  alert("Receipt download started!");
-};
-
 enum EReceiptPageState {
   LOADING,
   ERROR,
@@ -52,7 +50,6 @@ export default function ReceiptPage() {
   const [sale, setSale] = useState<Sale | undefined>(undefined);
   const [recieptUrl, setRecieptUrl] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
-
   const [state, setState] = useState<EReceiptPageState>(
     EReceiptPageState.LOADING
   );
@@ -61,11 +58,21 @@ export default function ReceiptPage() {
     sale ? sale.createdOn : Date.now.toString()
   );
   const params = useParams();
-  const checkoutId = String(params.checkoutId);
+  const checkoutId = String(params.invoiceNumber);
 
   useEffect(() => {
     getDate();
   }, [params]);
+
+  const getDate = async () => {
+    if (!checkoutId) {
+      setState(EReceiptPageState.ERROR);
+    }
+    const res = await GetSaleByReceipt(checkoutId);
+    console.log(res);
+    setSale(res.data as Sale);
+    setState(EReceiptPageState.OK);
+  };
 
   const handleDownloadReceipt = async () => {
     if (!sale) return;
@@ -97,17 +104,6 @@ export default function ReceiptPage() {
     } finally {
       setIsDownloading(false);
     }
-  };
-
-  const getDate = async () => {
-    if (!checkoutId) {
-      setState(EReceiptPageState.ERROR);
-    }
-    const res = await GetSaleByUUID(checkoutId);
-    console.log(res);
-    setSale(res.data as Sale);
-    setState(EReceiptPageState.OK);
-    setRecieptUrl("https://localhost:3000/receipt/" + res.data?.invoiceNumber);
   };
 
   if (state == EReceiptPageState.LOADING) {
@@ -218,17 +214,6 @@ export default function ReceiptPage() {
           </div>
 
           <Separator className="mb-1" />
-
-          <div className="text-center">
-            <QRCode
-              value={recieptUrl}
-              className="w-64 h-64 mx-auto rounded-lg p-0.5"
-            />
-            <XSmallText className="text-muted-foreground">
-              {recieptUrl}
-            </XSmallText>
-          </div>
-
           {/* Footer */}
           <div className="text-center text-sm text-muted-foreground">
             <p>Thank you for shopping with us!</p>
@@ -247,15 +232,18 @@ export default function ReceiptPage() {
             </Button>
           </div>
           <div className="flex items-start gap-2">
-            <div
-              onClick={handleDownloadReceipt}
-              className="bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 rounded-full p-2"
-            >
-              {isDownloading ? (
-                <Loader2 className="animate-spin w-4 h-4" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
+            <div>
+              <Button
+                onClick={handleDownloadReceipt}
+                disabled={isDownloading}
+                className="flex items-center gap-2"
+              >
+                {isDownloading ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+              </Button>
             </div>
             <div
               onClick={handleDownloadReceipt}

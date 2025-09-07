@@ -35,7 +35,7 @@ export async function RequestWrapper<T>(
 
     return res.data;
   } catch (error) {
-    console.log("RES WRAPPER", error);
+    console.dir(error);
     return {
       data: null,
       success: false,

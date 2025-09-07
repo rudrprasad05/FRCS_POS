@@ -67,7 +67,7 @@ export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
       const url = res.data?.uuid;
       if (uuidValidate(url)) {
         toast.success("Session created. Redirecting");
-        router.push(`${uuid}/session/${url}`);
+        router.push(`session/${url}`);
       } else {
         toast.error("Session url was invalid");
         console.error("Invalid UUID:", url);

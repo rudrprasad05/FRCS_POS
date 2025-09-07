@@ -93,7 +93,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
 app.MapHub<NotificationHub>("/socket/notificationHub");
-app.MapHub<PosHub>("/socket/posHub");
+app.MapHub<PosHub>("/socket/posHub")
+    .RequireCors("allowSpecificOrigin"); ;
 
 // TODO was adding barcodes. 
 

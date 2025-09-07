@@ -10,6 +10,7 @@ import hash from "object-hash";
 import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import {
+  ApiResponse,
   PosSession,
   PosSessionWithProducts,
   Product,
@@ -20,10 +21,12 @@ import { NewCheckoutRequest } from "@/types/res";
 import { SaleStatus } from "@/types/enum";
 import { Checkout } from "@/actions/PosSession";
 import { init } from "next/dist/compiled/webpack/webpack";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { GetAllProducts, GetPosProducts } from "@/actions/Product";
 
 interface PosSessionContextType {
   session: PosSession;
-  products: Product[];
+  products: (Product | undefined)[];
   qr: string | undefined;
   cart: SaleItemOmitted[];
 
@@ -40,12 +43,13 @@ interface PosSessionContextType {
   addProduct: (product: SaleItemOmitted) => void;
   removeProduct: (productId: string) => void;
   deleteProduct: (productId: string) => void;
+  loadMore: () => void;
 
   checkout: () => Promise<void>;
 
   setIsTerminalConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
   setIsScannerConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  //   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
 
 const PosSessionContext = createContext<PosSessionContextType>({
@@ -64,7 +68,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
 
   setInitialState: () => {},
   setQr: () => {},
-
+  loadMore: () => {},
   deleteProduct: () => {},
   addProduct: () => {},
   removeProduct: () => {},
@@ -73,7 +77,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
 
   setIsTerminalConnectedToServer: () => {},
   setIsScannerConnectedToServer: () => {},
-  setProducts: () => {},
+  //   setProducts: () => {},
 });
 
 interface IMoneyValue {
@@ -85,7 +89,7 @@ interface IMoneyValue {
 export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<PosSession>({} as PosSession);
 
-  const [products, setProducts] = useState<Product[]>([]);
+  //   const [products, setProducts] = useState<Product[]>([]);
   const [qr, setQr] = useState<string | undefined>();
   const router = useRouter();
 
@@ -106,6 +110,34 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const params = useParams();
   const companyName = String(params.companyName);
 
+  const pageSize = 20; // adjust
+
+  const infiniteQuery = useInfiniteQuery<ApiResponse<Product[]>, Error>({
+    queryKey: ["posSessionProducts", session.id],
+    queryFn: async ({ pageParam = 1 }) => {
+      return GetAllProducts({
+        companyName,
+        pageNumber: pageParam as number,
+        pageSize,
+      });
+    },
+    getNextPageParam: (lastPage) =>
+      (lastPage.meta?.pageNumber as number) <
+      (lastPage.meta?.totalPages as number)
+        ? (lastPage?.meta?.pageNumber as number) + 1
+        : undefined,
+    initialPageParam: 1, // ← important for TypeScript
+    enabled: !!session.id,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Merge all pages into a single array
+  const products = infiniteQuery.data?.pages.flatMap((p) => p.data) ?? [];
+
+  const loadMore = () => {
+    if (infiniteQuery.hasNextPage) infiniteQuery.fetchNextPage();
+  };
+
   // Track changes
   useEffect(() => {
     console.log(cart, products, session);
@@ -118,7 +150,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
   function setInitialState(init: PosSessionWithProducts) {
     console.log(init);
-    setProducts(init.products); // TODO bug?
+    // setProducts(init.products); // TODO bug?
     setSession(init.posSession);
     initialHashRef.current = hash({ ...init, products });
   }
@@ -187,6 +219,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }
 
   async function checkout() {
+    console.log("save point 1", products);
     setIsSaving(true);
     if (products.length === 0) {
       toast.error("No products to checkout");
@@ -201,11 +234,11 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       subtotal += unitTotal;
       taxTotal +=
         (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
-      console.log(index, subtotal, taxTotal);
+      console.log("save point 1.5", index, subtotal, taxTotal);
     }
 
     total += taxTotal + subtotal;
-    console.log(products);
+    console.log("save point 2", total, products);
 
     if (
       moneyValues.taxTotal != taxTotal ||
@@ -267,6 +300,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         isSaving,
         hasChanged,
         setInitialState,
+        loadMore,
         setQr,
         deleteProduct,
         addProduct,
@@ -274,7 +308,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         checkout,
         setIsTerminalConnectedToServer,
         setIsScannerConnectedToServer,
-        setProducts,
+        // setProducts,
       }}
     >
       {children}

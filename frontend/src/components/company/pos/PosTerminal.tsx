@@ -1,19 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { MOCK_PRODUCTS } from "@/lib/data";
-import { Minus, Plus, Search, Trash2 } from "lucide-react";
+import { usePosSession } from "@/context/PosContext";
+import { Search } from "lucide-react";
 import PosHeader from "./PosHeader";
 import { RecentProductCard } from "./RecentProductCard";
-import { Product, SaleItem, SaleItemOmitted } from "@/types/models";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { usePosSession } from "@/context/PosContext";
 import SaleItemCard from "./SaleItemCard";
-import { useEffect, useState } from "react";
 import SelectPaymentOptionDialog from "./SelectPaymentOption";
-import { Input } from "@/components/ui/input";
+import { Product } from "@/types/models";
+import { useEffect, useRef, useState } from "react";
 
 interface ICheckoutData {
   taxTotal: number;
@@ -22,10 +20,39 @@ interface ICheckoutData {
 }
 
 export default function PosTerminal() {
-  const { cart, products, moneyValues, checkout, removeProduct } =
+  const { cart, products, moneyValues, loadMore, removeProduct } =
     usePosSession();
 
   const { taxTotal, total, subtotal } = moneyValues;
+  const [isLoadingNewProducts, setIsLoadingNewProducts] = useState(false);
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          setIsLoadingNewProducts(true);
+          loadMore(); // call context loadMore function
+          setIsLoadingNewProducts(false);
+        }
+      },
+      {
+        root: null, // viewport
+        rootMargin: "200px", // start loading before reaching bottom
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [loadMoreRef, loadMore]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -46,9 +73,14 @@ export default function PosTerminal() {
             <ScrollArea className="flex-1 min-h-0">
               <div className="grid grid-cols-3 gap-4 pl-6 pb-4">
                 {products.map((product) => (
-                  <RecentProductCard key={product.uuid} item={product} />
+                  <RecentProductCard
+                    key={product?.uuid}
+                    item={product as Product}
+                  />
                 ))}
               </div>
+              {isLoadingNewProducts && <>i slaoding</>}
+              <div ref={loadMoreRef}></div>
             </ScrollArea>
           </Card>
         </div>
@@ -101,15 +133,7 @@ export default function PosTerminal() {
                       <span className="text-primary">${total.toFixed(2)}</span>
                     </div>
                   </div>
-                  {/* 
-                  <Button
-                    disabled={products.length == 0}
-                    onClick={checkout}
-                    className="w-full mt-4 font-semibold py-3"
-                    size="lg"
-                  >
-                    Checkout
-                  </Button> */}
+
                   <SelectPaymentOptionDialog />
                 </div>
               </div>

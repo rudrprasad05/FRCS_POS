@@ -119,6 +119,7 @@ namespace FrcsPos.Context
                 e.Property(x => x.Subtotal).HasPrecision(18, 2);
                 e.Property(x => x.TaxTotal).HasPrecision(18, 2);
                 e.Property(x => x.Total).HasPrecision(18, 2);
+                e.HasIndex(s => s.InvoiceNumber);
 
                 e.HasIndex(x => new { x.CompanyId, x.InvoiceNumber }).IsUnique();
 

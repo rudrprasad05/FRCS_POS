@@ -82,7 +82,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
 
   const productsRef = useRef<Product[]>([]);
   useEffect(() => {
-    productsRef.current = products;
+    // productsRef.current = products;
   }, [products]);
 
   const handleProductAdd = (scan: string) => {

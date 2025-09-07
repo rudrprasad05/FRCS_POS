@@ -110,6 +110,7 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject)
         {
             var query = _context.Products
+                .Include(p => p.TaxCategory)
                 .Include(p => p.Media)
                 .Include(p => p.Batches)
                 .Where(p => p.Company.Name == queryObject.CompanyName)
@@ -230,7 +231,6 @@ namespace FrcsPos.Repository
             var cached = await _redisCacheService.GetAsync<ProductEditInfo>(cacheKey);
             if (cached != null)
             {
-                Console.WriteLine("cache hit");
                 return ApiResponse<ProductEditInfo>.Ok(cached);
             }
 
@@ -254,8 +254,6 @@ namespace FrcsPos.Repository
             };
 
             FireAndForget.Run(_redisCacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5)));
-            Console.WriteLine("cache writtern");
-
             return ApiResponse<ProductEditInfo>.Ok(dto);
         }
 
