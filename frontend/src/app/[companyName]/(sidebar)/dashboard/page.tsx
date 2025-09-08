@@ -1,6 +1,5 @@
 "use client";
 
-import CompanySalesGraph from "@/components/company/dashboard/CompanySalesGraph";
 import { CompanyDashboardStats } from "@/components/company/dashboard/DashboardStats";
 import { H1, P } from "@/components/font/HeaderFonts";
 

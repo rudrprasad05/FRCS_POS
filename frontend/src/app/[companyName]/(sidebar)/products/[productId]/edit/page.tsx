@@ -17,11 +17,6 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export const {
-  Provider: ProductEditorProvider,
-  useGenericData: useProductEditorProvider,
-} = createGenericSingleDataContext<Product>();
-
 export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();

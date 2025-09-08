@@ -21,17 +21,19 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly UserManager<User> _userManager;
+        private readonly IUserContext _userContext;
 
         public CompanyRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IUserContext userContext
         )
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
-
+            _userContext = userContext;
 
         }
 
@@ -50,24 +52,28 @@ namespace FrcsPos.Repository
 
             var result = model.Entity.FromModelToDto();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New Company",
-                message: $"The company '{result.Name}' was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: $"/admin/companies/{result.UUID}",
-                isSuperAdmin: true,
-                companyId: result.Id
-            ));
+            var adminNotification = new NotificationDTO
+            {
+                Title = "Company created",
+                Message = $"The company {result.Name} was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/admin/companies/{result.Id}/view",
+                IsSuperAdmin = true,
+            };
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New company",
-                message: $"You've been assigned the company " + result.Name,
-                type: NotificationType.SUCCESS,
-                actionUrl: "/",
-                isSuperAdmin: false,
-                companyId: result.Id,
-                userId: request.AdminUserId
-            ));
+            var userNotification = new NotificationDTO
+            {
+                Title = "Company Created",
+                Message = $"The company {result.Name} was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = "#",
+                IsSuperAdmin = false,
+                CompanyId = result.Id,
+                UserId = _userContext.UserId
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
 
             return new ApiResponse<CompanyDTO>
@@ -90,15 +96,29 @@ namespace FrcsPos.Repository
             model.IsDeleted = true;
             model.UpdatedOn = DateTime.UtcNow;
 
-
             await _context.SaveChangesAsync();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "Company Deleted",
-                message: "The company '" + model.Name + "' was deleted",
-                type: NotificationType.WARNING,
-                actionUrl: "/admin/cake/" + model.UUID
-            ));
+            var adminNotification = new NotificationDTO
+            {
+                Title = "Company Deleted",
+                Message = $"The company {model.Name} was deleted",
+                Type = NotificationType.WARNING,
+                ActionUrl = "#",
+                IsSuperAdmin = true,
+            };
+
+            var userNotification = new NotificationDTO
+            {
+                Title = "Company Deleted",
+                Message = $"The company {model.Name} was deleted",
+                Type = NotificationType.WARNING,
+                ActionUrl = "#",
+                IsSuperAdmin = false,
+                CompanyId = model.Id,
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             return new ApiResponse<CompanyDTO>
             {

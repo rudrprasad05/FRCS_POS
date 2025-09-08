@@ -10,6 +10,7 @@ using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using FrcsPos.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -19,7 +20,7 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IMediaRepository _mediaRepository;
-
+        private readonly IUserContext _userContext;
         private readonly IRedisCacheService _redisCacheService;
 
 
@@ -27,10 +28,12 @@ namespace FrcsPos.Repository
            ApplicationDbContext applicationDbContext,
            INotificationService notificationService,
            IMediaRepository mediaRepository,
-           IRedisCacheService redisCacheService
+           IRedisCacheService redisCacheService,
+            IUserContext userContext
 
         )
         {
+            _userContext = userContext;
             _context = applicationDbContext;
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
@@ -39,6 +42,7 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request)
         {
+
             var existsSKU = await _context.Products.AnyAsync(p => p.Sku == request.SKU);
             if (existsSKU != false)
             {
@@ -94,14 +98,18 @@ namespace FrcsPos.Repository
             await _context.SaveChangesAsync();
 
             var result = model.Entity.FromModelToDto();
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New Product",
-                message: $"The product '{result.Name}' was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: $"/{company.Name}/products/{result.UUID}",
-                isSuperAdmin: false,
-                companyId: company.Id
-            ));
+            var notification = new NotificationDTO
+            {
+                Title = "New Product",
+                Message = $"The product '{result.Name}' was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/{company.Name}/products/{result.UUID}",
+                IsSuperAdmin = false,
+                CompanyId = company.Id,
+                UserId = _userContext.UserId
+
+            };
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
 
 
             return ApiResponse<ProductDTO>.Ok(data: result);

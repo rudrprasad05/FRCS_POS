@@ -1,204 +1,86 @@
 "use client";
 
-import { GetFullCompanyByUUID } from "@/actions/Company";
+import { GetFullCompanyByUUID } from "@/actions/Product";
+import { GetAllAdmins } from "@/actions/User";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H3, MutedText } from "@/components/font/HeaderFonts";
-import { DataTable } from "@/components/global/DataTable";
-import AddUsersToCompanyDialoge from "@/components/superadmin/companies/AddUsersToCompanyDialoge";
-import NewCompanyDialoge from "@/components/superadmin/companies/NewCompanyDialoge";
-import { CompanyUserColumn } from "@/components/tables/CompaniesColumns";
-import { PosTerminalOnlyColumns } from "@/components/tables/PosTerminalColumns";
-import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
-import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
-import { Company } from "@/types/models";
-import { ColumnDef } from "@tanstack/react-table";
-import { Building2 } from "lucide-react";
-import { use } from "react";
+import ConfigTab from "@/components/superadmin/companies/ConfigTab";
+import { EditorTab } from "@/components/superadmin/companies/EditTab";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
+import { cn } from "@/lib/utils";
+import { Company, User } from "@/types/models";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, PenBox } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-type PageProps = {
-  params: Promise<{ companyId: string; posId: string; sessionId: string }>;
-};
+export default function EditorPage() {
+  const [state, setState] = useState<"edit" | "config">("edit");
+  const params = useParams();
+  const companyId = String(params.companyId);
 
-export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericSingleDataContext<Company>();
-
-export default function SuperAdminCompanyPageContainer({ params }: PageProps) {
-  const { companyId } = use(params);
-
-  return (
-    <CompanyDataProvider fetchFn={() => GetFullCompanyByUUID(companyId)}>
-      <DataSection />
-    </CompanyDataProvider>
-  );
-}
-
-function DataSection() {
-  const { item } = useCompanyData();
-  if (!item) return <NoDataContainer />;
-  return (
-    <div className="space-y-4">
-      <Header />
-      <CompanyInfo />
-
-      <GenericSection
-        props={{
-          title: "Users",
-          desc: "List of users associated with the company",
-          items: item.users || [],
-          columns: CompanyUserColumn,
-          dialog: <AddUsersToCompanyDialoge />,
-        }}
-      />
-      <GenericSection
-        props={{
-          title: "Warehouse",
-          desc: "List of warehouses owned by the company",
-          items: item.warehouses || [],
-          columns: WarehouseOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
-        }}
-      />
-
-      <GenericSection
-        props={{
-          title: "Pos Terminal",
-          desc: "List of terminals owned by the company",
-          items: item.posTerminals || [],
-          columns: PosTerminalOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
-        }}
-      />
-
-      <GenericSection
-        props={{
-          title: "Products",
-          desc: "List of top products owned by the company",
-          items: item.products || [],
-          columns: ProductsOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
-        }}
-      />
-    </div>
-  );
-}
-
-function Header() {
-  const { item } = useCompanyData();
-
-  if (item == null) {
-    return <>loading</>;
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["editCompany", companyId],
+    queryFn: () => GetFullCompanyByUUID(companyId),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
+  if (isLoading) {
+    return <Loader2 className="animate-spin" />;
   }
 
+  if (error || !data?.success || !data.data) {
+    toast.error("Failed to fetch product data");
+    return <NoDataContainer />;
+  }
+
+  const company = data.data as Company;
+
   return (
-    <div className="flex items-center gap-3">
-      <Building2 className="h-8 w-8 text-primary" />
-      <div>
-        <h1 className="text-3xl font-bold capitalize">{item.name}</h1>
-        <p className="text-muted-foreground">ID: {item.uuid}</p>
+    <div>
+      <div className="">
+        <div className="flex items-center gap-2 mb-2">
+          <PenBox className="text-primary h-6 w-6" />
+          <h1 className="text-3xl font-bold">Edit Company</h1>
+        </div>
+        <p className="text-muted-foreground">
+          You are editing the product "{company?.name}"
+        </p>
       </div>
+      <Tabs
+        defaultValue="edit"
+        className="w-full overflow-hidden relative h-screen p-4 flex flex-col"
+      >
+        <TabsPrimitive.List className="w-full border-solid border-b flex flex-row">
+          <TabsPrimitive.Trigger
+            onClick={() => setState("edit")}
+            className={cn(
+              "text-sm border-b-primary flex-grow px-8 cursor-pointer py-4 text-center border-solid hover:border-b transition",
+              state == "edit" ? "border-b" : "border-none"
+            )}
+            value="edit"
+          >
+            Edit
+          </TabsPrimitive.Trigger>
+          <TabsPrimitive.Trigger
+            onClick={() => setState("config")}
+            className={cn(
+              "text-sm border-b-primary flex-grow px-8 cursor-pointer py-2 text-center border-solid hover:border-b transition",
+              state == "config" ? "border-b" : "border-none"
+            )}
+            value="config"
+          >
+            Config
+          </TabsPrimitive.Trigger>
+        </TabsPrimitive.List>
+        <TabsContent value="edit">
+          <EditorTab company={company} />
+        </TabsContent>
+        <TabsContent value="config">
+          <ConfigTab company={company} />
+        </TabsContent>
+      </Tabs>
     </div>
-  );
-}
-
-interface IGenericProps<T> {
-  title: string;
-  desc: string;
-  items: T[];
-  columns: ColumnDef<T, any>[];
-  dialog?: React.ReactElement;
-}
-
-function GenericSection<T>({ props }: { props: IGenericProps<T> }) {
-  const { title, desc, items, columns, dialog } = props;
-
-  const { item } = useCompanyData();
-  if (!item) return <NoDataContainer />;
-
-  return (
-    <section className="p-4">
-      <article className="flex flex-row items-center justify-between my-2">
-        <div className="space-y-1">
-          <H3 className="flex items-center gap-2">{title}</H3>
-          <MutedText>{desc}</MutedText>
-        </div>
-
-        {dialog && dialog}
-      </article>
-
-      <DataTable columns={columns} data={items} />
-    </section>
-  );
-}
-
-function CompanyInfo() {
-  const { item } = useCompanyData();
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-  if (!item) return <NoDataContainer />;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building2 className="h-5 w-5" />
-          Company Information
-        </CardTitle>
-        <CardDescription>
-          Basic company details and administrative information
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">
-            Company Name
-          </label>
-          <p className="text-lg font-semibold">{item.name}</p>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">
-            Created On
-          </label>
-          <p className="text-lg">{formatDate(item.createdOn)}</p>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">
-            Last Updated
-          </label>
-          <p className="text-lg">{formatDate(item.updatedOn)}</p>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">
-            Admin User
-          </label>
-          <p className="text-lg font-semibold">{item.adminUser?.username}</p>
-          <p className="text-sm text-muted-foreground">
-            {item.adminUser?.email}
-          </p>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-muted-foreground">
-            UUID
-          </label>
-          <p className="text-sm font-mono bg-muted px-2 py-1 rounded">
-            {item.uuid}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

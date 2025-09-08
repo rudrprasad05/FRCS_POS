@@ -32,7 +32,7 @@ namespace FrcsPos.Repository
 
         }
 
-        public async Task<ApiResponse<AdminDashboardDTO>> GetAdminDashboard(string companyName, string userId)
+        public async Task<ApiResponse<AdminDashboardDTO>> GetAdminDashboard(RequestQueryObject queryObject)
         {
             var company = await _context.Companies
                 .Include(c => c.AdminUser)
@@ -41,7 +41,7 @@ namespace FrcsPos.Repository
                 .Include(c => c.Warehouses)
                 .Include(c => c.PosTerminals)
                     .ThenInclude(t => t.Sales)
-                .FirstOrDefaultAsync(c => c.Name == companyName);
+                .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
 
             if (company == null)
             {
@@ -54,10 +54,13 @@ namespace FrcsPos.Repository
             var posTerminalCount = company.PosTerminals.Count;
             var saleCount = company.PosTerminals.Sum(t => t.Sales.Count);
 
-            var notifications = await _notificationRepository.GetNotificationByUserId(
-                new RequestQueryObject { PageSize = 5, SortBy = ESortBy.DSC },
-                userId: userId
-            );
+            var notifications = await _notificationRepository.GetNotificationByCompany(new RequestQueryObject
+            {
+                CompanyName = queryObject.CompanyName,
+                PageSize = 5,
+                PageNumber = 1,
+                SortBy = ESortBy.DSC,
+            });
 
             var dto = new AdminDashboardDTO
             {

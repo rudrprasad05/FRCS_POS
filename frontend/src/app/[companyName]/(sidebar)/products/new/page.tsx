@@ -5,7 +5,7 @@ import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -67,6 +67,7 @@ export default function NewProductPage() {
   const [file, setFile] = useState<File | undefined>(undefined);
   const params = useParams();
   const companyName = params.companyName;
+  const router = useRouter();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -110,8 +111,6 @@ export default function NewProductPage() {
     }
   }, [file]);
 
-  const formValues = form.watch();
-
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
     data.image = file;
@@ -131,15 +130,17 @@ export default function NewProductPage() {
 
     console.log("Submitting FormData:", formData);
 
-    try {
-      const res = await CreateProduct(formData);
+    const res = await CreateProduct(formData);
+
+    if (res.success) {
       console.log(res);
-      toast("Uploaded");
-    } catch (error) {
+      toast.success("Uploaded");
+      router.back();
+    } else {
       toast("Failed to upload");
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
   return (

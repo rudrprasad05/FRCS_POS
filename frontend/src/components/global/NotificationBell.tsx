@@ -23,6 +23,7 @@ import Link from "next/link";
 
 import { ESortBy, Notification, NotificationTypes } from "@/types/models";
 import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
+import { useParams } from "next/navigation";
 
 function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
@@ -61,6 +62,8 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const params = useParams();
+  const companyName = String(params.companyName);
 
   useEffect(() => {
     setNotifications([]);
@@ -69,9 +72,8 @@ export function NotificationBell() {
         pageNumber: 1,
         pageSize: 10,
         sortBy: ESortBy.DSC,
+        companyName,
       });
-
-      console.log("not", data);
 
       setNotifications(data.data as unknown as Notification[]);
       setUnreadCount(data.meta?.totalCount as number);

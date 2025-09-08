@@ -19,19 +19,19 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IMediaRepository _mediaRepository;
-
+        private readonly IUserContext _userContext;
 
         public WarehouseRepository(
            ApplicationDbContext applicationDbContext,
            INotificationService notificationService,
-           IMediaRepository mediaRepository
-
+           IMediaRepository mediaRepository,
+            IUserContext userContext
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
-
+            _userContext = userContext;
         }
 
         public async Task<ApiResponse<WarehouseDTO>> CreateAsync(NewWarehouseRequest request)
@@ -51,14 +51,18 @@ namespace FrcsPos.Repository
 
             var finalModel = result.Entity.FromModelToDto();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New Company",
-                message: $"The warehouse '{model.Name}' was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: $"/{company.Name}/warehouse/{model.UUID}",
-                isSuperAdmin: false,
-                companyId: company.Id
-            ));
+            var userNotification = new NotificationDTO
+            {
+                Title = "New warehouse",
+                Message = "A new warehouse was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/{company.Name}/warehouse/${model.UUID}/view",
+                IsSuperAdmin = false,
+                CompanyId = company.Id,
+                UserId = _userContext.UserId
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             return ApiResponse<WarehouseDTO>.Ok(model.FromModelToDto());
         }

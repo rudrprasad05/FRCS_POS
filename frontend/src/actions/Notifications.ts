@@ -2,21 +2,18 @@ import { ApiResponse, QueryObject } from "@/types/models";
 import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
+import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllNotificationsSuperAdmin(
   query?: QueryObject
 ): Promise<ApiResponse<Notification[]>> {
-  const token = await GetToken();
-  const params = buildMediaQueryParams(query);
-
-  const res = await axiosGlobal.get<ApiResponse<Notification[]>>(
-    `notification/get-all-superadmin?${params}`,
+  return RequestWrapper<Notification[]>(
+    "GET",
+    `notification/get-all-superadmin`,
     {
-      headers: { Authorization: `Bearer ${token}` },
+      query,
     }
   );
-
-  return res.data;
 }
 
 export async function MarkAsRead(

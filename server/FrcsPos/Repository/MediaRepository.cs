@@ -74,13 +74,6 @@ namespace FrcsPos.Repository
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                    title: "Media created",
-                    message: "The media " + newMedia.FileName + " was created",
-                    type: NotificationType.SUCCESS,
-                    actionUrl: "/admin/media/edit/" + newMedia.UUID
-                ));
-
                 var dto = newMedia.FromModelToDTO();
 
                 return new ApiResponse<MediaDto>
@@ -176,13 +169,6 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "Media Updated",
-                message: "The media " + existingMedia.FileName + " was updated",
-                type: NotificationType.SUCCESS,
-                actionUrl: "/admin/bin?type=media&uuid=" + existingMedia.UUID
-            ));
-
             return new ApiResponse<MediaDto>
             {
                 Success = true,
@@ -232,12 +218,6 @@ namespace FrcsPos.Repository
             media.IsDeleted = true;
 
             await _context.SaveChangesAsync();
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "Media Deleted",
-                message: "The media " + media.FileName + " was deleted",
-                type: NotificationType.WARNING,
-                actionUrl: "/admin/bin?type=media&uuid=" + media.UUID
-            ));
 
             return new ApiResponse<MediaDto>
             {

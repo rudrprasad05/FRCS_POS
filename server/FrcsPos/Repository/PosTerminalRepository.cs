@@ -18,15 +18,17 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IUserContext _userContext;
 
         public PosTerminalRepository(
             ApplicationDbContext applicationDbContext,
-            INotificationService notificationService
+            INotificationService notificationService,
+            IUserContext userContext
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
-
+            _userContext = userContext;
         }
 
         public async Task<ApiResponse<PosTerminalDTO>> CreatePosTerminalAsync(NewPosTerminalRequest request)
@@ -68,13 +70,18 @@ namespace FrcsPos.Repository
             await _context.SaveChangesAsync();
 
             var result = model.Entity.FromModelToDto();
+            var notification = new NotificationDTO
+            {
+                Title = "New POS Terminal",
+                Message = $"The terminal {result.Name} was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/{company.Name}/pos/{result.UUID}",
+                IsSuperAdmin = false,
+                CompanyId = company.Id,
+                UserId = _userContext.UserId
+            };
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New POS Terminal",
-                message: $"The terminal {result.Name} was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: "/admin/pos/" + result.UUID
-            ));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
 
             return new ApiResponse<PosTerminalDTO>
             {

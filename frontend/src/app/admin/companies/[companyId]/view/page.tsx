@@ -74,7 +74,6 @@ function DataSection({ data }: { data: Company }) {
           desc: "List of warehouses owned by the company",
           items: data.warehouses || [],
           columns: WarehouseOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
         }}
       />
 
@@ -84,7 +83,6 @@ function DataSection({ data }: { data: Company }) {
           desc: "List of terminals owned by the company",
           items: data.posTerminals || [],
           columns: PosTerminalOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
         }}
       />
 
@@ -94,7 +92,6 @@ function DataSection({ data }: { data: Company }) {
           desc: "List of top products owned by the company",
           items: data.products || [],
           columns: ProductsOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
         }}
       />
     </div>

@@ -9,6 +9,7 @@ using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
 using FrcsPos.Models;
+using FrcsPos.Response.DTO;
 using FrcsPos.Socket;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -39,14 +40,7 @@ namespace FrcsPos.Service
             _hubContext = hubContext;
         }
 
-        public Task CreateBackgroundNotification(
-            string title, string message,
-            NotificationType type = NotificationType.INFO,
-            bool isSuperAdmin = false,
-            string? actionUrl = null,
-            string? userId = null,
-            int? companyId = null
-        )
+        public Task CreateBackgroundNotification(NotificationDTO notificationDTO)
         {
             _taskQueue.QueueBackgroundWorkItem(async token =>
             {
@@ -55,19 +49,12 @@ namespace FrcsPos.Service
                     using var scope = _serviceScopeFactory.CreateScope();
                     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    var notification = new Notification
-                    {
-                        Title = title,
-                        Message = message,
-                        Type = type,
-                        ActionUrl = actionUrl ?? "#",
-                        IsSuperAdmin = isSuperAdmin
-                    };
+                    var notification = notificationDTO.FromDTOToModel();
 
                     context.Notifications.Add(notification);
                     await context.SaveChangesAsync();
 
-                    _logger.LogInformation("Notification queued: {Title}", title);
+                    _logger.LogInformation("Notification queued: {Title}", notificationDTO.Title);
 
                     var notificationDto = notification.FromModelToDto();
                     string? userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -79,7 +66,7 @@ namespace FrcsPos.Service
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error creating background notification: {Title}", title);
+                    _logger.LogError(ex, "Error creating background notification: {Title}", notificationDTO.Title);
                 }
             });
 
