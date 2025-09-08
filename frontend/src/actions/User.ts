@@ -24,18 +24,7 @@ export async function GetUser() {
 export async function GetAllAdmins(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  //   const token = await GetToken();
-  //   const params = buildMediaQueryParams(query);
-
-  //   const res = await axiosGlobal.get<ApiResponse<User[]>>(
-  //     `user/get-all-users?${params}`,
-  //     {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     }
-  //   );
-  //   console.log(res.data);
-  //   return res.data;
-  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {
+  return RequestWrapper<User[]>("GET", `user/get-all-users`, {
     query,
   });
 }
@@ -48,7 +37,9 @@ export async function GetUsersByCompany(
 export async function GetUnAssignedUsers(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {});
+  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {
+    query,
+  });
 }
 
 export async function CreateUser(

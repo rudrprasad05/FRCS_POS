@@ -27,6 +27,7 @@ export const { Provider: UserSectionProvider, useGenericData: useUserData } =
 export default function UserSection() {
   const param = useParams();
   const companyName = String(param.companyName);
+
   return (
     <UserSectionProvider
       fetchFn={() =>

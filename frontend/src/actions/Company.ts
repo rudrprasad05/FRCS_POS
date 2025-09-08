@@ -99,3 +99,12 @@ export async function SoftDeleteCompany(
     return ApiResponseFail<Company>();
   }
 }
+
+export async function RemoveUserFromCompany(
+  userId: string,
+  companyId: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("DELETE", `company/remove-user`, {
+    data: { userId, companyId },
+  });
+}

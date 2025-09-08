@@ -19,6 +19,7 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<CompanyDTO>> GetFullCompanyByUUIDAsync(string uuid);
 
         public Task<ApiResponse<CompanyDTO>> SoftDelete(string uuid);
+        public Task<ApiResponse<CompanyDTO>> RemoveUserAsync(RemoveUserFromCompany request);
 
     }
 }

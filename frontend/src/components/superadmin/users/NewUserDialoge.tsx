@@ -28,10 +28,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { useUsers } from "@/context/UserDataContext";
 import { generateStrongPassword } from "@/lib/utils";
 import { User, UserRoles } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Copy,
   CopyCheck,
@@ -78,11 +78,11 @@ export default function NewUserDialoge({
   onSuccess?: (newUser: User) => void;
   children: React.ReactNode;
 }) {
-  const { refresh } = useUsers();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -169,7 +169,11 @@ export default function NewUserDialoge({
         );
       }
 
-      refresh();
+      queryClient.invalidateQueries({
+        queryKey: ["adminUsers", {}],
+        exact: false,
+      });
+
       setOpen(false);
     }
 

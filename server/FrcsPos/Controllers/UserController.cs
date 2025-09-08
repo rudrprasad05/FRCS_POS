@@ -59,7 +59,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetAllUsers(requestQuery);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -71,7 +71,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetAllSuperAdminsNotInCompany(role);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -83,7 +83,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetUserByCompany(queryObject);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);

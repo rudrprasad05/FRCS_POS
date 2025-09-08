@@ -7,13 +7,16 @@ import { Edit, Eye } from "lucide-react";
 import { Company, CompanyUser, User } from "@/types/models";
 import Link from "next/link";
 import { DeleteCompanyDialoge } from "../superadmin/companies/DeleteCompaniesDialoge";
+import { Badge } from "../ui/badge";
+import RemoveUserFromCompanyDialoge from "../superadmin/companies/RemoveUserFromCompanyDialoge";
 
 export const CompanyOnlyColumn: ColumnDef<Company>[] = [
   {
-    accessorKey: "number",
+    accessorKey: "id",
     header: "#",
     cell: ({ row }) => {
-      return <div className="flex gap-2">{+row.id + 1}</div>;
+      const company = row.original;
+      return <div className="flex gap-2">{company.id}</div>;
     },
   },
   {
@@ -51,14 +54,22 @@ export const CompanyOnlyColumn: ColumnDef<Company>[] = [
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`/admin/companies/${company.uuid}`}
+              href={`/admin/companies/${company.uuid}/view`}
+              className="w-24 flex items-center justify-between"
+            >
+              View
+              <Eye className="" />
+            </Link>
+          </Button>
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`/admin/companies/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
             >
               Edit
               <Edit className="" />
             </Link>
           </Button>
-          {/* <DeleteCompanyDialoge data={company} /> */}
         </div>
       );
     },
@@ -84,11 +95,15 @@ export const CompanyUserColumn: ColumnDef<CompanyUser>[] = [
     },
   },
   {
-    accessorKey: "role",
+    accessorKey: "user.role",
     header: "Role",
     cell: ({ row }) => {
       const company = row.original; // Get the entire row data (of type companyType)
-      return <div className="flex gap-2">{company.role}</div>;
+      return (
+        <Badge variant={"outline"} className="flex gap-2">
+          {company.user?.role}
+        </Badge>
+      );
     },
   },
   {
@@ -113,25 +128,23 @@ export const CompanyUserColumn: ColumnDef<CompanyUser>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild>
             <Link
-              href={`/admin/companies/${company.uuid}`}
-              className="w-24 flex items-center justify-between"
+              href={`/admin/users/${company.uuid}/edit`}
+              className="flex items-center justify-between"
             >
-              Edit
               <Edit className="" />
             </Link>
           </Button>
-          {/* <DeleteCompanyDialoge data={company} /> */}
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild>
             <Link
-              href={`/${encodeURI(company.userId)}`}
-              className="w-24 flex items-center justify-between"
+              href={`/admin/users/${encodeURI(company.userId)}/view`}
+              className="flex items-center justify-between"
             >
-              View
               <Eye className="" />
             </Link>
           </Button>
+          <RemoveUserFromCompanyDialoge userId={company.userId} />
         </div>
       );
     },

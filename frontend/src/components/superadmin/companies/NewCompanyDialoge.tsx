@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GetAllAdmins } from "@/actions/User";
+import { GetAllAdmins, GetUnAssignedUsers } from "@/actions/User";
 import { useCompanyData } from "./CompaniesSection";
 import { CreateCompany } from "@/actions/Company";
 import { toast } from "sonner";
@@ -40,6 +40,7 @@ import { Label } from "@/components/ui/label";
 import NewUserDialoge from "../users/NewUserDialoge";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -53,10 +54,10 @@ const formSchema = z.object({
 export type NewCompanyFormType = z.infer<typeof formSchema>;
 
 export default function NewCompanyDialoge() {
-  const { refresh } = useCompanyData();
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const queryClient = useQueryClient();
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -87,8 +88,10 @@ export default function NewCompanyDialoge() {
 
   useEffect(() => {
     const getData = async () => {
-      const data = await GetAllAdmins({ role: UserRoles.ADMIN } as QueryObject);
-      console.log(data);
+      const data = await GetUnAssignedUsers({
+        role: UserRoles.ADMIN,
+      } as QueryObject);
+      console.log("newcompany admins", data);
       setAdminUsers(data.data as User[]);
 
       setLoading(false);
@@ -105,11 +108,17 @@ export default function NewCompanyDialoge() {
       toast.error("Error creating user", { description: res.message });
       setError(res.message);
     } else {
-      toast.success("Company created");
       const params = new URLSearchParams(searchParams.toString());
+
+      toast.success("Company created");
       params.delete("selectedUser");
       router.replace(`${window.location.pathname}?${params.toString()}`);
-      refresh();
+
+      queryClient.invalidateQueries({
+        queryKey: ["adminCompanies", {}],
+        exact: false,
+      });
+
       handleOpenChange(false);
     }
 
@@ -145,7 +154,7 @@ export default function NewCompanyDialoge() {
                 <FormItem>
                   <FormLabel>Company Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input placeholder="enter name" {...field} />
                   </FormControl>
                   <FormDescription>
                     This is the public display name.
@@ -154,35 +163,6 @@ export default function NewCompanyDialoge() {
                 </FormItem>
               )}
             />
-
-            {/* <FormField
-              control={form.control}
-              name="adminUserId"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Select Admin</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl className="w-full">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an admin" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="w-full">
-                      {loading && <Loader2 className="animate-spin" />}
-                      {adminUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.username ?? user.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Choose an admin for this company.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
             <FormField
               control={form.control}
               name="adminUserId"

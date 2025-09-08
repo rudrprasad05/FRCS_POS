@@ -238,8 +238,66 @@ namespace FrcsPos.Repository
                 return ApiResponse<CompanyDTO>.Fail(message: "Company not found");
             }
 
-            return ApiResponse<CompanyDTO>.Ok(model.FromModelToDto());
+            // Map company → DTO
+            var dto = model.FromModelToDto();
 
+            // Populate user DTOs (CompanyUser → User → UserDTO with role)
+            var userDtos = new List<UserDTO>();
+            foreach (var companyUser in model.Users)
+            {
+                var user = companyUser.User;
+                if (user != null)
+                {
+                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
+                }
+            }
+
+            var companyUserDtos = new List<CompanyUserDTO>();
+            foreach (var user in userDtos)
+            {
+                if (user != null)
+                {
+                    companyUserDtos.Add(new CompanyUserDTO
+                    {
+                        CompanyId = dto.Id,
+                        UserId = user.Id,
+                        User = user
+                    });
+                }
+            }
+
+            dto.Users = companyUserDtos;
+
+            // Populate AdminUser (with role as well)
+            if (model.AdminUser != null)
+            {
+                dto.AdminUser = await model.AdminUser.FromUserToDtoAsync(_userManager);
+            }
+
+
+            return ApiResponse<CompanyDTO>.Ok(dto);
+        }
+
+        public async Task<ApiResponse<CompanyDTO>> RemoveUserAsync(RemoveUserFromCompany request)
+        {
+            var company = await _context.Companies.FirstOrDefaultAsync(x => x.UUID == request.CompanyId);
+            if (company == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "company not found");
+            }
+
+            var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == company.Id && x.UserId == request.UserId);
+            if (companyUser == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "company user not found");
+            }
+
+            _context.CompanyUsers.Remove(companyUser);
+            await _context.SaveChangesAsync();
+
+            var dto = company.FromModelToDto();
+
+            return ApiResponse<CompanyDTO>.Ok(dto);
         }
 
         public async Task<ApiResponse<CompanyDTO>> AddUserToCompanyAsync(AddUserToCompany request)

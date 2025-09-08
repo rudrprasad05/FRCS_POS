@@ -111,9 +111,6 @@ export default function NewProductPage() {
   }, [file]);
 
   const formValues = form.watch();
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
