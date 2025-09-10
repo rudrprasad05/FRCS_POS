@@ -122,6 +122,7 @@ namespace FrcsPos.Repository
                 .Include(p => p.Media)
                 .Include(p => p.Batches)
                 .Where(p => p.Company.Name == queryObject.CompanyName)
+                .Where(p => p.Batches.Any(b => b.Quantity > 0))
                 .AsQueryable();
 
             // filtering

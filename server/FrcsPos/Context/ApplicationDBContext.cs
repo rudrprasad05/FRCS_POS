@@ -112,19 +112,20 @@ namespace FrcsPos.Context
             b.Entity<ProductBatch>(e =>
             {
                 e.HasIndex(x => new { x.CompanyId, x.ProductId, x.WarehouseId });
+
                 e.HasOne(x => x.Company)
                     .WithMany()
                     .HasForeignKey(x => x.CompanyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasOne(x => x.Product)
-                    .WithMany()
-                    .HasForeignKey(x => x.ProductId)
+                    .WithMany(p => p.Batches) // important
+                    .HasForeignKey(x => x.ProductId) // <- explicitly use ProductId
                     .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasOne(x => x.Warehouse)
                     .WithMany()
-                    .HasForeignKey(x => x.WarehouseId)
+                    .HasForeignKey(x => x.WarehouseId) // explicitly
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
