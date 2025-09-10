@@ -46,6 +46,7 @@ namespace FrcsPos.Repository
         {
             if (request.Items.Count == 0)
                 return ApiResponse<SaleDTO>.Fail(message: "sale is empty");
+
             // verify company exists
             var company = await _context.Companies
                 .FirstOrDefaultAsync(c => c.Name == request.CompanyName);
@@ -65,20 +66,89 @@ namespace FrcsPos.Repository
                 return ApiResponse<SaleDTO>.Fail(message: "Cashier not found");
 
 
-            var saleItems = request.Items.Select(i =>
-            {
-                var item = new SaleItem();
-
-                item.ProductId = i.ProductId;
-                item.Quantity = i.Quantity;
-                item.UnitPrice = i.UnitPrice;
-                item.LineTotal = i.LineTotal;
-
-                return item;
-            }).ToList();
-
             // Generate InvoiceNumber (example: CompanyID-YYYYMMDD-HHMMSS)
             var invoiceNumber = $"{request.CompanyName[0..2]}-{DateTime.UtcNow:yyyyMMddHHmmss}";
+
+            var productIds = request.Items.Select(i => i.ProductId).ToList();
+            var products = await _context.Products
+                .Include(p => p.TaxCategory)
+                .Where(p => productIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id);
+
+            // Load product batches for this company
+            var productBatches = await _context.ProductBatches
+                .Include(pb => pb.Product)
+                .Where(pb => productIds.Contains(pb.ProductId)
+                            && pb.Warehouse.CompanyId == company.Id
+                            && (pb.ExpiryDate == null || pb.ExpiryDate > DateTime.UtcNow))
+                .ToListAsync();
+
+            // Validate stock
+            foreach (var item in request.Items)
+            {
+                var availableQty = productBatches
+                    .Where(pb => pb.ProductId == item.ProductId)
+                    .Sum(pb => pb.Quantity);
+
+                if (availableQty < item.Quantity)
+                {
+                    return ApiResponse<SaleDTO>.Fail(
+                        message: $"Not enough stock for product {item.ProductId}. Requested {item.Quantity}, available {availableQty}"
+                    );
+                }
+            }
+
+            foreach (var item in request.Items)
+            {
+                var needed = item.Quantity;
+
+                var batches = productBatches
+                    .Where(pb => pb.ProductId == item.ProductId)
+                    .OrderBy(pb => pb.ExpiryDate ?? DateTime.MaxValue) // oldest first
+                    .ToList();
+
+                foreach (var batch in batches)
+                {
+                    if (needed <= 0) break;
+
+                    var deduction = Math.Min(needed, batch.Quantity);
+                    batch.Quantity -= deduction;
+                    needed -= deduction;
+                }
+
+                if (needed > 0)
+                {
+                    return ApiResponse<SaleDTO>.Fail(
+                        message: $"Not enough stock for product {item.ProductId}"
+                    );
+                }
+            }
+
+            // build sale items with verified prices and tax
+            decimal subtotal = 0m;
+            decimal taxTotal = 0m;
+
+            var saleItems = request.Items.Select(i =>
+            {
+                if (!products.TryGetValue(i.ProductId, out var product))
+                    throw new Exception($"Product {i.ProductId} not found");
+
+                var lineSubtotal = i.Quantity * i.Product.Price;
+                var lineTax = lineSubtotal * product.TaxCategory.RatePercent;
+
+                subtotal += lineSubtotal;
+                taxTotal += lineTax;
+
+                return new SaleItem
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    LineTotal = lineSubtotal + lineTax
+                };
+            }).ToList();
+
+            var total = subtotal + taxTotal;
 
             // Create Sale
             var sale = new Sale
@@ -90,9 +160,9 @@ namespace FrcsPos.Repository
                 CashierId = cashier.Id,
                 Cashier = cashier,
                 InvoiceNumber = invoiceNumber,
-                Subtotal = request.Subtotal,
-                TaxTotal = request.TaxTotal,
-                Total = request.Total,
+                Subtotal = subtotal,
+                TaxTotal = taxTotal,
+                Total = total,
                 Status = SaleStatus.PENDING,
                 Items = saleItems
             };

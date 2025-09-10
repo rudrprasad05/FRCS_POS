@@ -1,7 +1,7 @@
 import { ApiResponse, QueryObject, Warehouse } from "@/types/models";
 import { RequestWrapper } from "./RequestWrapper";
 import { NewWarehouseType } from "@/components/company/warehouse/NewWarehouseDialoge";
-import { WarehouseEditData } from "@/components/company/warehouse/view/EditTab";
+import { WarehouseEditData } from "@/components/company/warehouse/edit/EditTab";
 
 export async function GetAllWarehouses(
   query?: QueryObject

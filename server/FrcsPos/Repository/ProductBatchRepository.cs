@@ -42,7 +42,12 @@ namespace FrcsPos.Repository
 
             if (company == null || product == null || wh == null)
             {
-                return ApiResponse<ProductBatchDTO>.Fail();
+                return ApiResponse<ProductBatchDTO>.Fail(message: "invalid params");
+            }
+
+            if (!wh.IsActive)
+            {
+                return ApiResponse<ProductBatchDTO>.Fail(message: "Activate warehouse first");
             }
 
             var newModel = new ProductBatch

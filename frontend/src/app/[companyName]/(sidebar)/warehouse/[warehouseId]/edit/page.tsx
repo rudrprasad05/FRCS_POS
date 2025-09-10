@@ -14,8 +14,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
-import { EditorTab } from "@/components/company/warehouse/view/EditTab";
-import ConfigTab from "@/components/company/warehouse/view/ConfigTab";
+import { EditorTab } from "@/components/company/warehouse/edit/EditTab";
+import ConfigTab from "@/components/company/warehouse/edit/ConfigTab";
 
 export const {
   Provider: ProductEditorProvider,

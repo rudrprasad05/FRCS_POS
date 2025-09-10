@@ -183,6 +183,7 @@ namespace FrcsPos.Repository
             }
 
             var query = _context.PosSessions
+                .Include(x => x.PosUser)
                 .AsQueryable();
 
             // filtering

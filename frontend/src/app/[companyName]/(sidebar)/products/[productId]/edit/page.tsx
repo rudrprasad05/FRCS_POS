@@ -7,7 +7,6 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import ConfigTab from "@/components/company/products/view/ConfigTab";
 import { EditorTab } from "@/components/company/products/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Product, TaxCategory } from "@/types/models";

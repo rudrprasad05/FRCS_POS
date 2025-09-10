@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "util";
 import { Calendar } from "@/components/ui/calendar";
+import { formatDate, formatDateIntoFormat } from "@/lib/utils";
 
 export const schema = z.object({
   companyId: z.number({ error: "Company is required" }).int(),
@@ -141,7 +142,7 @@ export default function NewProductPage() {
       toast.success("Batch Created");
       router.back();
     } else {
-      toast.error("Error creating batch");
+      toast.error("Error creating batch", { description: res.message });
     }
 
     setIsSubmitting(false);
@@ -307,7 +308,7 @@ export default function NewProductPage() {
                             }`}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              formatDateIntoFormat(field.value.toString())
                             ) : (
                               <span>Pick a date</span>
                             )}

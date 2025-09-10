@@ -1,42 +1,21 @@
 "use client";
-import {
-  GetPosTerminalById,
-  GetPosTerminalSales,
-  GetPosTerminalSessions,
-} from "@/actions/PosTerminal";
+import { GetPosTerminalById } from "@/actions/PosTerminal";
 import NewSessionDialog from "@/components/company/pos/NewPosSessionDialoge";
+import SalesSection from "@/components/company/pos/view/ViewPosSales";
+import SessionsSection from "@/components/company/pos/view/ViewPosSessions";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H1, H2, P } from "@/components/font/HeaderFonts";
-import { DataTable } from "@/components/global/DataTable";
-import { TableSkeleton } from "@/components/global/LoadingContainer";
-import PaginationSection from "@/components/global/PaginationSection";
-import { PosSessionColumns } from "@/components/tables/PosSessionColumns";
-import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
+import { H1 } from "@/components/font/HeaderFonts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import type {
-  ApiResponse,
-  PosSession,
-  PosTerminal,
-  QueryObject,
-  Sale,
-} from "@/types/models";
+import { type PosSession, type PosTerminal, type Sale } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
-import { Building, Hash, Loader2, MapPin, PenBox, Search } from "lucide-react";
+import { Building, Hash, Loader2, MapPin, PenBox } from "lucide-react";
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import { toast } from "sonner";
 
 export const { Provider: SessionDataProvider, useGenericData: useSessionData } =
@@ -70,7 +49,7 @@ export default function PosTerminalPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <PosTerminalInfo posTerminal={data.data} />
-      <PosTerminalDataTabs terminalId={posId} />
+      <PosTerminalDataTabs />
     </div>
   );
 }
@@ -140,7 +119,7 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
   );
 }
 
-function PosTerminalDataTabs({ terminalId }: { terminalId: string }) {
+function PosTerminalDataTabs() {
   return (
     <Tabs defaultValue="sessions" className="space-y-4">
       <TabsList>
@@ -149,147 +128,12 @@ function PosTerminalDataTabs({ terminalId }: { terminalId: string }) {
       </TabsList>
 
       <TabsContent value="sessions" className="space-y-4">
-        <SessionDataProvider
-          fetchFn={(query) =>
-            GetPosTerminalSessions({ ...query, uuid: terminalId })
-          }
-        >
-          <SessionsSection />
-        </SessionDataProvider>
+        <SessionsSection />
       </TabsContent>
 
       <TabsContent value="sales" className="space-y-4">
-        <SalesDataProvider
-          fetchFn={(query) =>
-            GetPosTerminalSales({ ...query, uuid: terminalId })
-          }
-        >
-          <SalesSection />
-        </SalesDataProvider>
+        <SalesSection />
       </TabsContent>
     </Tabs>
-  );
-}
-
-function SessionsSection() {
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div>
-          <H2>Sessions</H2>
-          <P className="text-muted-foreground">
-            View all POS terminal sessions
-          </P>
-        </div>
-
-        <div className="flex items-center gap-4 flex-1 max-w-md">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
-            <Input placeholder="Search sessions..." className="pl-10" />
-          </div>
-
-          <Select>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <HandleSessionsData />
-    </div>
-  );
-}
-
-function SalesSection() {
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div>
-          <H2>Sales</H2>
-          <P className="text-muted-foreground">
-            View all sales from this terminal
-          </P>
-        </div>
-
-        <div className="flex items-center gap-4 flex-1 max-w-md">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
-            <Input placeholder="Search sales..." className="pl-10" />
-          </div>
-
-          <Select>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <HandleSalesData />
-    </div>
-  );
-}
-
-function HandleSessionsData() {
-  const { items, loading, pagination, setPagination } = useSessionData();
-  const data = items as PosSession[];
-
-  console.log("HandleSessionsData", items);
-
-  if (loading) {
-    return <TableSkeleton columns={4} rows={6} showHeader />;
-  }
-
-  if (!data || data.length === 0) {
-    return <NoDataContainer />;
-  }
-
-  return (
-    <>
-      <DataTable columns={PosSessionColumns} data={data} />
-      <div className="py-8">
-        <PaginationSection
-          pagination={pagination}
-          setPagination={setPagination}
-        />
-      </div>
-    </>
-  );
-}
-
-function HandleSalesData() {
-  const { items, loading, pagination, setPagination } = useSalesData();
-  const data = items as Sale[];
-
-  if (loading) {
-    return <TableSkeleton columns={5} rows={6} showHeader />;
-  }
-
-  if (!data || data.length === 0) {
-    return <NoDataContainer />;
-  }
-
-  return (
-    <>
-      <DataTable columns={PosTerminalSalesColumns} data={data} />
-      <div className="py-8">
-        <PaginationSection
-          pagination={pagination}
-          setPagination={setPagination}
-        />
-      </div>
-    </>
   );
 }
