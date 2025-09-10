@@ -23,6 +23,7 @@ namespace FrcsPos.Response.DTO
         public int TotalCompanies { get; set; }
         public int TotalUsers { get; set; }
         public int TotalProducts { get; set; }
+        public long TotalMedia { get; set; }
         public int TotalSales { get; set; }
 
         public List<NotificationDTO> Notifications { get; set; } = new();

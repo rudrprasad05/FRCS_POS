@@ -38,6 +38,7 @@ namespace FrcsPos.Repository
                 .Include(c => c.AdminUser)
                 .Include(c => c.Users)
                 .Include(c => c.Products)
+                    .ThenInclude(c => c.Media)
                 .Include(c => c.Warehouses)
                 .Include(c => c.PosTerminals)
                     .ThenInclude(t => t.Sales)
@@ -53,6 +54,9 @@ namespace FrcsPos.Repository
             var warehouseCount = company.Warehouses.Count;
             var posTerminalCount = company.PosTerminals.Count;
             var saleCount = company.PosTerminals.Sum(t => t.Sales.Count);
+            var mediaCount = company.Products
+                .Select(p => p.Media)
+                .Sum(m => m?.SizeInBytes);
 
             var notifications = await _notificationRepository.GetNotificationByCompany(new RequestQueryObject
             {
@@ -68,6 +72,7 @@ namespace FrcsPos.Repository
                 TotalProducts = productCount,
                 TotalSales = saleCount,
                 Notifications = notifications.Data ?? [],
+                TotalMedia = mediaCount ?? 0,
             };
 
             return new ApiResponse<AdminDashboardDTO>

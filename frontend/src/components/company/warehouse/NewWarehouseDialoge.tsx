@@ -23,12 +23,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HousePlus, Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useWarehouseData } from "./WarehouseSection";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -43,13 +44,13 @@ const formSchema = z.object({
 export type NewWarehouseType = z.infer<typeof formSchema>;
 
 export default function NewWarehouseDialoge() {
-  const { refresh } = useWarehouseData();
-
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const params = useParams();
   const companyName = String(params.companyName);
+  const queryClient = useQueryClient();
 
   const form = useForm<NewWarehouseType>({
     resolver: zodResolver(formSchema),
@@ -66,17 +67,19 @@ export default function NewWarehouseDialoge() {
 
   async function onSubmit(values: NewWarehouseType) {
     setLoading(true);
-    console.log(values);
-    const res = await CreateWarehouse(values);
-    console.log(res);
 
-    if (!res.success) {
-      toast.error("Error creating user", { description: res.message });
-      setError(res.message);
-    } else {
-      toast.success("Company created");
-      refresh();
+    const res = await CreateWarehouse(values);
+
+    if (res.success) {
+      queryClient.invalidateQueries({
+        queryKey: ["warehouse", companyName],
+      });
+
+      toast.success("Warehouse created");
       setOpen(false);
+    } else {
+      toast.error("Failed to upload");
+      setError(res.message);
     }
 
     setLoading(false);
