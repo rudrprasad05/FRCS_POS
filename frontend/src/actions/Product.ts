@@ -13,10 +13,14 @@ import { RequestWrapper } from "./RequestWrapper";
 import { EditProductData } from "@/types/res";
 
 export async function GetAllProducts(
-  query?: QueryObject
+  query?: QueryObject,
+  forPos?: boolean
 ): Promise<ApiResponse<Product[]>> {
-  return RequestWrapper<Product[]>("GET", `product/get-all`, {
+  return RequestWrapper<Product[]>("POST", `product/get-all`, {
     query,
+    data: {
+      ForPos: forPos || false,
+    },
   });
 }
 

@@ -57,10 +57,13 @@ export default function CompanySection() {
           { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
         ],
         queryFn: () =>
-          GetAllProducts({
-            ...pagination,
-            pageNumber: (pagination.pageNumber as number) + 1,
-          }),
+          GetAllProducts(
+            {
+              ...pagination,
+              pageNumber: (pagination.pageNumber as number) + 1,
+            },
+            false
+          ),
       });
     }
   }, [query.data, pagination, queryClient]);

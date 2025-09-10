@@ -115,16 +115,20 @@ namespace FrcsPos.Repository
             return ApiResponse<ProductDTO>.Ok(data: result);
         }
 
-        public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject)
+        public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject, bool isForPos = false)
         {
+            var now = DateTime.UtcNow;
             var query = _context.Products
                 .Include(p => p.TaxCategory)
                 .Include(p => p.Media)
                 .Include(p => p.Batches)
                 .Where(p => p.Company.Name == queryObject.CompanyName)
-                .Where(p => p.Batches.Any(b => b.Quantity > 0))
                 .AsQueryable();
 
+            if (isForPos)
+            {
+                query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
+            }
             // filtering
             if (queryObject.IsDeleted.HasValue)
             {
@@ -181,7 +185,6 @@ namespace FrcsPos.Repository
                 }
             };
         }
-
         public async Task<ApiResponse<ProductDTO>> EditProductAsync(RequestQueryObject queryObject, EditProductRequest request)
         {
             var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);

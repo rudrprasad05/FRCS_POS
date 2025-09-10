@@ -88,7 +88,6 @@ function BatchesSection() {
   const param = useParams();
   const warehouseId = decodeURIComponent(param.warehouseId as string);
   const queryClient = useQueryClient();
-  const params = useParams();
 
   const [pagination, setPagination] = useState<QueryObject>({
     pageNumber: 1,

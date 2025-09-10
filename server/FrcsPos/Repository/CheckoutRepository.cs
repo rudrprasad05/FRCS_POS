@@ -93,7 +93,7 @@ namespace FrcsPos.Repository
                 if (availableQty < item.Quantity)
                 {
                     return ApiResponse<SaleDTO>.Fail(
-                        message: $"Not enough stock for product {item.ProductId}. Requested {item.Quantity}, available {availableQty}"
+                        message: $"Not enough stock for product {item.Product.Name}. Requested {item.Quantity}, available {availableQty}"
                     );
                 }
             }

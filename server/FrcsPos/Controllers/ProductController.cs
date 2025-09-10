@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using FrcsPos.Response.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,10 +61,10 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
-        [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject)
+        [HttpPost("get-all")]
+        public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
         {
-            var model = await _productRepository.GetAllProducts(queryObject);
+            var model = await _productRepository.GetAllProducts(queryObject, req.ForPos ?? false);
 
             if (model == null || !model.Success)
             {
@@ -72,6 +73,7 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+
 
         [HttpGet("get-edit-page-info")]
         public async Task<IActionResult> GetProductEditPage([FromQuery] RequestQueryObject queryObject)

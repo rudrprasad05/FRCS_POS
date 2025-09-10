@@ -115,11 +115,14 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const infiniteQuery = useInfiniteQuery<ApiResponse<Product[]>, Error>({
     queryKey: ["posSessionProducts", session.id],
     queryFn: async ({ pageParam = 1 }) => {
-      return GetAllProducts({
-        companyName,
-        pageNumber: pageParam as number,
-        pageSize,
-      });
+      return GetAllProducts(
+        {
+          companyName,
+          pageNumber: pageParam as number,
+          pageSize,
+        },
+        true
+      );
     },
     getNextPageParam: (lastPage) =>
       (lastPage.meta?.pageNumber as number) <
@@ -277,7 +280,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       router.push(`${session.uuid}/checkout/${res.data.uuid}`);
     } else {
       console.log(res.errors);
-      toast.error("Checkout failed!");
+      toast.error("Checkout failed!", { description: res.message });
     }
 
     setCart([]);
