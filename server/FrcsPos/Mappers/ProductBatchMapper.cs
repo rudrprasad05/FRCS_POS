@@ -22,6 +22,7 @@ namespace FrcsPos.Mappers
                 Id = request.Id,
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
+                IsDeleted = request.IsDeleted,
                 CompanyId = request.CompanyId,
                 ProductId = request.ProductId,
                 Quantity = request.Quantity,

@@ -29,31 +29,31 @@ export const PosSessionColumns: ColumnDef<PosSession>[] = [
       return <Badge variant="destructive">Inactive</Badge>;
     },
   },
-  //   {
-  //     accessorKey: "posUser",
-  //     header: "Operator",
-  //     cell: ({ row }) => {
-  //       const user = row.getValue("posUser") as User;
-  //       if (!user) return <P>N/A</P>;
-  //       return <P>{user.email}</P>;
-  //     },
-  //   },
-  //   {
-  //     accessorKey: "sales",
-  //     header: "Total Sales",
-  //     cell: ({ row }) => {
-  //       const sales = row.getValue("sales") as Sale[];
-  //       let amount = 0;
-  //       sales.forEach((s) => {
-  //         amount += s.total;
-  //       });
-  //       const formatted = new Intl.NumberFormat("en-US", {
-  //         style: "currency",
-  //         currency: "USD",
-  //       }).format(amount);
-  //       return formatted;
-  //     },
-  //   },
+  {
+    accessorKey: "posUser",
+    header: "Operator",
+    cell: ({ row }) => {
+      const user = row.getValue("posUser") as User;
+      if (!user) return <P>N/A</P>;
+      return <P>{user.email}</P>;
+    },
+  },
+  {
+    accessorKey: "sales",
+    header: "Total Sales",
+    cell: ({ row }) => {
+      const sales = row.getValue("sales") as Sale[];
+      let amount = 0;
+      sales.forEach((s) => {
+        amount += s.total;
+      });
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+      return formatted;
+    },
+  },
   {
     accessorKey: "actions",
     header: "Actions",

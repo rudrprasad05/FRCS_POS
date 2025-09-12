@@ -66,7 +66,7 @@ export default function NewSessionDialog({
       const url = res.data?.uuid;
       if (uuidValidate(url)) {
         toast.success("Session created. Redirecting");
-        router.push(`${terminalId}/session/${url}`);
+        router.push(`session/${url}`);
       } else {
         toast.error("Session url was invalid");
         console.error("Invalid UUID:", url);

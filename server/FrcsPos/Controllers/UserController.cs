@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
+using FrcsPos.Mappers;
 using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
@@ -27,7 +28,7 @@ namespace FrcsPos.Controllers
         private readonly INotificationService _notificationService;
 
         private readonly ICompanyRepository _companyRepository;
-
+        private readonly IUserContext _userContext;
 
         public UserController(
             UserManager<User> userManager,
@@ -38,8 +39,8 @@ namespace FrcsPos.Controllers
             IWebHostEnvironment env,
             ILogger<UserController> logger,
             IUserRepository userRepository,
-            INotificationService notificationService
-
+            INotificationService notificationService,
+            IUserContext userContext
 
         ) : base(configuration, tokenService, logger)
         {
@@ -49,7 +50,7 @@ namespace FrcsPos.Controllers
             _userRepository = userRepository;
             _notificationService = notificationService;
             _companyRepository = companyRepository;
-
+            _userContext = userContext;
         }
 
         [HttpGet("get-all-users")]
@@ -58,7 +59,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetAllUsers(requestQuery);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -70,7 +71,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetAllSuperAdminsNotInCompany(role);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -82,7 +83,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetUserByCompany(queryObject);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -162,28 +163,29 @@ namespace FrcsPos.Controllers
 
                 // Include role(s) in JWT
                 var roles = await _userManager.GetRolesAsync(user);
-                var dto = new UserDTO
+                var dto = user.FromUserToDto();
+
+                var adminNotification = new NotificationDTO
                 {
-                    Username = model.Username ?? "",
-                    Email = model.Email ?? "",
+                    Title = "User created",
+                    Message = $"The user {user.UserName} was created",
+                    Type = NotificationType.SUCCESS,
+                    ActionUrl = $"/admin/users/{user.Id}/view",
+                    IsSuperAdmin = true,
                 };
 
-                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                    title: "New user added",
-                    message: "user " + model.Username + " was created",
-                    type: NotificationType.SUCCESS,
-                    isSuperAdmin: true,
-                    actionUrl: "/admin/users/" + user.Id
-                ));
+                var userNotification = new NotificationDTO
+                {
+                    Title = "Welcome to Tap N Go",
+                    Message = $"Contact an admin for further information",
+                    Type = NotificationType.SUCCESS,
+                    ActionUrl = "#",
+                    IsSuperAdmin = false,
+                    UserId = user.Id
+                };
 
-                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                    title: "Welcome to the Tap N Go",
-                    message: "refer to our guide on how to setup your account",
-                    type: NotificationType.SUCCESS,
-                    isSuperAdmin: false,
-                    actionUrl: "/admin/users/" + user.Id,
-                    userId: user.Id
-                ));
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
                 if (!string.IsNullOrEmpty(CompanyName))
                 {

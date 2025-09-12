@@ -32,4 +32,11 @@ namespace FrcsPos.Response.DTO
         public ProductDTO Product { get; set; } = default!;
         public List<TaxCategoryDTO> TaxCategories { get; set; } = default!;
     }
+
+    public class GetProductDTO
+    {
+        public bool? ForPos { get; set; } = false;
+    }
+
+
 }

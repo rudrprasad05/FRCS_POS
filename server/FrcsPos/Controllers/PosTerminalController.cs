@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using FrcsPos.Response.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,33 +34,33 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
         }
 
-        [HttpGet("get-all/{companyName}")]
-        public async Task<IActionResult> GetAllPosTerminalsByCompany([FromRoute] string companyName, [FromQuery] RequestQueryObject queryObject)
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAllPosTerminalsByCompany([FromQuery] RequestQueryObject queryObject)
         {
-            var model = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(queryObject, companyName);
+            var model = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(queryObject);
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
         }
 
         [HttpGet("get-one")]
-        public async Task<IActionResult> GetOnePosTerminalById([FromQuery] string uuid)
+        public async Task<IActionResult> GetOnePosTerminalById([FromQuery] RequestQueryObject requestQuery)
         {
-            var model = await _posTerminalRepository.GetOnePosTerminalByIdAsync(uuid);
+            var model = await _posTerminalRepository.GetOnePosTerminalByIdAsync(requestQuery);
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -84,6 +85,45 @@ namespace FrcsPos.Controllers
             var model = await _posTerminalRepository.GetPosTerminalSessionAsync(requestQuery);
 
             if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpDelete("soft-delete")]
+        public async Task<IActionResult> SoftDelete([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _posTerminalRepository.SoftDelete(queryObject);
+
+            if (!model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpPatch("edit")]
+        public async Task<IActionResult> SoftDelete([FromQuery] RequestQueryObject queryObject, [FromBody] EditTerminal editTerminal)
+        {
+            var model = await _posTerminalRepository.EditAsync(editTerminal, queryObject);
+
+            if (!model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpDelete("activate")]
+        public async Task<IActionResult> Activate([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _posTerminalRepository.Activate(queryObject);
+
+            if (!model.Success)
             {
                 return BadRequest(model);
             }

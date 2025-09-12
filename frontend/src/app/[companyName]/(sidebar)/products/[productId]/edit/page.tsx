@@ -7,7 +7,6 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import ConfigTab from "@/components/company/products/view/ConfigTab";
 import { EditorTab } from "@/components/company/products/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Product, TaxCategory } from "@/types/models";
@@ -16,11 +15,6 @@ import { Loader2, PenBox } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-
-export const {
-  Provider: ProductEditorProvider,
-  useGenericData: useProductEditorProvider,
-} = createGenericSingleDataContext<Product>();
 
 export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");

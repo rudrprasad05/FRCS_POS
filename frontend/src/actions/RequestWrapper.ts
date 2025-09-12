@@ -19,11 +19,6 @@ export async function RequestWrapper<T>(
 
   url = `${url}?${params}`;
 
-  console.log(url);
-
-  console.log(url);
-  console.log(params);
-
   try {
     const res = await axiosGlobal({
       method,
@@ -36,9 +31,11 @@ export async function RequestWrapper<T>(
       ...config,
     });
 
+    console.log("RequestWrapper", res);
+
     return res.data;
   } catch (error) {
-    console.log("RES WRAPPER", error);
+    console.dir(error);
     return {
       data: null,
       success: false,

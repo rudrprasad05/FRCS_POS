@@ -1,8 +1,9 @@
 "use client";
 
-import { CreateProduct } from "@/actions/Product";
+import { EditProduct } from "@/actions/Product";
 import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
+import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -25,8 +26,10 @@ import {
 } from "@/components/ui/select";
 import { Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Asterisk } from "lucide-react";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -64,12 +67,16 @@ export function EditorTab({
   product: Product;
   taxes: TaxCategory[];
 }) {
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     product?.media?.url as string
   );
 
+  const queryClient = useQueryClient();
   const [file, setFile] = useState<File | undefined>(undefined);
+  const router = useRouter();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -78,7 +85,7 @@ export function EditorTab({
       sku: product?.sku,
       barcode: product?.barcode as string,
       price: String(product?.price),
-      taxCategoryId: String(product?.id),
+      taxCategoryId: String(product?.taxCategoryId),
       isPerishable: product?.isPerishable,
     },
   });
@@ -109,6 +116,9 @@ export function EditorTab({
     formData.append("Barcode", data.barcode as string);
     formData.append("IsPerishable", data.isPerishable ? "true" : "false");
     formData.append("TaxCategoryId", data.taxCategoryId as string);
+    formData.append("MediaId", String(product.mediaId));
+
+    console.log("fd", formData);
 
     if (data.image) {
       formData.append("File", data.image); // IFormFile
@@ -116,15 +126,23 @@ export function EditorTab({
 
     console.log("Submitting FormData:", formData);
 
-    try {
-      const res = await CreateProduct(formData);
-      console.log(res);
-      toast("Uploaded");
-    } catch (error) {
-      toast("Failed to upload");
-    } finally {
-      setIsSubmitting(false);
+    const res = await EditProduct(formData, product.uuid);
+
+    if (res.success) {
+      queryClient.invalidateQueries({
+        queryKey: ["editProduct", product.uuid],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["products", companyName], // optionally include pagination
+        exact: false,
+      });
+      toast.success("Uploaded");
+      router.back();
+    } else {
+      toast.error("Failed to upload");
     }
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -309,8 +327,4 @@ export function EditorTab({
       </div>
     </div>
   );
-}
-
-function RedStar() {
-  return <Asterisk className="w-2 h-2 text-rose-500 mb-auto ml-0 mr-auto" />;
 }

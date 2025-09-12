@@ -7,6 +7,7 @@ import {
   QueryObject,
 } from "@/types/models";
 import { RequestWrapper } from "./RequestWrapper";
+import { EditCompanyData } from "@/components/superadmin/companies/EditTab";
 
 export async function GetAllCompanies(
   query?: QueryObject
@@ -83,19 +84,37 @@ export async function CreateCompany(
   }
 }
 
+export async function RemoveUserFromCompany(
+  userId: string,
+  companyId: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("DELETE", `company/remove-user`, {
+    data: { userId, companyId },
+  });
+}
+
 export async function SoftDeleteCompany(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  try {
-    const res = await axiosGlobal.delete<ApiResponse<Company>>(
-      `company/soft-delete?uuid=${uuid}`
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<Company>;
-    }
+  return RequestWrapper<Company>("DELETE", `company/soft-delete`, {
+    query: { uuid },
+  });
+}
 
-    return ApiResponseFail<Company>();
-  }
+export async function ActivateCompany(
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("DELETE", `company/activate`, {
+    query: { uuid },
+  });
+}
+
+export async function EditCompany(
+  data: EditCompanyData,
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("PATCH", `company/edit`, {
+    query: { uuid },
+    data: data,
+  });
 }

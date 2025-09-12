@@ -72,7 +72,10 @@ export default function BarcodeScanner() {
 
   function createConnection(terminalId: string) {
     return new signalR.HubConnectionBuilder()
-      .withUrl(`${WebSocketUrl}/socket/posHub?terminalId=${terminalId}`)
+      .withUrl(
+        `${"https://localhost:5081"}/socket/posHub?terminalId=${terminalId}`,
+        { withCredentials: true }
+      )
       .withAutomaticReconnect()
       .build();
   }
@@ -81,6 +84,7 @@ export default function BarcodeScanner() {
     setInitialLoad(true);
     try {
       const res = await ValidateQr(id);
+      console.log(res);
       if (res.success) {
         setIsUUIDValidated(true);
 

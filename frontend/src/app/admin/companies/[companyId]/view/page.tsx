@@ -18,41 +18,52 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { Company } from "@/types/models";
+import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { Building2 } from "lucide-react";
+import { Building2, Loader2 } from "lucide-react";
 import { use } from "react";
+import { toast } from "sonner";
 
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;
 };
 
-export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericSingleDataContext<Company>();
-
 export default function SuperAdminCompanyPageContainer({ params }: PageProps) {
   const { companyId } = use(params);
 
-  return (
-    <CompanyDataProvider fetchFn={() => GetFullCompanyByUUID(companyId)}>
-      <DataSection />
-    </CompanyDataProvider>
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["editCompany", companyId],
+    queryFn: () => GetFullCompanyByUUID(companyId),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
+
+  if (isLoading) {
+    return <Loader2 className="animate-spin" />;
+  }
+
+  if (error || !data?.success || !data.data) {
+    toast.error("Failed to fetch product data");
+    return <NoDataContainer />;
+  }
+
+  const company = data.data as Company;
+
+  return <DataSection data={company} />;
 }
 
-function DataSection() {
-  const { item } = useCompanyData();
-  if (!item) return <NoDataContainer />;
+function DataSection({ data }: { data: Company }) {
   return (
     <div className="space-y-4">
-      <Header />
-      <CompanyInfo />
+      <Header data={data} />
+      <CompanyInfo data={data} />
 
       <GenericSection
         props={{
           title: "Users",
           desc: "List of users associated with the company",
-          items: item.users || [],
+          items: data.users || [],
           columns: CompanyUserColumn,
           dialog: <AddUsersToCompanyDialoge />,
         }}
@@ -61,9 +72,8 @@ function DataSection() {
         props={{
           title: "Warehouse",
           desc: "List of warehouses owned by the company",
-          items: item.warehouses || [],
+          items: data.warehouses || [],
           columns: WarehouseOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
         }}
       />
 
@@ -71,9 +81,8 @@ function DataSection() {
         props={{
           title: "Pos Terminal",
           desc: "List of terminals owned by the company",
-          items: item.posTerminals || [],
+          items: data.posTerminals || [],
           columns: PosTerminalOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
         }}
       />
 
@@ -81,28 +90,21 @@ function DataSection() {
         props={{
           title: "Products",
           desc: "List of top products owned by the company",
-          items: item.products || [],
+          items: data.products || [],
           columns: ProductsOnlyColumns,
-          //   dialog: <NewCompanyDialoge />,
         }}
       />
     </div>
   );
 }
 
-function Header() {
-  const { item } = useCompanyData();
-
-  if (item == null) {
-    return <>loading</>;
-  }
-
+function Header({ data }: { data: Company }) {
   return (
     <div className="flex items-center gap-3">
       <Building2 className="h-8 w-8 text-primary" />
       <div>
-        <h1 className="text-3xl font-bold capitalize">{item.name}</h1>
-        <p className="text-muted-foreground">ID: {item.uuid}</p>
+        <h1 className="text-3xl font-bold capitalize">{data.name}</h1>
+        <p className="text-muted-foreground">ID: {data.uuid}</p>
       </div>
     </div>
   );
@@ -118,9 +120,6 @@ interface IGenericProps<T> {
 
 function GenericSection<T>({ props }: { props: IGenericProps<T> }) {
   const { title, desc, items, columns, dialog } = props;
-
-  const { item } = useCompanyData();
-  if (!item) return <NoDataContainer />;
 
   return (
     <section className="p-4">
@@ -138,8 +137,7 @@ function GenericSection<T>({ props }: { props: IGenericProps<T> }) {
   );
 }
 
-function CompanyInfo() {
-  const { item } = useCompanyData();
+function CompanyInfo({ data }: { data: Company }) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
       year: "numeric",
@@ -149,8 +147,6 @@ function CompanyInfo() {
       minute: "2-digit",
     });
   };
-  if (!item) return <NoDataContainer />;
-
   return (
     <Card>
       <CardHeader>
@@ -167,27 +163,27 @@ function CompanyInfo() {
           <label className="text-sm font-medium text-muted-foreground">
             Company Name
           </label>
-          <p className="text-lg font-semibold">{item.name}</p>
+          <p className="text-lg font-semibold">{data.name}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-muted-foreground">
             Created On
           </label>
-          <p className="text-lg">{formatDate(item.createdOn)}</p>
+          <p className="text-lg">{formatDate(data.createdOn)}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-muted-foreground">
             Last Updated
           </label>
-          <p className="text-lg">{formatDate(item.updatedOn)}</p>
+          <p className="text-lg">{formatDate(data.updatedOn)}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-muted-foreground">
             Admin User
           </label>
-          <p className="text-lg font-semibold">{item.adminUser?.username}</p>
+          <p className="text-lg font-semibold">{data.adminUser?.username}</p>
           <p className="text-sm text-muted-foreground">
-            {item.adminUser?.email}
+            {data.adminUser?.email}
           </p>
         </div>
         <div>
@@ -195,7 +191,7 @@ function CompanyInfo() {
             UUID
           </label>
           <p className="text-sm font-mono bg-muted px-2 py-1 rounded">
-            {item.uuid}
+            {data.uuid}
           </p>
         </div>
       </CardContent>

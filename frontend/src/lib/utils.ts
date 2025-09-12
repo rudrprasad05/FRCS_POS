@@ -22,6 +22,16 @@ export const formatDate = (dateString: string) => {
   }
 };
 
+export const formatDateIntoFormat = (dateString: string) => {
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 export function generateStrongPassword(length = 12) {
   const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lowercase = "abcdefghijklmnopqrstuvwxyz";

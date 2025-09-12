@@ -14,5 +14,9 @@ namespace FrcsPos.Response.DTO
         public NotificationType Type { get; set; } = NotificationType.INFO;
         public bool IsSuperAdmin { get; set; } = false;
         public string ActionUrl { get; set; } = string.Empty;
+        public string? UserId { get; set; }
+        public UserDTO? User { get; set; }
+        public int? CompanyId { get; set; }
+        public CompanyDTO? Company { get; set; }
     }
 }

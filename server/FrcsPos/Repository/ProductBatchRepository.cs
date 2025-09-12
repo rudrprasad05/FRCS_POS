@@ -19,19 +19,19 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IMediaRepository _mediaRepository;
-
+        private readonly IUserContext _userContext;
 
         public ProductBatchRepository(
            ApplicationDbContext applicationDbContext,
            INotificationService notificationService,
-           IMediaRepository mediaRepository
-
+           IMediaRepository mediaRepository,
+            IUserContext userContext
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
-
+            _userContext = userContext;
         }
 
         public async Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductBatchRequest request)
@@ -42,7 +42,12 @@ namespace FrcsPos.Repository
 
             if (company == null || product == null || wh == null)
             {
-                return ApiResponse<ProductBatchDTO>.Fail();
+                return ApiResponse<ProductBatchDTO>.Fail(message: "invalid params");
+            }
+
+            if (!wh.IsActive)
+            {
+                return ApiResponse<ProductBatchDTO>.Fail(message: "Activate warehouse first");
             }
 
             var newModel = new ProductBatch
@@ -59,15 +64,18 @@ namespace FrcsPos.Repository
 
             var result = model.Entity.FromModelToDto();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New batch",
-                message: $"A new batch for product " + product.Name + " was created",
-                type: NotificationType.INFO,
-                actionUrl: "/",
-                isSuperAdmin: false,
-                companyId: company.Id
-            ));
+            var userNotification = new NotificationDTO
+            {
+                Title = "New batch",
+                Message = "A new batch for product " + product.Name + " was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/{company.Name}/warehouse/${wh.UUID}/batch/${newModel.UUID}/view",
+                IsSuperAdmin = false,
+                CompanyId = company.Id,
+                UserId = _userContext.UserId
+            };
 
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             return new ApiResponse<ProductBatchDTO>
             {

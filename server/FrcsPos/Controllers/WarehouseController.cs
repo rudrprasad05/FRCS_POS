@@ -29,7 +29,20 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.CreateAsync(data);
 
-            if (model == null || !model.Success || model.Success == false)
+            if (!model.Success || model.Success == false)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpPatch("edit")]
+        public async Task<IActionResult> EditWarehouse([FromBody] EditWarehouseData data, [FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _warehouseRepository.EditAsync(data, queryObject);
+
+            if (!model.Success || model.Success == false)
             {
                 return BadRequest(model);
             }
@@ -44,7 +57,7 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -64,13 +77,26 @@ namespace FrcsPos.Controllers
         }
 
         [HttpDelete("soft-delete")]
-        public async Task<IActionResult> SoftDeleteCompany([FromQuery] string uuid)
+        public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
         {
-            var model = await _warehouseRepository.SoftDeleteAsync(uuid);
+            var model = await _warehouseRepository.SoftDeleteAsync(queryObject);
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpDelete("activate")]
+        public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _warehouseRepository.Activate(queryObject);
+
+            if (!model.Success)
+            {
+                return BadRequest(model);
             }
 
             return Ok(model);

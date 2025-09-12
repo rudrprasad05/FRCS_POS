@@ -27,6 +27,8 @@ axiosGlobal.interceptors.response.use(
   },
   (error) => {
     const status = error?.response?.status;
+    const res = error?.response;
+
     if (status === 401 || status === 403) {
       console.log("uhm");
       // Remove token cookie or localStorage
@@ -38,12 +40,13 @@ axiosGlobal.interceptors.response.use(
         // Redirect to login or home
         window.location.href = "/error/unauthorised";
       }
-
-      // Optional: reject with meaningful message
-      return Promise.reject("Unauthorized - Logged out");
     }
 
-    // For other errors, just forward them
-    return Promise.reject(error);
+    return {
+      data: res?.data ?? null,
+      success: false,
+      statusCode: res?.status ?? 400,
+      message: res?.data?.message || error.message || "Unknown error",
+    };
   }
 );

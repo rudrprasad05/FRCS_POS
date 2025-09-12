@@ -53,7 +53,45 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
       return <P>{formatted}</P>;
     },
   },
+  {
+    accessorKey: "expiryDate",
+    header: "Expiry",
+    cell: ({ row }) => {
+      const expiry = row.getValue("expiryDate") as string | null | undefined;
+      if (!expiry) return <P>N/A</P>;
 
+      const now = new Date();
+      const expiryDate = new Date(expiry);
+
+      // time difference in ms
+      const diffMs = expiryDate.getTime() - now.getTime();
+      console.log(diffMs);
+
+      if (diffMs <= 0) {
+        return <P className="text-red-600 font-semibold">Expired</P>;
+      }
+
+      // calculate days/hours left
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      let text = "";
+      let colorClass = "text-green-600"; // default (safe)
+
+      if (diffDays < 1) {
+        text = `${Math.floor(diffHours)}h left`;
+        colorClass = "text-red-600 font-semibold";
+      } else if (diffDays <= 5) {
+        text = `${Math.floor(diffDays)}d left`;
+        colorClass = "text-orange-500 font-semibold";
+      } else {
+        text = `${Math.floor(diffDays)}d left`;
+        colorClass = "text-green-600";
+      }
+
+      return <P className={colorClass}>{text}</P>;
+    },
+  },
   {
     accessorKey: "actions",
     header: "Actions",

@@ -19,6 +19,15 @@ export interface SuperAdminDashboardDTO {
   totalVat: number;
   notifications: Notification[];
 }
+export interface CompanyAdminDashboardDTO {
+  totalCompanies: number;
+  totalMedia: number;
+  totalUsers: number;
+  totalProducts: number;
+  totalSales: number;
+  totalVat: number;
+  notifications: Notification[];
+}
 
 export interface ILoadPreCreationInfo {
   company: Company;

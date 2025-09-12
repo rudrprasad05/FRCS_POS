@@ -17,6 +17,7 @@ import {
 
 import { GetToken } from "./User";
 import { RequestWrapper } from "./RequestWrapper";
+import axios from "axios";
 
 export async function CreateNewPosSession(
   data: ICreateNewPosSession
@@ -76,7 +77,24 @@ export async function Checkout(
 export async function ValidateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
-  return RequestWrapper<QuickConnect>("GET", `quickconnect/validate`, {
-    query: { uuid },
-  });
+  try {
+    const res = await axios.get<ApiResponse<QuickConnect>>(
+      `https://192.168.1.184:5081/api/quickconnect/validate`,
+      {
+        params: { uuid }, // axios automatically serializes query params
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    console.error("ValidateQr error:", error);
+    return {
+      data: {},
+      success: false,
+      statusCode: error?.response?.status || 400,
+      errors: error?.response?.data?.errors ?? ["Request failed"],
+      timestamp: Date.now.toString(),
+    } as ApiResponse<QuickConnect>;
+  }
 }
+
+// https://192.168.1.184:5081

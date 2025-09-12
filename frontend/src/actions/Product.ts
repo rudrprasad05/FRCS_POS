@@ -13,11 +13,43 @@ import { RequestWrapper } from "./RequestWrapper";
 import { EditProductData } from "@/types/res";
 
 export async function GetAllProducts(
-  query?: QueryObject
+  query?: QueryObject,
+  forPos?: boolean
 ): Promise<ApiResponse<Product[]>> {
-  return RequestWrapper<Product[]>("GET", `product/get-all`, {
+  return RequestWrapper<Product[]>("POST", `product/get-all`, {
     query,
+    data: {
+      ForPos: forPos || false,
+    },
   });
+}
+
+export async function GetPosProducts(
+  query?: QueryObject
+): Promise<{ data: Product[]; nextPage?: number }> {
+  // call backend
+  const res: ApiResponse<Product[]> = await RequestWrapper<Product[]>(
+    "GET",
+    "product/get-all",
+    { query }
+  );
+
+  if (!res.success) {
+    // handle failure gracefully
+    return { data: [], nextPage: undefined };
+  }
+
+  const nextPage =
+    query && res.meta && query.pageNumber && res.meta.totalPages
+      ? query.pageNumber < res.meta.totalPages
+        ? query.pageNumber + 1
+        : undefined
+      : undefined;
+
+  return {
+    data: res.data ?? [],
+    nextPage,
+  };
 }
 
 export async function GetCompanyByAdminUserId(
@@ -78,4 +110,30 @@ export async function CreateProduct(
 
     return ApiResponseFail<Product>();
   }
+}
+
+export async function EditProduct(
+  data: FormData,
+  uuid: string
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("PATCH", `product/edit`, {
+    query: { uuid },
+    data: data,
+  });
+}
+
+export async function SoftDeleteProduct(
+  uuid: string
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("DELETE", `product/soft-delete`, {
+    query: { uuid },
+  });
+}
+
+export async function ActivateProduct(
+  uuid: string
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("DELETE", `product/activate`, {
+    query: { uuid },
+  });
 }

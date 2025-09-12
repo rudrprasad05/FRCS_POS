@@ -13,15 +13,31 @@ import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 
 export const columns: ColumnDef<PosTerminal>[] = [
   {
-    accessorKey: "number",
+    accessorKey: "id",
     header: "#",
     cell: ({ row }) => {
-      return <div className="flex gap-2">{+row.id + 1}</div>;
+      const isDeleted = row.getValue("id") as string;
+      return <div className="flex gap-2">{isDeleted}</div>;
     },
   },
   {
     accessorKey: "name",
     header: "Name",
+  },
+  {
+    accessorKey: "isActive",
+    header: "Status",
+    cell: ({ row }) => {
+      const isDeleted = row.getValue("isActive") as boolean;
+      return (
+        <div
+          className={cn(
+            "rounded-full w-2 h-2",
+            !isDeleted ? "bg-rose-500" : "bg-green-500"
+          )}
+        />
+      );
+    },
   },
 
   {
@@ -47,10 +63,10 @@ export const columns: ColumnDef<PosTerminal>[] = [
 
       return (
         <div className="flex gap-2">
-          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN, UserRoles.ADMIN]}>
             <Button variant={"outline"} asChild className={cn("w-24")}>
               <Link
-                href="/"
+                href={`pos/${company.uuid}/edit`}
                 className={cn("w-24 flex items-center justify-between")}
               >
                 Edit
@@ -60,23 +76,13 @@ export const columns: ColumnDef<PosTerminal>[] = [
           </RoleWrapper>
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`pos/${company.uuid}`}
+              href={`pos/${company.uuid}/view`}
               className="w-24 flex items-center justify-between"
             >
               View
               <Edit className="" />
             </Link>
           </Button>
-          {/* <DeleteCompanyDialoge data={company} /> */}
-          {/* <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/${encodeURI(company.name)}`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button> */}
         </div>
       );
     },

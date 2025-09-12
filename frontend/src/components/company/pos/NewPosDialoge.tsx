@@ -15,27 +15,29 @@ import { useState } from "react";
 
 import { CreatePosTerminals } from "@/actions/PosTerminal";
 import { toast } from "sonner";
-import { usePosTerminal } from "./POSSection";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NewPosDialoge({
   companyName,
 }: {
   companyName: string;
 }) {
-  const { refresh } = usePosTerminal();
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleClick = async () => {
-    try {
-      setLoading(true);
-      const res = await CreatePosTerminals(companyName);
-      refresh();
+    setLoading(true);
+
+    const res = await CreatePosTerminals(companyName);
+
+    if (res.success) {
       setOpen(false);
       toast.success("Terminal created");
-    } catch (error) {
+      queryClient.invalidateQueries({
+        queryKey: ["posTerminals", companyName],
+      });
+    } else {
       toast.error("Terminal not created");
     }
 

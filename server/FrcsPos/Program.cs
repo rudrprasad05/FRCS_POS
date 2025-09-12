@@ -12,6 +12,7 @@ using FrcsPos.Repository;
 using Microsoft.AspNetCore.Authorization;
 using FrcsPos.Background;
 using FrcsPos.Socket;
+using StackExchange.Redis;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerServices();
 builder.Services.AddDatabaseContext(builder.Configuration);
+builder.Services.AddRedisContext(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
@@ -47,6 +49,7 @@ builder.Services.AddScoped<IMediaRepository, MediaRepository>();
 builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
+builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
@@ -54,11 +57,11 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAutho
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
 
+
+
 builder.Services.AddSignalR();
 
-builder.WebHost
-    .UseUrls(builder.Configuration["Backend:Url"]
-             ?? throw new InvalidOperationException());
+builder.WebHost.UseUrls(builder.Configuration["Backend:Url"] ?? throw new InvalidOperationException());
 
 var app = builder.Build();
 
@@ -87,7 +90,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
 app.MapHub<NotificationHub>("/socket/notificationHub");
-app.MapHub<PosHub>("/socket/posHub");
+app.MapHub<PosHub>("/socket/posHub")
+    .RequireCors("allowSpecificOrigin"); ;
 
 // TODO was adding barcodes. 
 
