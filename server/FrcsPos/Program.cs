@@ -23,6 +23,7 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerServices();
 builder.Services.AddDatabaseContext(builder.Configuration);
+builder.Services.AddRedisContext(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
@@ -56,11 +57,7 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAutho
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-{
-    var configuration = builder.Configuration.GetConnectionString("Redis") ?? throw new InvalidOperationException();
-    return ConnectionMultiplexer.Connect(configuration);
-});
+
 
 builder.Services.AddSignalR();
 
@@ -115,18 +112,5 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Database connection failed: {ex.Message}");
     }
 }
-using (var scope = app.Services.CreateScope())
-{
-    var redis = scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
-    try
-    {
-        var db = redis.GetDatabase();
-        var pong = db.Ping(); // synchronous ping
-        Console.WriteLine($"Redis connection successful. Ping: {pong.TotalMilliseconds} ms");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Redis connection failed: {ex.Message}");
-    }
-}
+
 app.Run();
