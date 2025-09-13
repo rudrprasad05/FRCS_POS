@@ -33,10 +33,12 @@ export default function SalesSection() {
   });
 
   const query = useQuery({
-    queryKey: ["getPosSessions", posId, pagination],
+    queryKey: ["getPosSales", posId, pagination],
     queryFn: () => GetPosTerminalSales({ ...pagination, uuid: posId }),
     staleTime: FIVE_MINUTE_CACHE,
   });
+
+  console.log(query.data);
 
   if (query.isLoading) {
     return <Loader2 className="animate-spin" />;
@@ -50,8 +52,10 @@ export default function SalesSection() {
   return (
     <>
       <Header pagination={pagination} setPagination={setPagination}>
-        <H1>Pos Sessions</H1>
-        <P className="text-muted-foreground">Create and manage your sessions</P>
+        <H1>Pos Sales</H1>
+        <P className="text-muted-foreground">
+          View and manage your sales for this terminal
+        </P>
       </Header>
 
       <HandleSalesDataSection
@@ -77,7 +81,7 @@ function HandleSalesDataSection({
   }
 
   if (query.isError) {
-    return <div className="text-red-500">Error loading POS terminals.</div>;
+    return <div className="text-red-500">Error loading sales</div>;
   }
 
   const data = query.data?.data ?? [];

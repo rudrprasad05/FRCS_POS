@@ -39,18 +39,15 @@ export const PosSessionColumns: ColumnDef<PosSession>[] = [
     },
   },
   {
-    accessorKey: "sales",
+    accessorKey: "totalSales",
     header: "Total Sales",
     cell: ({ row }) => {
-      const sales = row.getValue("sales") as Sale[];
-      let amount = 0;
-      sales.forEach((s) => {
-        amount += s.total;
-      });
+      const sales = row.getValue("totalSales") as number;
+
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount);
+      }).format(sales);
       return formatted;
     },
   },

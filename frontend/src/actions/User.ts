@@ -43,9 +43,10 @@ export async function GetUnAssignedUsers(
 }
 
 export async function CreateUser(
-  data: NewUserForm
+  data: NewUserForm,
+  query?: QueryObject
 ): Promise<ApiResponse<User>> {
-  return RequestWrapper<User>("POST", `user/create`, { data });
+  return RequestWrapper<User>("POST", `user/create`, { data, query });
 }
 
 export async function Logout(): Promise<ApiResponse<string>> {

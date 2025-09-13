@@ -90,7 +90,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string? CompanyName)
+        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] RequestQueryObject queryObject)
         {
             if (!ModelState.IsValid)
             {
@@ -164,6 +164,22 @@ namespace FrcsPos.Controllers
                 // Include role(s) in JWT
                 var roles = await _userManager.GetRolesAsync(user);
                 var dto = user.FromUserToDto();
+                var isSuperAdmin = true;
+
+                if (!string.IsNullOrEmpty(queryObject.CompanyName))
+                {
+                    var request = new AddUserToCompany
+                    {
+                        UserId = user.Id,
+                        CompanyUUID = queryObject.CompanyName,
+                    };
+                    var company = await _companyRepository.AddUserToCompanyAsync(request);
+                    if (company.Success != true)
+                    {
+                        return BadRequest(company);
+                    }
+                    isSuperAdmin = false;
+                }
 
                 var adminNotification = new NotificationDTO
                 {
@@ -171,7 +187,7 @@ namespace FrcsPos.Controllers
                     Message = $"The user {user.UserName} was created",
                     Type = NotificationType.SUCCESS,
                     ActionUrl = $"/admin/users/{user.Id}/view",
-                    IsSuperAdmin = true,
+                    IsSuperAdmin = isSuperAdmin,
                 };
 
                 var userNotification = new NotificationDTO
@@ -180,26 +196,14 @@ namespace FrcsPos.Controllers
                     Message = $"Contact an admin for further information",
                     Type = NotificationType.SUCCESS,
                     ActionUrl = "#",
-                    IsSuperAdmin = false,
+                    IsSuperAdmin = isSuperAdmin,
                     UserId = user.Id
                 };
 
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
-                if (!string.IsNullOrEmpty(CompanyName))
-                {
-                    var request = new AddUserToCompany
-                    {
-                        UserId = user.Id,
-                        CompanyUUID = CompanyName,
-                    };
-                    var company = await _companyRepository.AddUserToCompanyAsync(request);
-                    if (company.Success != true)
-                    {
-                        return BadRequest(company);
-                    }
-                }
+
 
 
                 return Ok(ApiResponse<UserDTO>.Ok(

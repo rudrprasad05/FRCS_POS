@@ -19,7 +19,8 @@ import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Company, User } from "@/types/models";
+import { Company, User, UserRoles } from "@/types/models";
+import { Badge } from "@/components/ui/badge";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -35,18 +36,44 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "role",
     header: "Role",
     cell: ({ row }) => {
-      const cake = row.original; // Get the entire row data (of type CakeType)
+      const role = row.original.role;
+      console.log(role);
 
-      return <div className="flex gap-2">{cake.role}</div>;
+      if (!role || role.trim().length == 0) {
+        return <>-</>;
+      }
+
+      return (
+        <Badge
+          variant={
+            role.toUpperCase() == UserRoles.ADMIN ? "secondary" : "outline"
+          }
+        >
+          {role}
+        </Badge>
+      );
     },
   },
-
   {
     accessorKey: "email",
     header: "Email",
     cell: ({ row }) => {
       const cake = row.original;
       return <div className="flex gap-2">{cake.email}</div>;
+    },
+  },
+
+  {
+    accessorKey: "createdOn",
+    header: "Created On",
+    cell: ({ row }) => {
+      console.log(row.getValue("createdOn"));
+      const date = new Date(row.getValue("createdOn"));
+      return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
     },
   },
 

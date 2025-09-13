@@ -1,22 +1,13 @@
 "use client";
 import { GetAllCompanies } from "@/actions/Company";
-import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  createGenericListDataContext,
-  GenericListDataContextType,
-} from "@/context/GenericDataTableContext";
+import { Header } from "@/components/global/TestHeader";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
   Company,
@@ -24,18 +15,10 @@ import {
   QueryObject,
   UserRoles,
 } from "@/types/models";
-import { Search } from "lucide-react";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useState } from "react";
 import { CompanyOnlyColumn } from "../../tables/CompaniesColumns";
 import NewCompanyDialoge from "./NewCompanyDialoge";
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import { Header } from "@/components/global/TestHeader";
-import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-
-export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericListDataContext<Company>();
 
 export default function CompanySection() {
   const [pagination, setPagination] = useState<QueryObject>({

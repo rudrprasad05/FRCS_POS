@@ -212,6 +212,7 @@ export interface PosSession extends BaseModel {
   isActive: boolean;
   connectionTimeOut: Date;
   sales: Sale[];
+  totalSales?: number;
 }
 
 export type PosSessionWithProducts = {

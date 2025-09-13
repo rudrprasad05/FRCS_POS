@@ -3,116 +3,134 @@ import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search } from "lucide-react";
-// import NewCompanyDialoge from "./NewCompanyDialoge";
-import { CompanyUserColumns } from "@/components/tables/CompanyUserColumns";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { ESortBy, User } from "@/types/models";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { GetUsersByCompany } from "@/actions/User";
+import { Header } from "@/components/global/TestHeader";
+import { CompanyUserColumns } from "@/components/tables/CompanyUserColumns";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
+import {
+  ApiResponse,
+  ESortBy,
+  QueryObject,
+  User,
+  UserRoles,
+} from "@/types/models";
+import {
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import NewWarehouseDialoge from "../warehouse/NewWarehouseDialoge";
-
-export const { Provider: UserSectionProvider, useGenericData: useUserData } =
-  createGenericListDataContext<User>();
+import NewUserDialoge from "@/components/superadmin/users/NewUserDialoge";
+import { buttonVariants } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
+import { columns } from "@/components/superadmin/users/UserColumns";
 
 export default function UserSection() {
-  const param = useParams();
-  const companyName = String(param.companyName);
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
+  const queryClient = useQueryClient();
 
-  return (
-    <UserSectionProvider
-      fetchFn={() =>
-        GetUsersByCompany({
-          pageNumber: 1,
-          pageSize: 10,
-          sortBy: ESortBy.DSC,
-          companyName: companyName,
-        })
-      }
-    >
-      <Header />
-      <HandleDataSection />
-    </UserSectionProvider>
-  );
-}
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 10,
+    search: "",
+    sortBy: ESortBy.DSC,
+    isDeleted: undefined as boolean | undefined,
+    companyName: companyName,
+  });
 
-function Header() {
-  const router = useRouter();
+  const query = useQuery({
+    queryKey: ["companyUsers", companyName, pagination],
+    queryFn: () => GetUsersByCompany({ ...pagination, companyName }),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
+
   useEffect(() => {
-    console.log("prefecthed");
-    router.prefetch("products/new");
-  }, [router]);
+    if (
+      query.data?.meta?.totalPages &&
+      (pagination.pageNumber as number) < query.data.meta.totalPages
+    ) {
+      queryClient.prefetchQuery({
+        queryKey: [
+          "products",
+          { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
+        ],
+        queryFn: () =>
+          GetUsersByCompany({
+            ...pagination,
+            pageNumber: (pagination.pageNumber as number) + 1,
+          }),
+      });
+    }
+  }, [query.data, pagination, queryClient]);
+
   return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Users</H1>
+    <>
+      <Header
+        pagination={pagination}
+        setPagination={setPagination}
+        newButton={
+          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+            <NewUserButton />
+          </RoleWrapper>
+        }
+      >
+        <H1>Users</H1>
         <P className="text-muted-foreground">
-          Create and manage your user here.
+          Create and manage your company users
         </P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search users..." className="pl-10 " />
-          </div>
+      </Header>
 
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <NewWarehouseDialoge />
-      </div>
-    </div>
+      <HandleDataSection
+        query={query}
+        pagination={pagination}
+        setPagination={setPagination}
+      />
+    </>
   );
 }
 
-function HandleDataSection() {
-  const { items, loading, pagination, setPagination } = useUserData();
-  const data = items as User[];
-
-  if (loading) {
-    return (
-      <div className="mt-8">
-        <TableSkeleton columns={3} rows={8} showHeader />;
+function NewUserButton() {
+  return (
+    <NewUserDialoge>
+      <div
+        className={`${buttonVariants({
+          variant: "default",
+        })} w-full text-start justify-start px-2 my-2`}
+      >
+        <UserPlus />
+        New User
       </div>
-    );
+    </NewUserDialoge>
+  );
+}
+
+function HandleDataSection({
+  query,
+  pagination,
+  setPagination,
+}: {
+  query: UseQueryResult<ApiResponse<User[]>, Error>;
+  pagination: any;
+  setPagination: React.Dispatch<React.SetStateAction<any>>;
+}) {
+  if (query.isLoading) {
+    return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!data) {
-    return <>Invalid URL</>;
+  if (query.isError) {
+    return <div className="text-red-500">Error loading Users</div>;
   }
+
+  const data = query.data?.data ?? [];
+  const meta = query.data?.meta;
 
   return (
     <div className="mt-8">
-      <DataTable columns={CompanyUserColumns} data={data} />
+      <DataTable columns={columns} data={data} />
       <div className="py-8">
         <PaginationSection
           pagination={pagination}

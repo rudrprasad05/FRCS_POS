@@ -36,6 +36,11 @@ namespace FrcsPos.Mappers
             result.PosUserId = session.PosUserId;
             result.IsActive = session.IsActive;
 
+            if (session.Sales != null)
+            {
+                result.TotalSales = session.Sales.Sum(s => s.Total);
+            }
+
             if (session.PosTerminal != null)
             {
                 result.PosTerminal = session.PosTerminal.FromModelToJustModelDTO();

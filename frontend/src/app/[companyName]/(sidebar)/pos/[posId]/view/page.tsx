@@ -18,12 +18,6 @@ import Link from "next/link";
 import { use } from "react";
 import { toast } from "sonner";
 
-export const { Provider: SessionDataProvider, useGenericData: useSessionData } =
-  createGenericListDataContext<PosSession>();
-
-export const { Provider: SalesDataProvider, useGenericData: useSalesData } =
-  createGenericListDataContext<Sale>();
-
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;
 };
@@ -77,44 +71,48 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
         </Button>
         <NewSessionDialog terminalId={posTerminal.uuid.toString()} />
       </div>
+      {/* 
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Company</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
             <div className="text-2xl font-bold">
-              {posTerminal.company?.name || "N/A"}
+                {posTerminal.company?.name || "N/A"}
             </div>
-          </CardContent>
+            </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Location</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
             <div className="text-2xl font-bold">
-              {posTerminal.locationDescription || "Not specified"}
+                {posTerminal.locationDescription || "Not specified"}
             </div>
-          </CardContent>
+            </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Serial Number</CardTitle>
             <Hash className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+            </CardHeader>
+            <CardContent>
             <div className="text-2xl font-bold">
-              {posTerminal.serialNumber || "N/A"}
+                {posTerminal.serialNumber || "N/A"}
             </div>
-          </CardContent>
+            </CardContent>
         </Card>
-      </div>
+        </div>
+
+
+        */}
     </div>
   );
 }
