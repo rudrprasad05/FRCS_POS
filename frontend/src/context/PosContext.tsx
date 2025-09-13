@@ -143,7 +143,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Track changes
   useEffect(() => {
-    console.log(cart, products, session);
     const currentHash = hash({ ...cart, products });
     if (!initialHashRef.current) {
       initialHashRef.current = currentHash;
@@ -152,8 +151,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }, [cart, products, session]);
 
   function setInitialState(init: PosSessionWithProducts) {
-    console.log(init);
-    // setProducts(init.products); // TODO bug?
     setSession(init.posSession);
     initialHashRef.current = hash({ ...init, products });
   }

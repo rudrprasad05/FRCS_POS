@@ -27,6 +27,8 @@ export interface Product extends BaseModel {
 
   batches?: ProductBatch[];
   saleItems?: SaleItem[];
+
+  maxStock?: number;
 }
 
 export interface Media extends BaseModel {
