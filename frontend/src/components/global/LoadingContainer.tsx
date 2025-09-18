@@ -33,6 +33,19 @@ export function LoadingCard() {
   );
 }
 
+export function LoadingProductsPosCard() {
+  return (
+    <div className="flex flex-col space-y-3 bg-card rounded-lg">
+      <Skeleton className="h-full aspect-square w-full rounded-t-xl rounded-b-none bg-muted-foreground/60" />
+      <div className="space-y-2 p-4">
+        <Skeleton className="h-4 w-full  bg-muted-foreground/60" />
+
+        <Skeleton className="h-4 w-3/5  bg-muted-foreground/60" />
+      </div>
+    </div>
+  );
+}
+
 export function SmallMediaLoadingCard() {
   return (
     <div className="flex flex-col space-y-3  bg-white rounded-lg">

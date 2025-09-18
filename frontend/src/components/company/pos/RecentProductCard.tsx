@@ -64,9 +64,12 @@ export function RecentProductCard({ item }: { item: Product }) {
           )}
         </div>
         <div className="p-4 flex-1/2 flex flex-col">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-start">
             <h3 className="text-xl font-semibold mb-2">
-              {item.name as string}
+              <div>{item.name as string}</div>
+              <div className="text-xs font-light">
+                SKU: {item.sku as string}
+              </div>
             </h3>
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-2">

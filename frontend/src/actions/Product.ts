@@ -16,6 +16,7 @@ export async function GetAllProducts(
   query?: QueryObject,
   forPos?: boolean
 ): Promise<ApiResponse<Product[]>> {
+  console.log("hit");
   return RequestWrapper<Product[]>("POST", `product/get-all`, {
     query,
     data: {

@@ -5,13 +5,17 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { usePosSession } from "@/context/PosContext";
-import { Search } from "lucide-react";
+import { RefreshCcw, Search } from "lucide-react";
 import PosHeader from "./PosHeader";
 import { RecentProductCard } from "./RecentProductCard";
 import SaleItemCard from "./SaleItemCard";
 import SelectPaymentOptionDialog from "./SelectPaymentOption";
-import { Product } from "@/types/models";
-import { useEffect, useRef, useState } from "react";
+import { ESortBy, Product } from "@/types/models";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import { LoadingProductsPosCard } from "@/components/global/LoadingContainer";
 
 interface ICheckoutData {
   taxTotal: number;
@@ -20,13 +24,64 @@ interface ICheckoutData {
 }
 
 export default function PosTerminal() {
-  const { cart, products, moneyValues, loadMore, removeProduct } =
-    usePosSession();
-
+  const {
+    cart,
+    products,
+    moneyValues,
+    loadMore,
+    pagination,
+    setPagination,
+    isProductsLoading,
+  } = usePosSession();
   const { taxTotal, total, subtotal } = moneyValues;
-  const [isLoadingNewProducts, setIsLoadingNewProducts] = useState(false);
-
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [search, setSearch] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const sessionId = Number(params.sessionId);
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") ?? "";
+    setSearch(urlSearch);
+    if (urlSearch) {
+      setPagination((prev) => ({ ...prev, pageNumber: 1, search: urlSearch }));
+    }
+  }, [searchParams, setPagination]);
+
+  const handleSearch = useCallback(() => {
+    const trimmed = search.trim();
+    router.push(`?search=${encodeURIComponent(trimmed)}`, { scroll: false });
+    setPagination((prev) => ({ ...prev, pageNumber: 1, search: trimmed }));
+  }, [search, router, setPagination]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  };
+
+  const handleFilterReset = () => {
+    router.push("?");
+    setSearch("");
+    setPagination((prev) => ({
+      ...prev,
+      pageNumber: 1,
+      search: undefined,
+    }));
+    queryClient.invalidateQueries({
+      queryKey: [
+        "posSessionProducts",
+        sessionId,
+        { ...pagination, search: undefined },
+      ],
+      exact: false,
+    });
+  };
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
@@ -35,9 +90,7 @@ export default function PosTerminal() {
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting) {
-          setIsLoadingNewProducts(true);
           loadMore(); // call context loadMore function
-          setIsLoadingNewProducts(false);
         }
       },
       {
@@ -64,10 +117,27 @@ export default function PosTerminal() {
           <Card className="bg-transparent border-none flex flex-col flex-1 min-h-0">
             <CardHeader className="flex-shrink-0 flex items-center w-full gap-6">
               <CardTitle className="text-primary">Product Catalog</CardTitle>
-              <div className="flex items-center gap-2 grow">
-                <Input placeholder="Search by barcode or SKU" />
-                <Search />
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
+                <Input
+                  value={search}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search..."
+                  className="pl-10"
+                />
               </div>
+              <Button
+                variant="outline"
+                onClick={handleFilterReset}
+                disabled={
+                  !pagination.search &&
+                  !pagination.isDeleted &&
+                  pagination.sortBy === ESortBy.DSC
+                }
+              >
+                <RefreshCcw />
+              </Button>
             </CardHeader>
 
             <ScrollArea className="flex-1 min-h-0">
@@ -78,8 +148,11 @@ export default function PosTerminal() {
                     item={product as Product}
                   />
                 ))}
+                {isProductsLoading &&
+                  Array.from({ length: 6 }, (_, i) => (
+                    <LoadingProductsPosCard key={i} />
+                  ))}
               </div>
-              {isLoadingNewProducts && <>i slaoding</>}
               <div ref={loadMoreRef}></div>
             </ScrollArea>
           </Card>
