@@ -73,13 +73,24 @@ namespace FrcsPos.Repository
         }
         public async Task<ApiResponse<PosSessionDTO>> ResumePosSession(ResumePosSession request)
         {
+            var now = DateTime.UtcNow;
             var posSession = await _context.PosSessions
                 .Include(ps => ps.PosUser)
-                .FirstOrDefaultAsync(a => a.UUID == request.PosSessionId && a.IsActive == true);
+                .FirstOrDefaultAsync(a =>
+                    a.UUID == request.PosSessionId &&
+                    a.IsActive == true
+                );
 
             if (posSession == null)
             {
                 return ApiResponse<PosSessionDTO>.Fail(message: "no active sessions found");
+            }
+
+            if (posSession.ConnectionTimeOut < now)
+            {
+                posSession.IsActive = false;
+                await _context.SaveChangesAsync();
+                return ApiResponse<PosSessionDTO>.Fail(message: "session expired");
             }
 
             var user = posSession.PosUser;

@@ -53,6 +53,7 @@ export function CompanyDashboardStats() {
   useEffect(() => {
     const getData = async () => {
       const data = await GetCompanyAdminDashboard({ companyName });
+      console.log(data);
       setdata(data.data);
       setLoading(false);
     };
@@ -88,7 +89,7 @@ export function CompanyDashboardStats() {
           />
           <CompanyDashboardStatsCard
             input={{
-              title: "Sales Last Month",
+              title: "Sales Last Month (FJD)",
               val: data?.totalSales ?? 0,
               icon: Coins,
               isLoading: !data,

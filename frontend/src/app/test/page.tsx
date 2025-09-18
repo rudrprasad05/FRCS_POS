@@ -25,15 +25,15 @@ const developers = [
   {
     id: "S11219885",
     name: "Rahul Chand",
-    position: "Project Manager",
-    image: "/file.svg",
+    position: "Tester",
+    image: "/test/rahul.jpg",
     skills: ["MySQL", "DB Design", "DevOpps", "Azure", "GitHub"],
   },
   {
     id: "S11208753",
-    name: "Saurav Shankar",
+    name: "Business Analyst",
     position: "Project Manager",
-    image: "/file.svg",
+    image: "/test/saurav.jpg",
     skills: ["Unit Test", "Regression", "MS Word", "Risk Analysis"],
   },
 ];

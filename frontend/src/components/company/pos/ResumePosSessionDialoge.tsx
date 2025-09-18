@@ -24,11 +24,12 @@ import { useAuth } from "@/context/UserContext";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, Play } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { validate as uuidValidate } from "uuid";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IResumeSession {
   uuid: string;
@@ -40,9 +41,9 @@ export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect");
+  const params = useParams();
+  const posId = String(params.posId);
+  const queryClient = useQueryClient();
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInForm),
@@ -54,37 +55,35 @@ export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
 
   async function onSubmit(values: SignInFormType) {
     setLoading(true);
-    try {
-      const res = await ResumeSession(
-        {
-          PosTerminalUUID: uuid,
-          email: values.email,
-          password: values.password,
-        },
-        uuid
-      );
 
+    const res = await ResumeSession(
+      {
+        PosTerminalUUID: uuid,
+        email: values.email,
+        password: values.password,
+      },
+      uuid
+    );
+
+    if (res.success) {
       const url = res.data?.uuid;
       if (uuidValidate(url)) {
-        toast.success("Session created. Redirecting");
         router.push(`session/${url}`);
+        toast.success("Session created. Redirecting");
       } else {
         toast.error("Session url was invalid");
-        console.error("Invalid UUID:", url);
       }
-    } catch (error) {
-      console.error("Failed to start session:", error);
-      toast.error("Failed to start session");
-    } finally {
+    } else {
+      toast.error("An error occured", { description: res.message });
       setLoading(false);
       setOpen(false);
+      //   getPosSessions
+      queryClient.invalidateQueries({
+        queryKey: ["getPosSessions", posId],
+        exact: false,
+      });
     }
   }
-
-  useEffect(() => {
-    console.log("redirect prefecthed");
-    router.prefetch("/redirect");
-  }, [router]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
