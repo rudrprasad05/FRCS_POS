@@ -10,6 +10,7 @@ using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using FrcsPos.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -19,16 +20,22 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IUserContext _userContext;
+        private readonly UserManager<User> _userManager;
+
 
         public PosTerminalRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
-            IUserContext userContext
+            IUserContext userContext,
+            UserManager<User> userManager
+
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
             _userContext = userContext;
+            _userManager = userManager;
+
         }
 
         public async Task<ApiResponse<PosTerminalDTO>> CreatePosTerminalAsync(NewPosTerminalRequest request)
@@ -37,12 +44,32 @@ namespace FrcsPos.Repository
             var company = await _context.Companies
                 .Include(c => c.PosTerminals)
                 .FirstOrDefaultAsync(c => c.Name == request.CompanyName);
-
             if (company == null)
             {
                 return ApiResponse<PosTerminalDTO>.NotFound();
             }
 
+            // get and verify user
+            var user = await _userManager.FindByIdAsync(_userContext.UserId ?? "");
+            if (user == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "Invalid credentials");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var isAdmin = roles.Contains("admin");
+            if (!isAdmin)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "Invalid credentials");
+            }
+
+            var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == company.Id && x.UserId == user.Id);
+            if (companyUser == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "not associated with current company");
+            }
+
+            // auto generate the name according to the index of the last created terminal
             var lastTerminal = company.PosTerminals
                 .OrderByDescending(t => t.CreatedOn)
                 .FirstOrDefault();

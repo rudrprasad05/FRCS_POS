@@ -299,6 +299,14 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setCart([]);
+    queryClient.invalidateQueries({
+      queryKey: [
+        "posSessionProducts",
+        session.id,
+        { ...pagination, search: undefined },
+      ],
+      exact: false,
+    });
     initialHashRef.current = hash({ ...cart, products: [] });
     setHasChanged(false);
 

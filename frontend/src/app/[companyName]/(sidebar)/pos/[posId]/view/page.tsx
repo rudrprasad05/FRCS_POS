@@ -58,8 +58,8 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <H1>{posTerminal.name}</H1>
-            <Badge variant={!posTerminal.isActive ? "default" : "secondary"}>
-              {!posTerminal.isDeleted ? "Active" : "Inactive"}
+            <Badge variant={posTerminal.isActive ? "default" : "secondary"}>
+              {posTerminal.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
         </div>
@@ -69,7 +69,7 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
             Edit Terminal
           </Link>
         </Button>
-        <NewSessionDialog terminalId={posTerminal.uuid.toString()} />
+        <NewSessionDialog terminal={posTerminal} />
       </div>
     </div>
   );

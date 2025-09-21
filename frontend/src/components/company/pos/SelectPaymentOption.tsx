@@ -29,14 +29,14 @@ interface NewSessionDialogProps {
 
 export default function SelectPaymentOptionDialog() {
   const [open, setOpen] = useState(false);
-  const { products, isSaving, addProduct, checkout, removeProduct } =
+  const { cart, isSaving, addProduct, checkout, removeProduct } =
     usePosSession();
   const [paymentOption, setPaymentOption] = useState("cash");
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          disabled={isSaving || products.length == 0}
+          disabled={isSaving || cart.length == 0}
           className="gap-2 w-full mt-2"
         >
           <CheckCircle className="h-4 w-4" />
@@ -66,10 +66,7 @@ export default function SelectPaymentOptionDialog() {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={checkout}
-            disabled={isSaving || products.length == 0}
-          >
+          <Button onClick={checkout} disabled={isSaving || cart.length == 0}>
             Finish Checkout {isSaving && <Loader2 className="animate-spin" />}
           </Button>
         </DialogFooter>

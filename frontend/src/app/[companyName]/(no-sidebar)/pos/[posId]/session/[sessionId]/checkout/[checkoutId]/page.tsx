@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sale } from "@/types/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { Download, Check, ArrowLeftIcon, Mail, Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
@@ -57,6 +57,7 @@ export default function ReceiptPage() {
   const companyName = decodeURIComponent(params.companyName as string);
   const checkoutId = String(params.checkoutId);
   const sessionId = String(params.sessionId);
+  const router = useRouter();
 
   const queryClient = useQueryClient();
 
@@ -251,7 +252,7 @@ export default function ReceiptPage() {
             <Button
               variant="outline"
               className=" bg-transparent"
-              onClick={() => window.history.back()}
+              onClick={() => router.back()}
             >
               <ArrowLeftIcon /> Back
             </Button>
