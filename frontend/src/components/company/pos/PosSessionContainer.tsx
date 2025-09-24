@@ -3,11 +3,11 @@
 import { GetPosSession } from "@/actions/PosSession";
 import { usePosSession } from "@/context/PosContext";
 import { WebSocketUrl } from "@/lib/utils";
+import { Product, SaleItemOmitted } from "@/types/models";
 import * as signalR from "@microsoft/signalr";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import PosTerminal from "./PosTerminal";
-import { Product, SaleItemOmitted } from "@/types/models";
 
 export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const [loading, setLoading] = useState(true);
@@ -17,8 +17,27 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     setIsTerminalConnectedToServer,
     setIsScannerConnectedToServer,
     addProduct,
-    products,
   } = usePosSession();
+
+  const productsRef = useRef<Product[]>([]);
+
+  const handleProductAdd = useCallback(
+    async (scan: string) => {
+      const product = productsRef.current.find((p) => p.barcode === scan);
+      if (!product) return;
+      const sI: SaleItemOmitted = {
+        productId: product.id,
+        product: product,
+        quantity: 1,
+        unitPrice: product.price,
+        taxRatePercent: product.taxCategory?.ratePercent as number,
+        lineTotal: product.price,
+        isDeleted: false,
+      };
+      addProduct(sI);
+    },
+    [productsRef, addProduct]
+  );
 
   useEffect(() => {
     const getData = async () => {
@@ -31,9 +50,8 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     };
 
     getData();
-  }, []);
+  }, [setInitialState, uuid]);
 
-  // 🔥 Setup SignalR once we have UUID
   useEffect(() => {
     if (!uuid) return;
 
@@ -78,31 +96,12 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       setIsTerminalConnectedToServer(false);
       connection.stop();
     };
-  }, [uuid]);
-
-  const productsRef = useRef<Product[]>([]);
-  useEffect(() => {
-    // productsRef.current = products;
-  }, [products]);
-
-  const handleProductAdd = (scan: string) => {
-    const product = productsRef.current.find((p) => p.barcode === scan);
-    if (!product) return;
-    handleAddProduct(product);
-  };
-
-  const handleAddProduct = (product: Product) => {
-    let sI: SaleItemOmitted = {
-      productId: product.id,
-      product: product,
-      quantity: 1,
-      unitPrice: product.price,
-      taxRatePercent: product.taxCategory?.ratePercent as number,
-      lineTotal: product.price,
-      isDeleted: false,
-    };
-    addProduct(sI);
-  };
+  }, [
+    uuid,
+    handleProductAdd,
+    setIsScannerConnectedToServer,
+    setIsTerminalConnectedToServer,
+  ]);
 
   if (loading) return <>loading</>;
 

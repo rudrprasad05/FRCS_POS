@@ -1,6 +1,5 @@
 "use client";
-import { CreateNewPosSession } from "@/actions/PosSession";
-import { H2, LargeText, MutedText, P } from "@/components/font/HeaderFonts";
+import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -12,26 +11,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { usePosSession } from "@/context/PosContext";
-import { CheckCircle, Loader2, Play } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import { validate as uuidValidate } from "uuid";
-
-interface NewSessionDialogProps {
-  terminalId: string;
-}
 
 export default function SelectPaymentOptionDialog() {
   const [open, setOpen] = useState(false);
-  const { cart, isSaving, addProduct, checkout, removeProduct } =
-    usePosSession();
-  const [paymentOption, setPaymentOption] = useState("cash");
+  const { cart, isSaving, checkout } = usePosSession();
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -49,10 +37,7 @@ export default function SelectPaymentOptionDialog() {
           <DialogDescription>Select a payment option below</DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <RadioGroup
-            defaultValue="cash"
-            onValueChange={(val) => setPaymentOption(val)}
-          >
+          <RadioGroup defaultValue="cash">
             <Card className="flex flex-row items-center space-x-2 px-4 gap-2">
               <RadioGroupItem value="cash" id="cash" />
               <div className="flex flex-col gap-2">

@@ -3,24 +3,18 @@
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
+import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
+import ConfigTab from "@/components/company/warehouse/edit/ConfigTab";
+import { EditorTab } from "@/components/company/warehouse/edit/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { Product, TaxCategory, Warehouse } from "@/types/models";
+import { Warehouse } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
-import { EditorTab } from "@/components/company/warehouse/edit/EditTab";
-import ConfigTab from "@/components/company/warehouse/edit/ConfigTab";
-
-export const {
-  Provider: ProductEditorProvider,
-  useGenericData: useProductEditorProvider,
-} = createGenericSingleDataContext<Product>();
 
 export default function WarehouseEditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
@@ -52,7 +46,7 @@ export default function WarehouseEditorPage() {
           <h1 className="text-3xl font-bold">Edit Warehouse</h1>
         </div>
         <p className="text-muted-foreground">
-          You are editing the Warehouse "{warehouse?.name}"
+          You are editing the Warehouse &quot;{warehouse?.name}&quot;
         </p>
       </div>
       <Tabs

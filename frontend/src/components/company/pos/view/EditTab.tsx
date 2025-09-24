@@ -1,15 +1,11 @@
 "use client";
 
 import { EditTerminal, GetPosTerminalById } from "@/actions/PosTerminal";
-import { CreateProduct, EditProduct } from "@/actions/Product";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,21 +13,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import { PosTerminal, Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Asterisk } from "lucide-react";
-import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -60,7 +47,7 @@ export function EditorTab() {
   const params = useParams();
   const posId = String(params.posId);
 
-  const { data, isLoading, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ["editTerminal", posId],
     queryFn: () => GetPosTerminalById(posId),
     staleTime: FIVE_MINUTE_CACHE,

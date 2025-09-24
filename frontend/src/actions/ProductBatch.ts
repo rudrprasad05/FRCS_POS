@@ -1,15 +1,7 @@
-import {
-  ApiResponse,
-  Company,
-  Product,
-  ProductBatch,
-  QueryObject,
-  Warehouse,
-} from "@/types/models";
-import { RequestWrapper } from "./RequestWrapper";
-import { NewWarehouseType } from "@/components/company/warehouse/NewWarehouseDialoge";
+import { NewBatchFormData } from "@/components/company/warehouse/batch/new/NewBatchContainer";
+import { ApiResponse, ProductBatch, QueryObject } from "@/types/models";
 import { ILoadPreCreationInfo } from "@/types/res";
-import { NewBatchFormData } from "@/app/[companyName]/(sidebar)/warehouse/[warehouseId]/batch/new/page";
+import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllBatchesByWarehouse(
   query?: QueryObject

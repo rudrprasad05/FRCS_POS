@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
 export const WelcomeToast = () => {
-  toast.custom((t) => (
+  toast.custom(() => (
     <div
       className={`max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
     >

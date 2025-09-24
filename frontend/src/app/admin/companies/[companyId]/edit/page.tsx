@@ -1,14 +1,13 @@
 "use client";
 
 import { GetFullCompanyByUUID } from "@/actions/Product";
-import { GetAllAdmins } from "@/actions/User";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import ConfigTab from "@/components/superadmin/companies/ConfigTab";
 import { EditorTab } from "@/components/superadmin/companies/EditTab";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { Company, User } from "@/types/models";
+import { Company } from "@/types/models";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
@@ -45,7 +44,7 @@ export default function EditorPage() {
           <h1 className="text-3xl font-bold">Edit Company</h1>
         </div>
         <p className="text-muted-foreground">
-          You are editing the product "{company?.name}"
+          You are editing the product &quot;{company?.name}&quot;
         </p>
       </div>
       <Tabs

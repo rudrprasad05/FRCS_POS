@@ -1,25 +1,24 @@
 "use client";
 
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { GetAllCompanyPosTerminals } from "@/actions/PosTerminal";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { H1, P } from "@/components/font/HeaderFonts";
+import { DataTable } from "@/components/global/DataTable";
+import { TableSkeleton } from "@/components/global/LoadingContainer";
+import PaginationSection from "@/components/global/PaginationSection";
+import { Header } from "@/components/global/TestHeader";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import {
   ApiResponse,
   ESortBy,
-  MetaData,
   PosTerminal,
   QueryObject,
   UserRoles,
 } from "@/types/models";
-import { H1, P } from "@/components/font/HeaderFonts";
-import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 import NewPosDialoge from "./NewPosDialoge";
-import { TableSkeleton } from "@/components/global/LoadingContainer";
-import { DataTable } from "@/components/global/DataTable";
 import { columns } from "./PosTerminalDataColumns";
-import PaginationSection from "@/components/global/PaginationSection";
-import { Header } from "@/components/global/TestHeader";
 
 export default function POSSection() {
   const params = useParams();

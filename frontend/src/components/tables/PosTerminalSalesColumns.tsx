@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import type { Sale } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 
 import Link from "next/link";
 

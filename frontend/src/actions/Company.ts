@@ -1,3 +1,4 @@
+import { EditCompanyData } from "@/components/superadmin/companies/EditTab";
 import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
 import { axiosGlobal } from "@/lib/axios";
 import {
@@ -7,7 +8,6 @@ import {
   QueryObject,
 } from "@/types/models";
 import { RequestWrapper } from "./RequestWrapper";
-import { EditCompanyData } from "@/components/superadmin/companies/EditTab";
 
 export async function GetAllCompanies(
   query?: QueryObject
@@ -21,7 +21,7 @@ export async function GetAllCompanies(
 export async function GetCompanyByAdminUserId(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  let query: QueryObject = {
+  const query: QueryObject = {
     uuid: uuid,
   };
   return RequestWrapper<Company>("GET", `company/get-one-by-admin-id`, {

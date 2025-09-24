@@ -1,34 +1,20 @@
 "use client";
+import { GetSaleByCompany } from "@/actions/Sale";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { PackagePlus } from "lucide-react";
-import { GetAllProducts } from "@/actions/Product";
 import { Header } from "@/components/global/TestHeader";
-import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import {
-  ApiResponse,
-  ESortBy,
-  Product,
-  QueryObject,
-  Sale,
-  UserRoles,
-} from "@/types/models";
+import { ApiResponse, ESortBy, QueryObject, Sale } from "@/types/models";
 import {
   useQuery,
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
-import { GetSaleByCompany } from "@/actions/Sale";
 
 export default function CompanySalesSection() {
   const params = useParams();

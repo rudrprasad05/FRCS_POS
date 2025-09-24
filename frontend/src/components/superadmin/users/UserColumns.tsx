@@ -1,26 +1,12 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Edit, Loader2, Trash } from "lucide-react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { ColumnDef } from "@tanstack/react-table";
+import { Edit } from "lucide-react";
 
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { Company, User, UserRoles } from "@/types/models";
 import { Badge } from "@/components/ui/badge";
+import { User, UserRoles } from "@/types/models";
+import Link from "next/link";
 
 export const columns: ColumnDef<User>[] = [
   {

@@ -1,13 +1,10 @@
 "use client";
 
 import { EditCompany } from "@/actions/Company";
-import { EditProduct } from "@/actions/Product";
 import { GetUnAssignedUsers } from "@/actions/User";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -26,20 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Company,
-  Product,
-  QueryObject,
-  TaxCategory,
-  User,
-  UserRoles,
-} from "@/types/models";
+import { Company, QueryObject, User, UserRoles } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Asterisk, Loader2, Plus } from "lucide-react";
-import Image from "next/image";
+import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -93,7 +82,7 @@ export function EditorTab({ company }: { company: Company }) {
       setLoading(false);
     };
     getData();
-  }, []);
+  }, [company.adminUserId, company.adminUser, form]);
 
   const onSubmit = async (data: EditCompanyData) => {
     setIsSubmitting(true);

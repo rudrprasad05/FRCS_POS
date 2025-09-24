@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ImageIcon, Upload } from "lucide-react";
+import Image from "next/image";
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 
 export default function AddMediaDialoge({
@@ -126,7 +127,9 @@ export default function AddMediaDialoge({
           ) : (
             <div className="space-y-4">
               <div className="relative rounded-lg overflow-hidden border">
-                <img
+                <Image
+                  width={200}
+                  height={200}
                   src={previewUrl! || "/placeholder.svg"}
                   alt="Preview"
                   className="w-full h-48 object-cover"

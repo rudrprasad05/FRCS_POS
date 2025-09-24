@@ -1,17 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { usePosSession } from "@/context/PosContext";
-import { Product, SaleItem, SaleItemOmitted } from "@/types/models";
+import { Product, SaleItemOmitted } from "@/types/models";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import React from "react";
 
 export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
   const { cart, addProduct, deleteProduct, removeProduct } = usePosSession();
 
   const handleAddProduct = (product: Product) => {
-    let sI: SaleItemOmitted = {
+    const sI: SaleItemOmitted = {
       productId: product.id,
       product: product,
       quantity: 1,

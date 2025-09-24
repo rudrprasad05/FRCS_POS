@@ -1,8 +1,7 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React from "react";
+import { ActivateProduct, SoftDeleteProduct } from "@/actions/Product";
+import { ConfirmDialog } from "@/components/global/ConfirmDialog";
 import {
   Card,
   CardContent,
@@ -10,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Product } from "@/types/models";
-import { ActivateProduct, SoftDeleteProduct } from "@/actions/Product";
-import { ConfirmDialog } from "@/components/global/ConfirmDialog";
 import { Check, Trash } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -97,7 +96,7 @@ export default function ConfigTab({ product }: { product: Product }) {
                   ["products", companyName],
                   ["editProduct", product.uuid],
                 ]}
-                onConfirm={async (uuid) => {
+                onConfirm={async () => {
                   return await SoftDeleteProduct(product.uuid);
                 }}
               />
@@ -132,7 +131,7 @@ export default function ConfigTab({ product }: { product: Product }) {
                   ["products", companyName],
                   ["editProduct", product.uuid],
                 ]}
-                onConfirm={async (uuid) => {
+                onConfirm={async () => {
                   return await ActivateProduct(product.uuid);
                 }}
               />

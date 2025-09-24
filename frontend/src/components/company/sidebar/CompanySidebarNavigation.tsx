@@ -92,7 +92,7 @@ export function CompanySidebarNavigation() {
     },
   ];
   console.log(user?.role);
-  let navArr =
+  const navArr =
     user?.role?.toUpperCase() === UserRoles.ADMIN
       ? adminNavigationItems
       : cashierNavigationItems;

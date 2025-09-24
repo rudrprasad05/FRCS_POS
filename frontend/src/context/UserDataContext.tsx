@@ -1,9 +1,10 @@
 "use client";
 import { GetAllAdmins } from "@/actions/User";
-import { User, MetaData } from "@/types/models";
+import { MetaData, User } from "@/types/models";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -40,7 +41,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     totalPages: 0,
   });
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     setUsers([]);
     const res = await GetAllAdmins({
@@ -56,11 +57,11 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       ),
     }));
     setLoading(false);
-  };
+  }, [setLoading, setPagination, pagination]);
 
   useEffect(() => {
     refresh();
-  }, [pagination.pageNumber, pagination.pageSize]);
+  }, [pagination.pageNumber, pagination.pageSize, refresh]);
 
   return (
     <UserDataContext.Provider

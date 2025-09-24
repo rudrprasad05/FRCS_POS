@@ -60,7 +60,7 @@ export default function AddUsersToCompanyDialoge() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["editCompany", companyId],
     queryFn: () => GetFullCompanyByUUID(companyId),
     staleTime: FIVE_MINUTE_CACHE,

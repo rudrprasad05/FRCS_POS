@@ -1,7 +1,7 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   Edit,
@@ -11,10 +11,10 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-import { Product } from "@/types/models";
-import Link from "next/link";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Product } from "@/types/models";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import Barcode from "react-barcode";
 
@@ -39,45 +39,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     header: "Image",
     cell: ({ row }) => {
       const company = row.original;
-      const [isImageValid, setIsImageValid] = useState(true);
-      const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-      console.log(company);
-
-      return (
-        <div className="relative object-cover aspect-square h-16 w-full rounded-md overflow-hidden">
-          {isImageValid ? (
-            <>
-              <Image
-                width={100}
-                height={100}
-                src={company.media?.url as string}
-                onError={(e) => {
-                  e.currentTarget.onerror = null; // prevent infinite loop
-                  setIsImageValid(false);
-                }}
-                onLoad={() => setIsImageLoaded(true)}
-                alt={"image"}
-                className={cn(
-                  "w-full h-full object-cover",
-                  isImageLoaded ? "opacity-100" : "opacity-0"
-                )}
-              />
-              {!isImageLoaded && (
-                <div
-                  className={cn(
-                    "absolute top-0 left-0 w-full h-full object-cover  animate-pulse"
-                  )}
-                ></div>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center ">
-              <ImageIcon className="h-4 w-4" />
-            </div>
-          )}
-        </div>
-      );
+      <CompanyCell company={company} />;
     },
   },
   {
@@ -214,3 +176,39 @@ export function HandleBarcode({ barcode }: { barcode: string }) {
     </Dialog>
   );
 }
+
+const CompanyCell = ({ company }: { company: any }) => {
+  const [isImageValid, setIsImageValid] = useState(true);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  return (
+    <div className="relative object-cover aspect-square h-16 w-full rounded-md overflow-hidden">
+      {isImageValid ? (
+        <>
+          <Image
+            width={100}
+            height={100}
+            src={company.media?.url as string}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              setIsImageValid(false);
+            }}
+            onLoad={() => setIsImageLoaded(true)}
+            alt="image"
+            className={cn(
+              "w-full h-full object-cover",
+              isImageLoaded ? "opacity-100" : "opacity-0"
+            )}
+          />
+          {!isImageLoaded && (
+            <div className="absolute top-0 left-0 w-full h-full object-cover animate-pulse"></div>
+          )}
+        </>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center ">
+          <ImageIcon className="h-4 w-4" />
+        </div>
+      )}
+    </div>
+  );
+};

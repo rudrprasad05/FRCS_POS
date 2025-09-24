@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  GetCompanyAdminDashboard,
-  GetSuperAdminDashboard,
-} from "@/actions/SuperAdminDashboard";
+import { GetCompanyAdminDashboard } from "@/actions/SuperAdminDashboard";
 import { SmallLoadingHorizontialCard } from "@/components/global/LoadingContainer";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SuperAdminDashboardDTO } from "@/types/res";
@@ -13,7 +9,6 @@ import {
   AlertCircle,
   AlertTriangle,
   Box,
-  BuildingIcon,
   CheckCircle,
   Coins,
   Database,
@@ -23,13 +18,12 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { QuickActions } from "./QuickActions";
-import CompanyDashboardStatsCard from "./CompanyDashboardStatsCard";
-import { NotificationTypes, UserRoles } from "@/types/models";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { formatFileSize } from "@/lib/utils";
-import { Notification } from "@/types/models";
+import { Notification, NotificationTypes, UserRoles } from "@/types/models";
 import { useParams } from "next/navigation";
+import CompanyDashboardStatsCard from "./CompanyDashboardStatsCard";
+import { QuickActions } from "./QuickActions";
 
 function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
@@ -58,7 +52,7 @@ export function CompanyDashboardStats() {
       setLoading(false);
     };
     getData();
-  }, []);
+  }, [companyName]);
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-6">

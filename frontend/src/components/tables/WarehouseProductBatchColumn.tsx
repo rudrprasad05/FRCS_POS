@@ -1,17 +1,10 @@
 "use client";
+import type { Product, ProductBatch } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import type {
-  PosSession,
-  Product,
-  ProductBatch,
-  Sale,
-  User,
-} from "@/types/models";
+import { Pause } from "lucide-react";
+import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
 import { P } from "../font/HeaderFonts";
 import { Button } from "../ui/button";
-import { Pause, Play, Square, SquarePauseIcon } from "lucide-react";
-import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
 
 export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
   {

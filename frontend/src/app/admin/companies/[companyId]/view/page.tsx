@@ -5,7 +5,6 @@ import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H3, MutedText } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import AddUsersToCompanyDialoge from "@/components/superadmin/companies/AddUsersToCompanyDialoge";
-import NewCompanyDialoge from "@/components/superadmin/companies/NewCompanyDialoge";
 import { CompanyUserColumn } from "@/components/tables/CompaniesColumns";
 import { PosTerminalOnlyColumns } from "@/components/tables/PosTerminalColumns";
 import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
@@ -17,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { Company } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";

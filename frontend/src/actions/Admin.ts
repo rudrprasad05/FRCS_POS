@@ -2,7 +2,7 @@
 
 import { axiosGlobal } from "@/lib/axios";
 import { ApiResponse } from "@/types/models";
-import { AdminDashboardDTO, SuperAdminDashboardDTO } from "@/types/res";
+import { AdminDashboardDTO } from "@/types/res";
 import { GetToken } from "./User";
 
 export async function GetAdminDashboardByCompany(): Promise<

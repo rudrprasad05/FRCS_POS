@@ -1,27 +1,21 @@
 "use client";
 
+import { LoadingProductsPosCard } from "@/components/global/LoadingContainer";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { usePosSession } from "@/context/PosContext";
+import { ESortBy, Product } from "@/types/models";
+import { useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw, Search } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PosHeader from "./PosHeader";
 import { RecentProductCard } from "./RecentProductCard";
 import SaleItemCard from "./SaleItemCard";
 import SelectPaymentOptionDialog from "./SelectPaymentOption";
-import { ESortBy, Product } from "@/types/models";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
-import { LoadingProductsPosCard } from "@/components/global/LoadingContainer";
-
-interface ICheckoutData {
-  taxTotal: number;
-  subtotal: number;
-  total: number;
-}
 
 export default function PosTerminal() {
   const {

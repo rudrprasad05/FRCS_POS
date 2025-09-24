@@ -1,6 +1,4 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -8,25 +6,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  LayoutDashboard,
-  FileText,
-  Star,
-  Share2,
-  MessageSquare,
-  Database,
-  Tag,
-  Cake,
-  Bell,
-  Globe,
-  Cloud,
-  Trash2,
-  Building2,
-  UsersIcon,
-  Flag,
-  BookText,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  BookText,
+  Building2,
+  Flag,
+  LayoutDashboard,
+  UsersIcon,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navigationItems = [
   {
@@ -56,50 +45,8 @@ const navigationItems = [
   },
 ];
 
-const companyNavigationItems = [
-  {
-    title: "Inventory",
-    href: (companyId: string | number) => `/company/${companyId}/inventory`,
-    icon: Database,
-    subItems: [
-      {
-        title: "Summary",
-        href: (companyId: string | number) =>
-          `/company/${companyId}/inventory/summary`,
-      },
-      {
-        title: "Product Batches",
-        href: (companyId: string | number) =>
-          `/company/${companyId}/inventory/batches`,
-      },
-      {
-        title: "Low Stock",
-        href: (companyId: string | number) =>
-          `/company/${companyId}/inventory/low-stock`,
-      },
-      {
-        title: "Expiring Products",
-        href: (companyId: string | number) =>
-          `/company/${companyId}/inventory/expiring`,
-      },
-      {
-        title: "Stock Transfers",
-        href: (companyId: string | number) =>
-          `/company/${companyId}/inventory/transfers`,
-      },
-    ],
-  },
-];
-
 export function SidebarNavigation() {
   const pathname = usePathname();
-
-  // Check if we're in a company route
-  const companyMatch = pathname.match(/\/company\/([^\/]+)/);
-  const companyId = companyMatch ? companyMatch[1] : null;
-
-  // Determine which navigation items to show based on the route
-  const itemsToShow = companyId ? companyNavigationItems : navigationItems;
 
   return (
     <SidebarGroup className="h-full">

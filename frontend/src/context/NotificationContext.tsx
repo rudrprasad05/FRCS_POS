@@ -38,7 +38,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   );
   const [hasChanged, setHasChanged] = useState(false);
   const initialHashRef = useRef<string>(null);
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const currentHash = hash(notifications);
@@ -64,16 +63,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   }
 
   async function saveContext() {
-    setIsSaving(true);
     try {
       initialHashRef.current = hash(notifications);
       setHasChanged(false);
 
       toast.success("Saved successfully");
     } catch (error) {
+      console.log(error);
       toast.error("Error ocured. Changes not saved");
     }
-    setIsSaving(false);
   }
 
   return (

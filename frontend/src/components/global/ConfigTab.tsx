@@ -1,8 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React from "react";
+import { ConfirmDialog } from "@/components/global/ConfirmDialog";
 import {
   Card,
   CardContent,
@@ -10,11 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ApiResponse, BaseModel, Product } from "@/types/models";
-import { ActivateProduct, SoftDeleteProduct } from "@/actions/Product";
-import { ConfirmDialog } from "@/components/global/ConfirmDialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { BaseModel } from "@/types/models";
 import { Check, Trash } from "lucide-react";
-import { useParams } from "next/navigation";
 
 export default function ConfigTab({
   model,
@@ -102,7 +99,7 @@ export default function ConfigTab({
                 buttonVariant="destructive"
                 buttonIcon={<Trash />}
                 queryKeys={query}
-                onConfirm={async (uuid) => {
+                onConfirm={async () => {
                   return await deleteRequest(model.uuid);
                 }}
               />
@@ -134,7 +131,7 @@ export default function ConfigTab({
                 buttonVariant="default"
                 buttonIcon={<Check />}
                 queryKeys={query}
-                onConfirm={async (uuid) => {
+                onConfirm={async () => {
                   return await activateRequest(model.uuid);
                 }}
               />

@@ -1,6 +1,6 @@
 "use server";
 
-import { axiosGlobal } from "@/lib/axios";
+import { EditTerminalData } from "@/components/company/pos/view/EditTab";
 import {
   ApiResponse,
   PosSession,
@@ -8,11 +8,7 @@ import {
   QueryObject,
   Sale,
 } from "@/types/models";
-import { GetToken } from "./User";
-import { buildMediaQueryParams } from "@/lib/params";
 import { RequestWrapper } from "./RequestWrapper";
-import { EditTerminalData } from "@/components/company/pos/view/EditTab";
-import { uuid } from "zod";
 
 export async function GetPosTerminalById(
   uuid: string

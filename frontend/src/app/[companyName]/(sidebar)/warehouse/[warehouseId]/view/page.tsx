@@ -1,34 +1,20 @@
 "use client";
 import { GetAllBatchesByWarehouse } from "@/actions/ProductBatch";
 import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
-import NewSessionDialog from "@/components/company/pos/NewPosSessionDialoge";
 import WarehouseInfo from "@/components/company/warehouse/view/WarehouseInfo";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H1, H2, P } from "@/components/font/HeaderFonts";
+import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
 import { WarehouseProductBatchColumn } from "@/components/tables/WarehouseProductBatchColumn";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
   ESortBy,
-  ProductBatchDTO,
   UserRoles,
   type ProductBatch,
   type QueryObject,
@@ -39,23 +25,11 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
-import {
-  Box,
-  Boxes,
-  Building,
-  Edit,
-  Loader2,
-  MapPin,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-export const { Provider: BatchDataProvider, useGenericData: useBatchData } =
-  createGenericListDataContext<ProductBatch>();
 
 export default function WarehousePage() {
   const params = useParams();

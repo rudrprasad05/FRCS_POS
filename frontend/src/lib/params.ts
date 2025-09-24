@@ -1,4 +1,4 @@
-import { ESortBy, QueryObject } from "@/types/models";
+import { QueryObject } from "@/types/models";
 import qs from "qs";
 
 export const buildMediaQueryParams = (query?: QueryObject) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { CreateUser } from "@/actions/User";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -32,14 +32,7 @@ import { generateStrongPassword } from "@/lib/utils";
 import { User, UserRoles } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Copy,
-  CopyCheck,
-  File,
-  Loader2,
-  RotateCw,
-  UserPlus,
-} from "lucide-react";
+import { Copy, CopyCheck, File, Loader2, RotateCw } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";

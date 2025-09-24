@@ -7,19 +7,13 @@ import { GetPosTerminalById } from "@/actions/PosTerminal";
 import ConfigTab from "@/components/company/pos/view/ConfigTab";
 import { EditorTab } from "@/components/company/pos/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { PosTerminal, Product } from "@/types/models";
+import { PosTerminal } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
 import { use, useState } from "react";
 import { toast } from "sonner";
-
-export const {
-  Provider: ProductEditorProvider,
-  useGenericData: useProductEditorProvider,
-} = createGenericSingleDataContext<Product>();
 
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;
@@ -55,7 +49,7 @@ export default function EditorPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold">Edit Pos Terminal</h1>
         </div>
         <p className="text-muted-foreground">
-          You are editing the terminal "{terminal?.name}"
+          You are editing the terminal &quot;{terminal?.name}&quot;
         </p>
       </div>
       <Tabs

@@ -1,9 +1,9 @@
 "use client";
 
-import { EditProduct } from "@/actions/Product";
+import { CreateProduct } from "@/actions/Product";
+import { GetAllTaxCategories } from "@/actions/Tax";
 import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
-import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -16,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import {
   Select,
   SelectContent,
@@ -24,12 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Product, TaxCategory } from "@/types/models";
+import { TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
+import { Asterisk, PackagePlus } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -60,42 +58,45 @@ export const productSchema = z.object({
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
-export function EditorTab({
-  product,
-  taxes,
-}: {
-  product: Product;
-  taxes: TaxCategory[];
-}) {
-  console.log(product);
-  const params = useParams();
-  const companyName = decodeURIComponent(params.companyName as string);
+export default function EditProductContainer() {
+  const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
+  const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    product?.media?.url ?? null
-  );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const queryClient = useQueryClient();
   const [file, setFile] = useState<File | undefined>(undefined);
+  const params = useParams();
+  const companyName = params.companyName;
   const router = useRouter();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: product?.name,
-      sku: product?.sku,
-      barcode: product?.barcode as string,
-      price: String(product?.price),
-      taxCategoryId: String(product?.taxCategoryId),
-      isPerishable: product?.isPerishable,
+      name: "",
+      sku: "",
+      barcode: "",
+      price: "0",
+      taxCategoryId: "0",
+      isPerishable: false,
     },
   });
 
+  // Load tax categories on component mount
   useEffect(() => {
-    if (product?.media?.url) {
-      setPreviewUrl(product.media.url);
-    }
-  }, [product?.media?.url]);
+    const loadTaxCategories = async () => {
+      const response = await GetAllTaxCategories();
+
+      if (response.success && response.data) {
+        setTaxCategories(response.data as TaxCategory[]);
+      } else {
+        toast.error("Failed to get tax", { description: response.message });
+      }
+
+      setIsLoadingTaxCategories(false);
+    };
+
+    loadTaxCategories();
+  }, []);
 
   useEffect(() => {
     if (file && file.type.startsWith("image/")) {
@@ -105,12 +106,6 @@ export function EditorTab({
       setPreviewUrl("");
     }
   }, [file]);
-
-  const formValues = form.watch();
-
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -123,9 +118,7 @@ export function EditorTab({
     formData.append("Barcode", data.barcode as string);
     formData.append("IsPerishable", data.isPerishable ? "true" : "false");
     formData.append("TaxCategoryId", data.taxCategoryId as string);
-    formData.append("MediaId", String(product.mediaId));
-
-    console.log("fd", formData);
+    formData.append("CompanyName", companyName as string);
 
     if (data.image) {
       formData.append("File", data.image); // IFormFile
@@ -133,27 +126,31 @@ export function EditorTab({
 
     console.log("Submitting FormData:", formData);
 
-    const res = await EditProduct(formData, product.uuid);
+    const res = await CreateProduct(formData);
 
     if (res.success) {
-      queryClient.invalidateQueries({
-        queryKey: ["editProduct", product.uuid],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["products", companyName], // optionally include pagination
-        exact: false,
-      });
+      console.log(res);
       toast.success("Uploaded");
       router.back();
     } else {
-      toast.error("Failed to upload");
+      toast("Failed to upload");
     }
 
     setIsSubmitting(false);
   };
 
   return (
-    <div className="min-h-screen bg-background pt-4">
+    <div className="min-h-screen bg-background p-4">
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-2">
+          <PackagePlus className="text-primary h-6 w-6" />
+          <h1 className="text-3xl font-bold">New Product</h1>
+        </div>
+        <p className="text-muted-foreground">
+          Add a new product to your inventory system
+        </p>
+      </div>
+
       <div className="space-y-4">
         <div>
           <LargeText>Product Information</LargeText>
@@ -253,14 +250,21 @@ export function EditorTab({
                       <Select
                         onValueChange={field.onChange}
                         value={field.value ? field.value.toString() : ""}
+                        disabled={isLoadingTaxCategories}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={"Select VAT"} />
+                            <SelectValue
+                              placeholder={
+                                isLoadingTaxCategories
+                                  ? "Loading tax categories..."
+                                  : "Select VAT"
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {taxes.map((category) => (
+                          {taxCategories.map((category) => (
                             <SelectItem
                               key={category.id as number}
                               value={String(category.id)}
@@ -270,6 +274,12 @@ export function EditorTab({
                           ))}
                         </SelectContent>
                       </Select>
+                      {isLoadingTaxCategories && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+                          Loading tax categories...
+                        </div>
+                      )}
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -313,11 +323,14 @@ export function EditorTab({
               />
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || isLoadingTaxCategories}
+                >
                   {isSubmitting && (
                     <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   )}
-                  {isSubmitting ? "Editing..." : "Edit Product"}
+                  {isSubmitting ? "Creating Product..." : "Create Product"}
                 </Button>
                 <Button
                   type="button"
@@ -334,4 +347,8 @@ export function EditorTab({
       </div>
     </div>
   );
+}
+
+function RedStar() {
+  return <Asterisk className="w-2 h-2 text-rose-500 mb-auto ml-0 mr-auto" />;
 }

@@ -6,7 +6,6 @@ import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,

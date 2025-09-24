@@ -1,14 +1,6 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-  useRef,
-} from "react";
-import hash from "object-hash";
-import { toast } from "sonner";
-import { useParams, useRouter } from "next/navigation";
+import { Checkout } from "@/actions/PosSession";
+import { GetAllProducts } from "@/actions/Product";
+import { SaleStatus } from "@/types/enum";
 import {
   ApiResponse,
   ESortBy,
@@ -20,11 +12,19 @@ import {
   SaleItemOmitted,
 } from "@/types/models";
 import { NewCheckoutRequest } from "@/types/res";
-import { SaleStatus } from "@/types/enum";
-import { Checkout } from "@/actions/PosSession";
-import { init } from "next/dist/compiled/webpack/webpack";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { GetAllProducts, GetPosProducts } from "@/actions/Product";
+import { useParams, useRouter } from "next/navigation";
+import hash from "object-hash";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { toast } from "sonner";
 
 interface PosSessionContextType {
   session: PosSession;
@@ -153,7 +153,10 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }, [infiniteQuery.isLoading]);
 
   // Merge all pages into a single array
-  const products = infiniteQuery.data?.pages.flatMap((p) => p.data) ?? [];
+  const products = useMemo(
+    () => infiniteQuery.data?.pages.flatMap((p) => p.data) ?? [],
+    [infiniteQuery.data?.pages]
+  );
 
   const loadMore = () => {
     if (infiniteQuery.hasNextPage) infiniteQuery.fetchNextPage();
@@ -177,8 +180,8 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     let subtotal = 0,
       taxTotal = 0,
       total = 0;
-    for (const [index, item] of cart.entries()) {
-      let unitTotal = item.unitPrice * item.quantity;
+    for (const item of cart) {
+      const unitTotal = item.unitPrice * item.quantity;
       subtotal += unitTotal;
       taxTotal +=
         (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
@@ -194,8 +197,8 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       const existing = prev.find((p) => p.productId === product.productId);
       if (existing) {
         return prev.map((p) => {
-          let newQuant = p.quantity + 1;
-          let newP = {
+          const newQuant = p.quantity + 1;
+          const newP = {
             ...p,
             quantity: newQuant,
             lineTotal: newQuant * p.unitPrice,
@@ -248,7 +251,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       taxTotal = 0,
       total = 0;
     for (const [index, item] of cart.entries()) {
-      let unitTotal = item.unitPrice * item.quantity;
+      const unitTotal = item.unitPrice * item.quantity;
       subtotal += unitTotal;
       taxTotal +=
         (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
@@ -271,7 +274,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    let checkoutDataToSend: NewCheckoutRequest = {
+    const checkoutDataToSend: NewCheckoutRequest = {
       companyName: companyName,
       posSessionId: session.id,
       cashierId: session.posUserId,

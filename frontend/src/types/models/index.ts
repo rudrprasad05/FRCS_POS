@@ -159,7 +159,7 @@ export interface User {
   createdOn: string;
   updatedOn: string;
 }
-export interface ProductBatchDTO {}
+
 export interface CompanyUser extends BaseModel {
   companyId: number;
   company?: Company;

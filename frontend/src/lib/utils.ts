@@ -1,4 +1,3 @@
-import { NotificationTypes } from "@/types/models";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -40,7 +39,7 @@ export function generateStrongPassword(length = 12) {
   const specials = "!@#$%^&*()_+[]{}|;:,.<>?/~`-=";
 
   // Ensure at least one of each required character
-  let password = [
+  const password = [
     uppercase[Math.floor(Math.random() * uppercase.length)],
     lowercase[Math.floor(Math.random() * lowercase.length)],
     numbers[Math.floor(Math.random() * numbers.length)],

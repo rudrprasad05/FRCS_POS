@@ -1,9 +1,8 @@
 "use client";
 
-import { EditProduct } from "@/actions/Product";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
+import { GetEditProductData } from "@/actions/Product";
+import NoDataContainer from "@/components/containers/NoDataContainer";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
-import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -24,18 +23,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, Package, PenBox } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
-
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-export const productSchema = z.object({
+const productSchema = z.object({
   name: z
     .string()
     .min(1, "Product name is required")
@@ -60,25 +60,39 @@ export const productSchema = z.object({
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
-export function EditorTab({
+export default function ViewProductContainer() {
+  const params = useParams();
+  const productId = String(params.productId);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["editProduct", productId],
+    queryFn: () => GetEditProductData(productId),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
+
+  if (isLoading) {
+    return <Loader2 className="animate-spin" />;
+  }
+
+  if (error || !data?.success || !data.data) {
+    toast.error("Failed to fetch product data");
+    return <NoDataContainer />;
+  }
+
+  const product = data.data.product as Product;
+  const taxCategories = data.data.taxCategories as TaxCategory[];
+
+  return <MainSection product={product} taxCategories={taxCategories} />;
+}
+
+function MainSection({
   product,
-  taxes,
+  taxCategories,
 }: {
   product: Product;
-  taxes: TaxCategory[];
+  taxCategories: TaxCategory[];
 }) {
-  console.log(product);
-  const params = useParams();
-  const companyName = decodeURIComponent(params.companyName as string);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    product?.media?.url ?? null
-  );
-
-  const queryClient = useQueryClient();
-  const [file, setFile] = useState<File | undefined>(undefined);
-  const router = useRouter();
-
+  const previewUrl = product.media?.url;
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -86,74 +100,31 @@ export function EditorTab({
       sku: product?.sku,
       barcode: product?.barcode as string,
       price: String(product?.price),
-      taxCategoryId: String(product?.taxCategoryId),
+      taxCategoryId: String(product?.id),
       isPerishable: product?.isPerishable,
     },
   });
 
-  useEffect(() => {
-    if (product?.media?.url) {
-      setPreviewUrl(product.media.url);
-    }
-  }, [product?.media?.url]);
-
-  useEffect(() => {
-    if (file && file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    } else {
-      setPreviewUrl("");
-    }
-  }, [file]);
-
-  const formValues = form.watch();
-
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
-
-  const onSubmit = async (data: ProductFormData) => {
-    setIsSubmitting(true);
-    data.image = file;
-
-    const formData = new FormData();
-    formData.append("ProductName", data.name);
-    formData.append("SKU", data.sku);
-    formData.append("Price", data.price.toString()); // decimal -> string
-    formData.append("Barcode", data.barcode as string);
-    formData.append("IsPerishable", data.isPerishable ? "true" : "false");
-    formData.append("TaxCategoryId", data.taxCategoryId as string);
-    formData.append("MediaId", String(product.mediaId));
-
-    console.log("fd", formData);
-
-    if (data.image) {
-      formData.append("File", data.image); // IFormFile
-    }
-
-    console.log("Submitting FormData:", formData);
-
-    const res = await EditProduct(formData, product.uuid);
-
-    if (res.success) {
-      queryClient.invalidateQueries({
-        queryKey: ["editProduct", product.uuid],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["products", companyName], // optionally include pagination
-        exact: false,
-      });
-      toast.success("Uploaded");
-      router.back();
-    } else {
-      toast.error("Failed to upload");
-    }
-
-    setIsSubmitting(false);
-  };
-
   return (
-    <div className="min-h-screen bg-background pt-4">
+    <div className="min-h-screen bg-background p-4">
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Package className="text-primary h-6 w-6" />
+            <h1 className="text-3xl font-bold">View Product</h1>
+          </div>
+          <p className="text-muted-foreground">
+            You are veiwing the product &quot;{product?.name}&quot;
+          </p>
+        </div>
+        <Button asChild>
+          <Link href={`edit`}>
+            <PenBox />
+            Edit Product
+          </Link>
+        </Button>
+      </div>
+
       <div className="space-y-4">
         <div>
           <LargeText>Product Information</LargeText>
@@ -161,20 +132,23 @@ export function EditorTab({
             Fill in the details below to create a new product
           </MutedText>
         </div>
+
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="">
-                        Product Name <RedStar />
-                      </FormLabel>
+                      <FormLabel className="">Product Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter product name" {...field} />
+                        <Input
+                          disabled
+                          placeholder="Enter product name"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -186,11 +160,9 @@ export function EditorTab({
                   name="sku"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        SKU <RedStar />
-                      </FormLabel>
+                      <FormLabel>SKU</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter SKU" {...field} />
+                        <Input disabled placeholder="Enter SKU" {...field} />
                       </FormControl>
                       <FormDescription>
                         Stock Keeping Unit - unique identifier
@@ -207,11 +179,13 @@ export function EditorTab({
                   name="barcode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Barcode <RedStar />
-                      </FormLabel>
+                      <FormLabel>Barcode</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter barcode" {...field} />
+                        <Input
+                          disabled
+                          placeholder="Enter barcode"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -223,11 +197,10 @@ export function EditorTab({
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Price <RedStar />
-                      </FormLabel>
+                      <FormLabel>Price</FormLabel>
                       <FormControl>
                         <Input
+                          disabled
                           type="number"
                           step="0.01"
                           min="0"
@@ -246,21 +219,20 @@ export function EditorTab({
                 name="taxCategoryId"
                 render={({ field }) => (
                   <FormItem className="flex items-center">
-                    <FormLabel>
-                      Tax Category <RedStar />
-                    </FormLabel>
+                    <FormLabel>Tax Category</FormLabel>
                     <div className="gap-2 flex items-center">
                       <Select
                         onValueChange={field.onChange}
                         value={field.value ? field.value.toString() : ""}
+                        disabled
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={"Select VAT"} />
+                            <SelectValue />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {taxes.map((category) => (
+                          {taxCategories.map((category) => (
                             <SelectItem
                               key={category.id as number}
                               value={String(category.id)}
@@ -275,8 +247,6 @@ export function EditorTab({
                   </FormItem>
                 )}
               />
-
-              <AddMediaDialoge file={file} setFile={setFile} />
               {previewUrl && (
                 <div className="w-[200px]">
                   <Image
@@ -296,38 +266,17 @@ export function EditorTab({
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
                       <Checkbox
+                        disabled
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Perishable Product <RedStar />
-                      </FormLabel>
-                      <FormDescription>
-                        Check this if the product has an expiration date
-                      </FormDescription>
+                      <FormLabel>Perishable Product</FormLabel>
                     </div>
                   </FormItem>
                 )}
               />
-
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {isSubmitting ? "Editing..." : "Edit Product"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-              </div>
             </form>
           </Form>
         </div>

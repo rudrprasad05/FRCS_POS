@@ -1,19 +1,13 @@
 "use client";
 
-import {
-  DownloadRecieptFromServer,
-  GetSaleByReceipt,
-  GetSaleByUUID,
-} from "@/actions/Sale";
-import { XSmallText } from "@/components/font/HeaderFonts";
+import { DownloadRecieptFromServer, GetSaleByReceipt } from "@/actions/Sale";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Sale } from "@/types/models";
-import { Download, Check, ArrowLeftIcon, Mail, Loader2 } from "lucide-react";
+import { ArrowLeftIcon, Check, Download, Loader2, Mail } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import QRCode from "react-qr-code";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // Mock data based on the provided interfaces
@@ -48,7 +42,6 @@ enum EReceiptPageState {
 
 export default function ReceiptPage() {
   const [sale, setSale] = useState<Sale | undefined>(undefined);
-  const [recieptUrl, setRecieptUrl] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [state, setState] = useState<EReceiptPageState>(
     EReceiptPageState.LOADING
@@ -60,11 +53,7 @@ export default function ReceiptPage() {
   const params = useParams();
   const checkoutId = String(params.invoiceNumber);
 
-  useEffect(() => {
-    getDate();
-  }, [params]);
-
-  const getDate = async () => {
+  const getDate = useCallback(async () => {
     if (!checkoutId) {
       setState(EReceiptPageState.ERROR);
     }
@@ -72,7 +61,7 @@ export default function ReceiptPage() {
     console.log(res);
     setSale(res.data as Sale);
     setState(EReceiptPageState.OK);
-  };
+  }, [checkoutId]);
 
   const handleDownloadReceipt = async () => {
     if (!sale) return;
@@ -89,7 +78,6 @@ export default function ReceiptPage() {
       }
 
       const url = res.data as string;
-      setRecieptUrl(url);
 
       // Automatically trigger browser download
       const link = document.createElement("a");
@@ -105,6 +93,9 @@ export default function ReceiptPage() {
       setIsDownloading(false);
     }
   };
+  useEffect(() => {
+    getDate();
+  }, [params, getDate]);
 
   if (state == EReceiptPageState.LOADING) {
     return <>loading</>;

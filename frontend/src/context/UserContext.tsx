@@ -7,7 +7,6 @@ import { ApiResponse, User } from "@/types/models";
 import { LoginResponse } from "@/types/res";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { destroyCookie } from "nookies";
 import {
   createContext,
   ReactNode,
@@ -34,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl");
 
   // 🔹 Load session from cookies on mount
 
@@ -44,11 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: "Redirecting shortly",
     });
 
-    router.push((returnUrl as string) || "/redirect");
+    router.push(searchParams.get("returnUrl") || "/redirect");
     // router.push("/redirect");
   };
 
   const login = async (email: string, password: string, redirect?: string) => {
+    setIsLoading(true);
     let tempUser: User;
     try {
       const res = await axiosGlobal.post<ApiResponse<LoginResponse>>(
@@ -58,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           password,
         }
       );
-      let data = res.data.data;
+      const data = res.data.data;
       if (data == undefined) {
         return;
       }
@@ -69,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: data.email,
         token: data.token,
         role: data.role,
-      };
+      } as User;
 
       setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
@@ -83,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Login failed:", error);
       throw new Error("Invalid credentials");
     }
+    setIsLoading(false);
   };
 
   const register = async (data: RegisterFormType) => {
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: res.data.email,
         token: res.data.token,
         role: res.data.role,
-      };
+      } as User;
       setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
 
@@ -114,8 +114,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // 🔹 Logout function
-  const logout = async (unAuth = false) => {
-    const res = await Logout();
+  const logout = async () => {
+    await Logout();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        let data = res.data.data;
+        const data = res.data.data;
         if (!data) return;
         tempUser = {
           id: data.id,
@@ -151,8 +151,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: data.email,
           token: data.token,
           role: data.role,
-        };
-      } catch (error) {}
+        } as User;
+      } catch (error) {
+        console.log(error);
+      }
   }, [pathname]);
 
   useEffect(() => {
