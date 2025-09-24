@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Warehouse } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Asterisk } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";

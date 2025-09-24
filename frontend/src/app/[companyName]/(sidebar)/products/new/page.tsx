@@ -1,11 +1,11 @@
 "use client";
 
+import { CreateProduct } from "@/actions/Product";
 import { GetAllTaxCategories } from "@/actions/Tax";
 import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useParams, useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -25,13 +25,13 @@ import {
 } from "@/components/ui/select";
 import { TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Asterisk, ImageIcon, PackagePlus, Upload } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Asterisk, PackagePlus } from "lucide-react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { CreateProduct } from "@/actions/Product";
-import Image from "next/image";
 
 export const productSchema = z.object({
   name: z
@@ -84,23 +84,19 @@ export default function NewProductPage() {
   // Load tax categories on component mount
   useEffect(() => {
     const loadTaxCategories = async () => {
-      try {
-        const response = await GetAllTaxCategories();
-        console.log("tax", response);
-        if (response.success && response.data) {
-          setTaxCategories(response.data as TaxCategory[]);
-        } else {
-          toast("Failed to upload");
-        }
-      } catch (error) {
-        toast("Failed to upload");
-      } finally {
-        setIsLoadingTaxCategories(false);
+      const response = await GetAllTaxCategories();
+
+      if (response.success && response.data) {
+        setTaxCategories(response.data as TaxCategory[]);
+      } else {
+        toast.error("Failed to get tax", { description: response.message });
       }
+
+      setIsLoadingTaxCategories(false);
     };
 
     loadTaxCategories();
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (file && file.type.startsWith("image/")) {
@@ -356,5 +352,3 @@ export default function NewProductPage() {
 function RedStar() {
   return <Asterisk className="w-2 h-2 text-rose-500 mb-auto ml-0 mr-auto" />;
 }
-
-function ImageSelector() {}

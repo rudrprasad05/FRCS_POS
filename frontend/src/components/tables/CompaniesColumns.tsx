@@ -6,9 +6,8 @@ import { Edit, Eye } from "lucide-react";
 
 import { Company, CompanyUser, User } from "@/types/models";
 import Link from "next/link";
-import { DeleteCompanyDialoge } from "../superadmin/companies/DeleteCompaniesDialoge";
-import { Badge } from "../ui/badge";
 import RemoveUserFromCompanyDialoge from "../superadmin/companies/RemoveUserFromCompanyDialoge";
+import { Badge } from "../ui/badge";
 
 export const CompanyOnlyColumn: ColumnDef<Company>[] = [
   {

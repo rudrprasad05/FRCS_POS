@@ -1,7 +1,13 @@
 "use client";
+import { GetAllAdmins } from "@/actions/User";
 import { H1, P } from "@/components/font/HeaderFonts";
+import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
+import { Header } from "@/components/global/TestHeader";
+import { buttonVariants } from "@/components/ui/button";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
   ESortBy,
@@ -9,22 +15,11 @@ import {
   User,
   UserRoles,
 } from "@/types/models";
-import { GetAllAdmins } from "@/actions/User";
-import { DataTable } from "@/components/global/DataTable";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { UserPlus } from "lucide-react";
+import { useState } from "react";
 import NewUserDialoge from "./NewUserDialoge";
 import { columns } from "./UserColumns";
-import { buttonVariants } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
-import {
-  useQuery,
-  useQueryClient,
-  UseQueryResult,
-} from "@tanstack/react-query";
-import { useState } from "react";
-import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import { Header } from "@/components/global/TestHeader";
-import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 
 export default function UsersSection() {
   const [pagination, setPagination] = useState<QueryObject>({

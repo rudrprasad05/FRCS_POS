@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ApiResponse, User } from "./types/models";
+import { ApiResponse } from "./types/models";
 import { LoginDTO } from "./types/res";
 
 export async function middleware(req: NextRequest) {

@@ -2,13 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { AlertCircle, AlertTriangle, Edit, Eye } from "lucide-react";
+import { Edit, Eye } from "lucide-react";
 
-import { CompanyUser, Notification, NotificationTypes } from "@/types/models";
+import { CompanyUser, Notification } from "@/types/models";
 import Link from "next/link";
+import { GetNotificationIcon } from "../global/NotificationIcons";
 import RemoveUserFromCompanyDialoge from "../superadmin/companies/RemoveUserFromCompanyDialoge";
 import { Badge } from "../ui/badge";
-import { GetNotificationIcon } from "../global/NotificationIcons";
 
 function formatTimeAgo(str: string) {
   const date = new Date(str);

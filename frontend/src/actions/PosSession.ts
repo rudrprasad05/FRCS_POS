@@ -5,19 +5,14 @@ import {
   ApiResponse,
   PosSession,
   PosSessionWithProducts,
-  PosTerminal,
   QuickConnect,
   Sale,
 } from "@/types/models";
-import {
-  ICreateNewPosSession,
-  IPosSessionData,
-  NewCheckoutRequest,
-} from "@/types/res";
+import { ICreateNewPosSession, NewCheckoutRequest } from "@/types/res";
 
-import { GetToken } from "./User";
-import { RequestWrapper } from "./RequestWrapper";
 import axios from "axios";
+import { RequestWrapper } from "./RequestWrapper";
+import { GetToken } from "./User";
 
 export async function CreateNewPosSession(
   data: ICreateNewPosSession

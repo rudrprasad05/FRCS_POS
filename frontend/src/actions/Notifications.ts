@@ -1,12 +1,11 @@
+import { axiosGlobal } from "@/lib/axios";
 import {
   ApiResponse,
-  QueryObject,
   Notification as AppNotification,
+  QueryObject,
 } from "@/types/models";
-import { GetToken } from "./User";
-import { axiosGlobal } from "@/lib/axios";
-import { buildMediaQueryParams } from "@/lib/params";
 import { RequestWrapper } from "./RequestWrapper";
+import { GetToken } from "./User";
 
 export async function GetAllNotificationsSuperAdmin(
   query?: QueryObject

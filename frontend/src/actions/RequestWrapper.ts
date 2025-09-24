@@ -1,8 +1,8 @@
-import { ApiResponse, QueryObject } from "@/types/models";
-import axios, { AxiosRequestConfig, Method } from "axios";
-import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
+import { ApiResponse, QueryObject } from "@/types/models";
+import { AxiosRequestConfig, Method } from "axios";
+import { GetToken } from "./User";
 
 export async function RequestWrapper<T>(
   method: Method,

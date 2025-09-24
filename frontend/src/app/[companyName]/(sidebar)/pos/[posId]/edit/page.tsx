@@ -55,7 +55,7 @@ export default function EditorPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold">Edit Pos Terminal</h1>
         </div>
         <p className="text-muted-foreground">
-          You are editing the terminal "{terminal?.name}"
+          You are editing the terminal &quot;{terminal?.name}&quot;
         </p>
       </div>
       <Tabs

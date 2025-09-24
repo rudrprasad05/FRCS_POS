@@ -16,7 +16,7 @@ export function RecentProductCard({ item }: { item: Product }) {
   const { addProduct, cart } = usePosSession();
 
   const handleAddProduct = (product: Product) => {
-    let sI: SaleItemOmitted = {
+    const sI: SaleItemOmitted = {
       productId: product.id,
       product: product,
       quantity: 1,

@@ -1,5 +1,5 @@
 "use client";
-import { CreateNewPosSession, ResumeSession } from "@/actions/PosSession";
+import { ResumeSession } from "@/actions/PosSession";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,16 +20,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/UserContext";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, Loader2, Play } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { validate as uuidValidate } from "uuid";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface IResumeSession {
   uuid: string;
@@ -40,7 +39,6 @@ export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const params = useParams();
   const posId = String(params.posId);
   const queryClient = useQueryClient();
@@ -111,7 +109,6 @@ export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
                     <FormControl>
                       <Input
                         placeholder="Enter your email"
-                        disabled={isLoading}
                         className="bg-background"
                         {...field}
                       />
@@ -132,7 +129,6 @@ export default function ResumeSessionDialoge({ uuid }: IResumeSession) {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          disabled={isLoading}
                           className=" pr-10"
                           {...field}
                         />

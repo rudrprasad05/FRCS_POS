@@ -22,14 +22,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { HousePlus, Loader2 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useWarehouseData } from "./WarehouseSection";
-import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -44,7 +43,6 @@ const formSchema = z.object({
 export type NewWarehouseType = z.infer<typeof formSchema>;
 
 export default function NewWarehouseDialoge() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -63,7 +61,7 @@ export default function NewWarehouseDialoge() {
 
   useEffect(() => {
     form.setValue("companyName", companyName);
-  }, []);
+  }, [form, companyName]);
 
   async function onSubmit(values: NewWarehouseType) {
     setLoading(true);

@@ -1,10 +1,9 @@
 "use client";
 
-import { CreateProduct, GetEditProductData } from "@/actions/Product";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
+import { GetEditProductData } from "@/actions/Product";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -16,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+
 import {
   Select,
   SelectContent,
@@ -27,11 +27,10 @@ import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { Asterisk, Loader2, Package, PackagePlus, PenBox } from "lucide-react";
+import { Loader2, Package, PenBox } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -115,7 +114,7 @@ function MainSection({
             <h1 className="text-3xl font-bold">View Product</h1>
           </div>
           <p className="text-muted-foreground">
-            You are veiwing the product "{product?.name}"
+            You are veiwing the product &quot;{product?.name}&quot;
           </p>
         </div>
         <Button asChild>

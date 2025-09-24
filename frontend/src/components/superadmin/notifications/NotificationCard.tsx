@@ -58,9 +58,10 @@ export function NotificationCard({ data }: { data: Notification }) {
   const handleMarkAsRead = async () => {
     toast.success("Marked as read");
     setNotification((prev) => ({ ...prev, isRead: true }));
-    try {
-      const res = await MarkAsRead(notification.uuid);
-    } catch (error) {
+
+    const res = await MarkAsRead(notification.uuid);
+
+    if (!res.success) {
       toast.error("An Error occured");
       setNotification((prev) => ({ ...prev, isRead: false }));
     }
@@ -69,9 +70,9 @@ export function NotificationCard({ data }: { data: Notification }) {
   const handleSafeDelete = async () => {
     toast.success("Notification Deleted");
     setNotification((prev) => ({ ...prev, isDeleted: true }));
-    try {
-      const res = await SafeDeleteNotification(notification.uuid);
-    } catch (error) {
+
+    const res = await SafeDeleteNotification(notification.uuid);
+    if (!res.success) {
       toast.error("An Error occured");
       setNotification((prev) => ({ ...prev, isDeleted: false }));
     }

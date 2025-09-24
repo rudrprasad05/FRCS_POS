@@ -1,6 +1,5 @@
 "use client";
 
-import { SoftDeleteProduct } from "@/actions/Product";
 import { ActivateWarehouse, SoftDeleteWarehouse } from "@/actions/Warehouse";
 import { ConfirmDialog } from "@/components/global/ConfirmDialog";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
 type PageProps = {
@@ -16,7 +16,7 @@ export default function PosTerminalPage({ params }: PageProps) {
   useEffect(() => {
     router.push(`${warehouseId}/view`);
     setIsLoading(false);
-  }, [warehouseId]);
+  }, [warehouseId, router]);
 
   if (isLoading) return <Loader2 className="animate-spin" />;
   return null;

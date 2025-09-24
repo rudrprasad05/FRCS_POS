@@ -1,10 +1,10 @@
+import { Toaster } from "@/components/ui/sonner";
+import TanstackProvider from "@/context/TanstackProvider";
+import { AuthProvider } from "@/context/UserContext";
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "@/context/UserContext";
-import TanstackProvider from "@/context/TanstackProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,9 +1,7 @@
 "use server";
 
-import { axiosGlobal } from "@/lib/axios";
 import { ApiResponse, QueryObject } from "@/types/models";
 import { CompanyAdminDashboardDTO, SuperAdminDashboardDTO } from "@/types/res";
-import { GetToken } from "./User";
 import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetSuperAdminDashboard(): Promise<

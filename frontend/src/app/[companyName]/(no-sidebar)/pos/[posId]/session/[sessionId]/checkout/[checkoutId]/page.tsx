@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Sale } from "@/types/models";
 import { useQueryClient } from "@tanstack/react-query";
-import { Download, Check, ArrowLeftIcon, Mail, Loader2 } from "lucide-react";
+import { ArrowLeftIcon, Check, Download, Loader2, Mail } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 
@@ -37,12 +37,6 @@ const formatDateTime = (dateString: string) => {
   };
 };
 
-const handleDownloadReceipt = () => {
-  // In a real implementation, this would generate and download a PDF
-  console.log("Downloading receipt...");
-  alert("Receipt download started!");
-};
-
 enum EReceiptPageState {
   LOADING,
   ERROR,
@@ -54,7 +48,6 @@ export default function ReceiptPage() {
   const [recieptUrl, setRecieptUrl] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
   const params = useParams();
-  const companyName = decodeURIComponent(params.companyName as string);
   const checkoutId = String(params.checkoutId);
   const sessionId = String(params.sessionId);
   const router = useRouter();
@@ -68,10 +61,6 @@ export default function ReceiptPage() {
   const { date, time } = formatDateTime(
     sale ? sale.createdOn : Date.now.toString()
   );
-
-  useEffect(() => {
-    getDate();
-  }, [params]);
 
   queryClient.invalidateQueries({
     queryKey: ["posSessionProducts", sessionId],
@@ -110,16 +99,22 @@ export default function ReceiptPage() {
     }
   };
 
-  const getDate = async () => {
+  const getDate = useCallback(async () => {
     if (!checkoutId) {
       setState(EReceiptPageState.ERROR);
+      return;
     }
+
     const res = await GetSaleByUUID(checkoutId);
     console.log(res);
     setSale(res.data as Sale);
     setState(EReceiptPageState.OK);
     setRecieptUrl("https://localhost:3000/receipt/" + res.data?.invoiceNumber);
-  };
+  }, [checkoutId]);
+
+  useEffect(() => {
+    getDate();
+  }, [params, getDate]);
 
   if (state == EReceiptPageState.LOADING) {
     return <>loading</>;

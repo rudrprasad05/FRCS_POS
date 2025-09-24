@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ServerCrash, ArrowLeft, Home, RefreshCw } from "lucide-react";
+import { ArrowLeft, Home, RefreshCw, ServerCrash } from "lucide-react";
 import Link from "next/link";
 
 export default function InternalServerError() {

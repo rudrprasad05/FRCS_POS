@@ -1,3 +1,4 @@
+import { axiosGlobal } from "@/lib/axios";
 import {
   ApiResponse,
   ApiResponseFail,
@@ -5,12 +6,8 @@ import {
   Product,
   QueryObject,
 } from "@/types/models";
-import { GetToken } from "./User";
-import { axiosGlobal } from "@/lib/axios";
-import { buildMediaQueryParams } from "@/lib/params";
-import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
-import { RequestWrapper } from "./RequestWrapper";
 import { EditProductData } from "@/types/res";
+import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllProducts(
   query?: QueryObject,

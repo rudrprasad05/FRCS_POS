@@ -1,19 +1,19 @@
-import { useState } from "react";
+import { SoftDeleteCompany } from "@/actions/Company";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Loader2 } from "lucide-react";
 import { Company } from "@/types/models";
-import { SoftDeleteCompany } from "@/actions/Company";
+import { Loader2, Trash } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export function DeleteCompanyDialoge({ data }: { data: Company }) {
@@ -23,16 +23,17 @@ export function DeleteCompanyDialoge({ data }: { data: Company }) {
 
   async function handleDelete() {
     setIsLoading(true);
-    try {
-      const res = await SoftDeleteCompany(data.uuid);
-      setIsLoading(false);
+
+    const res = await SoftDeleteCompany(data.uuid);
+
+    if (res.success) {
       toast.success("Company Deleted");
       setIsOpen(false);
       setConfirmationText("");
-    } catch (error) {
-      setIsLoading(false);
+    } else {
       toast.error("Error Occurred");
     }
+    setIsLoading(false);
   }
 
   const isConfirmValid = confirmationText.trim().toLowerCase() === "delete";

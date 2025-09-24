@@ -47,7 +47,7 @@ export default function EditorPage() {
           <h1 className="text-3xl font-bold">Edit Product</h1>
         </div>
         <p className="text-muted-foreground">
-          You are editing the product "{product?.name}"
+          You are editing the product &quot;{product?.name}&quot;
         </p>
       </div>
       <Tabs

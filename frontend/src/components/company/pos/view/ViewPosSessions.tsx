@@ -15,7 +15,7 @@ import {
   type QueryObject,
 } from "@/types/models";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { da } from "date-fns/locale";
+
 import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";

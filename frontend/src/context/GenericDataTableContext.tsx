@@ -1,9 +1,9 @@
 "use client";
-import { P } from "@/components/font/HeaderFonts";
 import { ApiResponse, ESortBy, QueryObject } from "@/types/models";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -67,16 +67,16 @@ export function createGenericSingleDataContext<T>() {
     const [item, setItem] = useState<T | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const refresh = async () => {
+    const refresh = useCallback(async () => {
       setLoading(true);
       const res = await fetchFn();
       setItem(res.data ?? null);
       setLoading(false);
-    };
+    }, [fetchFn, setLoading]);
 
     useEffect(() => {
       refresh();
-    }, []);
+    }, [refresh]);
 
     if (item == null || item == undefined) {
       return <>loading</>;
@@ -124,7 +124,7 @@ export function createGenericListDataContext<T>() {
       search: "",
     });
 
-    const refresh = async () => {
+    const refresh = useCallback(async () => {
       console.log("hit refesh");
       setLoading(true);
       console.log(pagination);
@@ -147,7 +147,7 @@ export function createGenericListDataContext<T>() {
       }));
 
       setLoading(false);
-    };
+    }, [setLoading, pagination, setPagination, fetchFn]);
 
     useEffect(() => {
       refresh();
@@ -157,6 +157,7 @@ export function createGenericListDataContext<T>() {
       pagination.search,
       pagination.sortBy,
       pagination.isDeleted,
+      refresh,
     ]);
 
     return (

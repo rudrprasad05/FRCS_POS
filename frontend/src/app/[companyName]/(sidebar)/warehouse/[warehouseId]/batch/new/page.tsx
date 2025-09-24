@@ -1,15 +1,15 @@
 "use client";
 
-import { GetAllTaxCategories } from "@/actions/Tax";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
+import {
+  CreateProductBatch,
+  LoadPreCreationInfo,
+} from "@/actions/ProductBatch";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useParams, useRouter } from "next/navigation";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,40 +17,27 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Product, TaxCategory } from "@/types/models";
+import { formatDateIntoFormat } from "@/lib/utils";
+import { ILoadPreCreationInfo } from "@/types/res";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Asterisk,
-  CalendarIcon,
-  ImageIcon,
-  PackagePlus,
-  Upload,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Asterisk, CalendarIcon, PackagePlus } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { CreateProduct } from "@/actions/Product";
-import {
-  CreateProductBatch,
-  LoadPreCreationInfo,
-} from "@/actions/ProductBatch";
-import { ILoadPreCreationInfo } from "@/types/res";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "util";
-import { Calendar } from "@/components/ui/calendar";
-import { formatDate, formatDateIntoFormat } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
 
 export const schema = z.object({
   companyId: z.number({ error: "Company is required" }).int(),
@@ -69,6 +56,7 @@ export default function NewProductPage() {
   const [initalFormState, setInitalFormState] = useState<
     ILoadPreCreationInfo | undefined
   >(undefined);
+  const [inputValue, setInputValue] = useState("");
 
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,25 +80,21 @@ export default function NewProductPage() {
   // Load tax categories on component mount
   useEffect(() => {
     const loadTaxCategories = async () => {
-      try {
-        const response = await LoadPreCreationInfo({
-          companyName: companyName,
-        });
-        console.log("tax", response);
-        if (response.success && response.data) {
-          setInitalFormState(response.data as ILoadPreCreationInfo);
-        } else {
-          toast("Failed to upload");
-        }
-      } catch (error) {
-        toast("Failed to upload");
-      } finally {
-        setIsLoadingTaxCategories(false);
+      const response = await LoadPreCreationInfo({
+        companyName: companyName,
+      });
+
+      if (response.success && response.data) {
+        setInitalFormState(response.data as ILoadPreCreationInfo);
+      } else {
+        toast.error("Failed to upload", { description: response.message });
       }
+
+      setIsLoadingTaxCategories(false);
     };
 
     loadTaxCategories();
-  }, [toast]);
+  }, [companyName]);
 
   useEffect(() => {
     if (initalFormState) {
@@ -261,10 +245,6 @@ export default function NewProductPage() {
                 control={form.control}
                 name="quantity"
                 render={({ field }) => {
-                  const [inputValue, setInputValue] = useState(
-                    field.value !== undefined ? String(field.value) : ""
-                  );
-
                   return (
                     <FormItem>
                       <FormLabel>Quantity</FormLabel>

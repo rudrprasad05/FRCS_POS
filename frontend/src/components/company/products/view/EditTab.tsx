@@ -27,9 +27,9 @@ import {
 import { Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Asterisk } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

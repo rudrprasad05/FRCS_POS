@@ -1,8 +1,7 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React from "react";
+import { ActivateCompany, SoftDeleteCompany } from "@/actions/Company";
+import { ConfirmDialog } from "@/components/global/ConfirmDialog";
 import {
   Card,
   CardContent,
@@ -10,11 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Company } from "@/types/models";
-import { ConfirmDialog } from "@/components/global/ConfirmDialog";
 import { Check, Trash } from "lucide-react";
 import { useParams } from "next/navigation";
-import { ActivateCompany, SoftDeleteCompany } from "@/actions/Company";
 
 export default function ConfigTab({ company }: { company: Company }) {
   const params = useParams();
@@ -97,7 +96,7 @@ export default function ConfigTab({ company }: { company: Company }) {
                   ["companys", companyName],
                   ["editcompany", company.uuid],
                 ]}
-                onConfirm={async (uuid) => {
+                onConfirm={async () => {
                   return await SoftDeleteCompany(company.uuid);
                 }}
               />
@@ -132,7 +131,7 @@ export default function ConfigTab({ company }: { company: Company }) {
                   ["companys", companyName],
                   ["editcompany", company.uuid],
                 ]}
-                onConfirm={async (uuid) => {
+                onConfirm={async () => {
                   return await ActivateCompany(company.uuid);
                 }}
               />

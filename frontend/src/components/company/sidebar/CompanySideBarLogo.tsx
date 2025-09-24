@@ -2,7 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/UserContext";
-import { Cable, HandCoins, Wrench } from "lucide-react";
+import { HandCoins, Wrench } from "lucide-react";
 import { useParams } from "next/navigation";
 
 export function CompanySidebarLogo() {
