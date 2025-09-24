@@ -97,6 +97,18 @@ namespace FrcsPos.Repository
             var model = await _context.Products.AddAsync(modelToBeCreated);
             await _context.SaveChangesAsync();
 
+            if (request.FirstWarningInDays != null && request.CriticalWarningInHours != null && request.IsPerishable)
+            {
+                var expiryConfig = new ExpiryNotificationConfiguration
+                {
+                    FirstWarningInDays = (int)request.FirstWarningInDays,
+                    CriticalWarningInHours = (int)request.CriticalWarningInHours,
+                    ProductId = modelToBeCreated.Id,
+                };
+                var expiryConfigModel = await _context.ExpiryNotificationConfigurations.AddAsync(expiryConfig);
+                await _context.SaveChangesAsync();
+            }
+
             var result = model.Entity.FromModelToDto();
             var notification = new NotificationDTO
             {

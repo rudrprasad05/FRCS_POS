@@ -15,5 +15,7 @@ namespace FrcsPos.Request
         public IFormFile? File { get; set; } = null!;
         public int TaxCategoryId { get; set; } = default!;
         public string CompanyName { get; set; } = string.Empty;
+        public int? FirstWarningInDays { get; set; } = null;
+        public int? CriticalWarningInHours { get; set; } = null;
     }
 }

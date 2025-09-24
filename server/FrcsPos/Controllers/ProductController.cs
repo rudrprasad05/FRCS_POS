@@ -36,7 +36,9 @@ namespace FrcsPos.Controllers
             [FromForm] bool IsPerishable,
             IFormFile? File,
             [FromForm] int TaxCategoryId,
-            [FromForm] string CompanyName
+            [FromForm] string CompanyName,
+            [FromForm] int FirstWarningInDays,
+            [FromForm] int CriticalWarningInHours
         )
         {
             var data = new NewProductRequest
@@ -49,6 +51,8 @@ namespace FrcsPos.Controllers
                 File = File,
                 TaxCategoryId = TaxCategoryId,
                 CompanyName = CompanyName,
+                FirstWarningInDays = FirstWarningInDays,
+                CriticalWarningInHours = CriticalWarningInHours
             };
 
             var model = await _productRepository.CreateProductAsync(data);

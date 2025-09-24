@@ -33,30 +33,47 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-export const productSchema = z.object({
-  firstWarningInDays: z.string().optional(),
-  criticalWarningInHours: z.string().optional(),
-  name: z
-    .string()
-    .min(1, "Product name is required")
-    .max(100, "Name must be less than 100 characters"),
-  sku: z
-    .string()
-    .min(1, "SKU is required")
-    .max(50, "SKU must be less than 50 characters"),
-  barcode: z.string().optional(),
-  price: z.string().min(0, "Price must be greater than or equal to 0"),
-  taxCategoryId: z.string().optional(),
-  isPerishable: z.boolean(),
-  image: z
-    .any()
-    .optional()
-    .refine(
-      (files: FileList | undefined) =>
-        !files || files.length === 0 || files[0]?.type.startsWith("image/"),
-      "Please select a valid image file"
-    ),
-});
+export const productSchema = z
+  .object({
+    firstWarningInDays: z.number().optional(),
+    criticalWarningInHours: z.number().optional(),
+    name: z
+      .string()
+      .min(1, "Product name is required")
+      .max(100, "Name must be less than 100 characters"),
+    sku: z
+      .string()
+      .min(1, "SKU is required")
+      .max(50, "SKU must be less than 50 characters"),
+    barcode: z.string().optional(),
+    price: z.string().min(0, "Price must be greater than or equal to 0"),
+    taxCategoryId: z.string().optional(),
+    isPerishable: z.boolean(),
+    image: z
+      .any()
+      .optional()
+      .refine(
+        (files: FileList | undefined) =>
+          !files || files.length === 0 || files[0]?.type.startsWith("image/"),
+        "Please select a valid image file"
+      ),
+  })
+  .refine(
+    (data) => {
+      if (!data.isPerishable) return true;
+      if (
+        data.firstWarningInDays == null ||
+        data.criticalWarningInHours == null
+      )
+        return false;
+      return data.criticalWarningInHours < data.firstWarningInDays * 24;
+    },
+    {
+      message:
+        "Critical warning (hours) must be less than first warning (days x 24)",
+      path: ["criticalWarningInHours"],
+    }
+  );
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
@@ -65,6 +82,14 @@ export default function EditProductContainer() {
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [customExpiryDays, setCustomExpiryDays] = useState([1, 2, 3, 5, 7, 10]);
+  const [customExpiryHours, setCustomExpiryHours] = useState([
+    6, 12, 24, 48, 72,
+  ]);
+  const [isSelectCustom, setIsSelectCustom] = useState({
+    customExpiryDays: false,
+    customExpiryHours: false,
+  });
 
   const [file, setFile] = useState<File | undefined>(undefined);
   const params = useParams();
@@ -78,8 +103,10 @@ export default function EditProductContainer() {
       sku: "",
       barcode: "",
       price: "0",
-      taxCategoryId: "0",
+      taxCategoryId: "",
       isPerishable: false,
+      criticalWarningInHours: 24,
+      firstWarningInDays: 3,
     },
   });
 
@@ -90,6 +117,7 @@ export default function EditProductContainer() {
 
       if (response.success && response.data) {
         setTaxCategories(response.data as TaxCategory[]);
+        form.setValue("taxCategoryId", String(response?.data[0].id));
       } else {
         toast.error("Failed to get tax", { description: response.message });
       }
@@ -120,6 +148,14 @@ export default function EditProductContainer() {
     formData.append("Barcode", data.barcode as string);
     formData.append("IsPerishable", data.isPerishable ? "true" : "false");
     formData.append("TaxCategoryId", data.taxCategoryId as string);
+    formData.append(
+      "FirstWarningInDays",
+      data?.firstWarningInDays?.toString() || "0"
+    );
+    formData.append(
+      "CriticalWarningInHours",
+      data?.criticalWarningInHours?.toString() || "0"
+    );
     formData.append("CompanyName", companyName as string);
 
     if (data.image) {
@@ -256,13 +292,7 @@ export default function EditProductContainer() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                isLoadingTaxCategories
-                                  ? "Loading tax categories..."
-                                  : "Select VAT"
-                              }
-                            />
+                            <SelectValue placeholder={"Select VAT"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -325,40 +355,126 @@ export default function EditProductContainer() {
               />
 
               {form.watch("isPerishable") && (
-                <div className="flex items-center">
+                <div className="flex gap-4 items-center">
+                  {/* Days Select */}
                   <FormField
                     control={form.control}
                     name="firstWarningInDays"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Expiration Date <RedStar />
-                        </FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Please provide the product’s expiration date
-                        </FormDescription>
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const value = Number(field.value);
+
+                      return (
+                        <FormItem>
+                          <FormLabel>
+                            First Warning (Days) <RedStar />
+                          </FormLabel>
+                          <FormControl>
+                            {isSelectCustom.customExpiryDays ? (
+                              <Input
+                                type="number"
+                                min={1}
+                                placeholder="Enter days"
+                                value={value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                onBlur={(e) => {
+                                  if (!e.target.value) field.onChange(""); // reset if cleared
+                                }}
+                              />
+                            ) : (
+                              <Select
+                                onValueChange={(val) => {
+                                  if (val === "custom") {
+                                    field.onChange("");
+                                    setIsSelectCustom((prev) => ({
+                                      ...prev,
+                                      customExpiryDays: true,
+                                    }));
+                                  } else {
+                                    field.onChange(val);
+                                  }
+                                }}
+                                value={value.toString()}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select days" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {customExpiryDays.map((d) => (
+                                    <SelectItem key={d} value={d.toString()}>
+                                      {d} day{d !== 1 && "s"}
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="custom">Custom</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </FormControl>
+                          <FormDescription>
+                            When to send the first expiry warning.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
+
+                  {/* Hours Select */}
                   <FormField
                     control={form.control}
                     name="criticalWarningInHours"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          Expiration Date <RedStar />
-                        </FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Please provide the product’s expiration date
-                        </FormDescription>
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const value = Number(field.value);
+                      const isCustom = !customExpiryHours.includes(value);
+
+                      return (
+                        <FormItem>
+                          <FormLabel>
+                            Critical Warning (Hours) <RedStar />
+                          </FormLabel>
+                          <FormControl>
+                            {isCustom ? (
+                              <Input
+                                type="number"
+                                min={1}
+                                placeholder="Enter hours"
+                                value={value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                onBlur={(e) => {
+                                  if (!e.target.value) field.onChange(""); // reset if cleared
+                                }}
+                              />
+                            ) : (
+                              <Select
+                                onValueChange={(val) => {
+                                  if (val === "custom") {
+                                    field.onChange(""); // switch to input
+                                  } else {
+                                    field.onChange(val);
+                                  }
+                                }}
+                                value={value.toString()}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select hours" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {["12", "24", "48", "72"].map((h) => (
+                                    <SelectItem key={h} value={h}>
+                                      {h} hours
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="custom">Custom</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </FormControl>
+                          <FormDescription>
+                            When to send the critical expiry warning.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
               )}
