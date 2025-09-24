@@ -21,6 +21,7 @@ namespace FrcsPos.Context
         public DbSet<PosTerminal> PosTerminals => Set<PosTerminal>();
         public DbSet<PosSession> PosSessions => Set<PosSession>();
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<ExpiryNotificationConfiguration> ExpiryNotificationConfigurations => Set<ExpiryNotificationConfiguration>();
         public DbSet<ProductBatch> ProductBatches => Set<ProductBatch>();
         public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
         public DbSet<Sale> Sales => Set<Sale>();
@@ -104,9 +105,18 @@ namespace FrcsPos.Context
 
             b.Entity<Product>(e =>
             {
+                e.HasOne(p => p.ExpiryNotificationConfiguration)
+                    .WithOne(ec => ec.Product)
+                    .HasForeignKey<ExpiryNotificationConfiguration>(ec => ec.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 e.Property(x => x.Price).HasPrecision(18, 2);
+
                 e.HasIndex(x => new { x.CompanyId, x.Sku }).IsUnique();
-                e.HasIndex(x => new { x.CompanyId, x.Barcode }).IsUnique().HasFilter("[Barcode] IS NOT NULL");
+
+                e.HasIndex(x => new { x.CompanyId, x.Barcode })
+                    .IsUnique()
+                    .HasFilter("[Barcode] IS NOT NULL");
             });
 
             b.Entity<ProductBatch>(e =>

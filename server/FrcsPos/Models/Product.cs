@@ -17,6 +17,7 @@ namespace FrcsPos.Models
         public bool IsPerishable { get; set; } = false;
         public Media? Media { get; set; } = null!;
         public int? MediaId { get; set; } = null!;
+        public ExpiryNotificationConfiguration? ExpiryNotificationConfiguration { get; set; } = null!;
         public ICollection<ProductBatch> Batches { get; set; } = [];
         public ICollection<SaleItem> SaleItems { get; set; } = [];
     }

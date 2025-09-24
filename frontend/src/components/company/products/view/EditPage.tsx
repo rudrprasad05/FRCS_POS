@@ -34,6 +34,8 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 export const productSchema = z.object({
+  firstWarningInDays: z.string().optional(),
+  criticalWarningInHours: z.string().optional(),
   name: z
     .string()
     .min(1, "Product name is required")
@@ -321,6 +323,45 @@ export default function EditProductContainer() {
                   </FormItem>
                 )}
               />
+
+              {form.watch("isPerishable") && (
+                <div className="flex items-center">
+                  <FormField
+                    control={form.control}
+                    name="firstWarningInDays"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Expiration Date <RedStar />
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Please provide the product’s expiration date
+                        </FormDescription>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="criticalWarningInHours"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Expiration Date <RedStar />
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Please provide the product’s expiration date
+                        </FormDescription>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
               <div className="flex gap-4 pt-4">
                 <Button

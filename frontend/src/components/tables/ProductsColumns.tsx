@@ -2,6 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   Edit,
@@ -39,7 +44,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     header: "Image",
     cell: ({ row }) => {
       const company = row.original;
-      <CompanyCell company={company} />;
+      return <CompanyCell company={company} />;
     },
   },
   {
@@ -88,8 +93,26 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
       return (
         <div className="flex gap-2 items-center">
           <div>
-            {(company.isDeleted || company.maxStock == 0) && (
-              <TriangleAlert className="w-3 h-3 text-yellow-600" />
+            {company.isDeleted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TriangleAlert className="w-3 h-3 text-red-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="">Product no longer available</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {company.maxStock === 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TriangleAlert className="w-3 h-3 text-yellow-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="">Low stock</span>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
           <div>{company.maxStock}</div>
@@ -180,6 +203,8 @@ export function HandleBarcode({ barcode }: { barcode: string }) {
 const CompanyCell = ({ company }: { company: any }) => {
   const [isImageValid, setIsImageValid] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  console.log("pcb", company);
 
   return (
     <div className="relative object-cover aspect-square h-16 w-full rounded-md overflow-hidden">
