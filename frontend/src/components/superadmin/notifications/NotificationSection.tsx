@@ -1,30 +1,26 @@
 "use client";
-import { GetPosTerminalSessions } from "@/actions/PosTerminal";
-import NoDataContainer from "@/components/containers/NoDataContainer";
+
+import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
-import { PosSessionColumns } from "@/components/tables/PosSessionColumns";
+import { NotificationColumns } from "@/components/tables/NotificationTables";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
+  ApiResponse,
   ESortBy,
-  type ApiResponse,
-  type PosSession,
-  type QueryObject,
+  Notification as AppNotification,
+  QueryObject,
 } from "@/types/models";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { da } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 
-export default function SessionsSection() {
+export default function NotificationSection() {
   const params = useParams();
-  const posId = String(params.posId);
-
+  const companyName = decodeURIComponent(params.companyName as string);
   const [pagination, setPagination] = useState<QueryObject>({
     pageNumber: 1,
     pageSize: 10,
@@ -33,29 +29,22 @@ export default function SessionsSection() {
     isDeleted: undefined as boolean | undefined,
   });
 
-  const query = useQuery({
-    queryKey: ["getPosSessions", posId, pagination],
-    queryFn: () => GetPosTerminalSessions({ ...pagination, uuid: posId }),
+  const query = useQuery<ApiResponse<AppNotification[]>, Error>({
+    queryKey: ["adminNotifications", pagination],
+    queryFn: () =>
+      GetAllNotificationsSuperAdmin({ ...pagination, companyName }),
     staleTime: FIVE_MINUTE_CACHE,
   });
-
-  if (query.isLoading) {
-    return <Loader2 className="animate-spin" />;
-  }
-
-  if (query.error || !query.data?.success || !query.data.data) {
-    toast.error("Failed to fetch product data");
-    return <NoDataContainer />;
-  }
-
   return (
     <>
       <Header pagination={pagination} setPagination={setPagination}>
-        <H1>Pos Sessions</H1>
-        <P className="text-muted-foreground">Create and manage your sessions</P>
+        <H1>Notifications</H1>
+        <P className="text-muted-foreground">
+          View and manage your notifications
+        </P>
       </Header>
 
-      <HandleSessionDataSection
+      <HandleDataSection
         query={query}
         pagination={pagination}
         setPagination={setPagination}
@@ -64,12 +53,12 @@ export default function SessionsSection() {
   );
 }
 
-function HandleSessionDataSection({
+function HandleDataSection({
   query,
   pagination,
   setPagination,
 }: {
-  query: UseQueryResult<ApiResponse<PosSession[]>, Error>;
+  query: UseQueryResult<ApiResponse<AppNotification[]>, Error>;
   pagination: any;
   setPagination: React.Dispatch<React.SetStateAction<any>>;
 }) {
@@ -78,17 +67,14 @@ function HandleSessionDataSection({
   }
 
   if (query.isError) {
-    return <div className="text-red-500">Error loading POS terminals.</div>;
+    return <div className="text-red-500">Error loading notifications</div>;
   }
 
   const data = query.data?.data ?? [];
   const meta = query.data?.meta;
-
-  console.log("pos session", data);
-
   return (
     <>
-      <DataTable columns={PosSessionColumns} data={data} />
+      <DataTable columns={NotificationColumns} data={data} />
       <div className="py-8">
         <PaginationSection
           pagination={{

@@ -3,7 +3,13 @@
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, ImageIcon, SquareArrowUpRight } from "lucide-react";
+import {
+  Edit,
+  Eye,
+  ImageIcon,
+  SquareArrowUpRight,
+  TriangleAlert,
+} from "lucide-react";
 
 import { Product } from "@/types/models";
 import Link from "next/link";
@@ -108,6 +114,25 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
       const company = row.original;
 
       return <div className="flex gap-2">{company.price}</div>;
+    },
+  },
+
+  {
+    accessorKey: "maxStock",
+    header: "Stock",
+    cell: ({ row }) => {
+      const company = row.original;
+
+      return (
+        <div className="flex gap-2 items-center">
+          <div>
+            {(company.isDeleted || company.maxStock == 0) && (
+              <TriangleAlert className="w-3 h-3 text-yellow-600" />
+            )}
+          </div>
+          <div>{company.maxStock}</div>
+        </div>
+      );
     },
   },
 

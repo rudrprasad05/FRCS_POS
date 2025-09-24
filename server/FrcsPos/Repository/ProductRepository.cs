@@ -128,9 +128,11 @@ namespace FrcsPos.Repository
             if (isForPos)
             {
                 query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
+                query = query.Where(p => p.IsDeleted != true);
+
             }
             // filtering
-            if (queryObject.IsDeleted.HasValue)
+            if (queryObject.IsDeleted.HasValue && !isForPos)
             {
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
             }
@@ -170,6 +172,12 @@ namespace FrcsPos.Repository
             {
                 var dto = product.FromModelToDto();
                 result.Add(dto);
+
+                dto.MaxStock = product.Batches
+                    .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
+                    .Sum(b => b.Quantity);
+
+
             }
 
             return new ApiResponse<List<ProductDTO>>

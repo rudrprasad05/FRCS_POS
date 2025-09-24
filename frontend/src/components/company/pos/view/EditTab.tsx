@@ -130,9 +130,7 @@ export function EditorTab() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Location <RedStar />
-                      </FormLabel>
+                      <FormLabel>Location</FormLabel>
                       <FormControl>
                         <Input placeholder="Enter location" {...field} />
                       </FormControl>
@@ -146,9 +144,7 @@ export function EditorTab() {
                   name="serialNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Serial <RedStar />
-                      </FormLabel>
+                      <FormLabel>Serial</FormLabel>
                       <FormControl>
                         <Input placeholder="Enter serial" {...field} />
                       </FormControl>

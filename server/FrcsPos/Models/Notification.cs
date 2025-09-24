@@ -15,6 +15,8 @@ namespace FrcsPos.Models
         public User? User { get; set; }
         public int? CompanyId { get; set; }
         public Company? Company { get; set; }
+        public int? ProductBatchId { get; set; }
+        public ProductBatch? ProductBatch { get; set; }
         public bool IsSuperAdmin { get; set; } = false;
         public string ActionUrl { get; set; } = string.Empty;
     }
@@ -24,7 +26,9 @@ namespace FrcsPos.Models
         INFO,
         WARNING,
         ERROR,
-        SUCCESS
+        SUCCESS,
+        EXPIRED,
+        CRITICAL,
     }
 
 }

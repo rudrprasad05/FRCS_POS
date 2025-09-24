@@ -117,8 +117,8 @@ namespace FrcsPos.Repository
                 .Select(u => new UserDTO
                 {
                     Id = u.Id,
-                    Email = u.Email,
-                    Username = u.UserName
+                    Email = u.Email ?? "",
+                    Username = u.UserName ?? ""
                 })
                 .ToListAsync();
 
@@ -144,13 +144,15 @@ namespace FrcsPos.Repository
                 query = _userManager.Users;
             }
 
-            // Search (by username, email, or full name)
             if (!string.IsNullOrWhiteSpace(requestQuery.Search))
             {
-                var search = requestQuery.Search.ToLower();
-                query = query.Where(u => u.UserName.ToLower().Contains(search) || u.Email.ToLower().Contains(search));
+                var search = requestQuery.Search.Normalize();
+                query = query.Where(
+                    c =>
+                        (c.NormalizedUserName != null && c.NormalizedUserName.Contains(search)) ||
+                        (c.NormalizedEmail != null && c.NormalizedEmail.Contains(search))
+                );
             }
-
             // Sorting
             query = requestQuery.SortBy switch
             {
@@ -212,6 +214,17 @@ namespace FrcsPos.Repository
             {
                 query = query.Where(u => u.IsDeleted == queryObject.IsDeleted.Value);
             }
+
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.Normalize();
+                query = query.Where(
+                    c =>
+                        (c.NormalizedUserName != null && c.NormalizedUserName.Contains(search)) ||
+                        (c.NormalizedEmail != null && c.NormalizedEmail.Contains(search))
+                );
+            }
+
 
             // Sorting
             query = queryObject.SortBy switch

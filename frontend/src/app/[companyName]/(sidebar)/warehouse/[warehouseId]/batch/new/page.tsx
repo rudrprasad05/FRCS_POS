@@ -50,6 +50,7 @@ import {
 import { format } from "util";
 import { Calendar } from "@/components/ui/calendar";
 import { formatDate, formatDateIntoFormat } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const schema = z.object({
   companyId: z.number({ error: "Company is required" }).int(),
@@ -71,11 +72,11 @@ export default function NewProductPage() {
 
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [file, setFile] = useState<File | undefined>(undefined);
   const params = useParams();
   const companyName = String(params.companyName);
   const warehouseId = String(params.warehouseId);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const form = useForm<NewBatchFormData>({
     resolver: zodResolver(schema),
@@ -111,16 +112,6 @@ export default function NewProductPage() {
     loadTaxCategories();
   }, [toast]);
 
-  const formValues = form.watch();
-
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
-
-  useEffect(() => {
-    console.log("Form state changed:", initalFormState);
-  }, [initalFormState]);
-
   useEffect(() => {
     if (initalFormState) {
       form.reset({
@@ -140,6 +131,10 @@ export default function NewProductPage() {
     console.log(res);
     if (res.success) {
       toast.success("Batch Created");
+      queryClient.invalidateQueries({
+        queryKey: ["warehouseBatches", warehouseId],
+        exact: false,
+      });
       router.back();
     } else {
       toast.error("Error creating batch", { description: res.message });

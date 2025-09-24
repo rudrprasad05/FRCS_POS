@@ -18,6 +18,7 @@ export async function RequestWrapper<T>(
   const params = buildMediaQueryParams(query);
 
   url = `${url}?${params}`;
+  console.log(url);
 
   try {
     const res = await axiosGlobal({

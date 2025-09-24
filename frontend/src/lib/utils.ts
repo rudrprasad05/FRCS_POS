@@ -1,3 +1,4 @@
+import { NotificationTypes } from "@/types/models";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

@@ -8,8 +8,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import React from "react";
 
 export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
-  const { products, addProduct, deleteProduct, removeProduct } =
-    usePosSession();
+  const { cart, addProduct, deleteProduct, removeProduct } = usePosSession();
 
   const handleAddProduct = (product: Product) => {
     let sI: SaleItemOmitted = {
@@ -19,6 +18,7 @@ export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: 0,
+      isDeleted: false,
     };
     addProduct(sI);
   };
@@ -54,6 +54,11 @@ export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
         <Button
           variant="outline"
           size="sm"
+          disabled={
+            item.product.maxStock !== undefined &&
+            (cart.find((c) => c.productId === item.product.id)?.quantity ??
+              0) >= item.product.maxStock
+          }
           onClick={() => handleAddProduct(item.product as Product)}
         >
           <Plus className="w-3 h-3" />

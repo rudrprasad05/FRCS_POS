@@ -11,9 +11,11 @@ import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import {
   ApiResponse,
+  ESortBy,
   PosSession,
   PosSessionWithProducts,
   Product,
+  QueryObject,
   SaleItem,
   SaleItemOmitted,
 } from "@/types/models";
@@ -21,7 +23,7 @@ import { NewCheckoutRequest } from "@/types/res";
 import { SaleStatus } from "@/types/enum";
 import { Checkout } from "@/actions/PosSession";
 import { init } from "next/dist/compiled/webpack/webpack";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { GetAllProducts, GetPosProducts } from "@/actions/Product";
 
 interface PosSessionContextType {
@@ -29,12 +31,14 @@ interface PosSessionContextType {
   products: (Product | undefined)[];
   qr: string | undefined;
   cart: SaleItemOmitted[];
+  pagination: QueryObject;
 
   moneyValues: IMoneyValue;
   isScannerConnectedToServer: boolean;
   isTerminalConnectedToServer: boolean;
 
   isSaving: boolean;
+  isProductsLoading: boolean;
   hasChanged: boolean;
 
   setQr: (data: string) => void;
@@ -49,6 +53,8 @@ interface PosSessionContextType {
 
   setIsTerminalConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
   setIsScannerConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
+  setPagination: React.Dispatch<React.SetStateAction<QueryObject>>;
+
   //   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
 
@@ -57,6 +63,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
   products: {} as Product[],
   qr: undefined,
   cart: [],
+  pagination: {} as QueryObject,
 
   moneyValues: {} as IMoneyValue,
 
@@ -65,6 +72,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
 
   isSaving: false,
   hasChanged: false,
+  isProductsLoading: false,
 
   setInitialState: () => {},
   setQr: () => {},
@@ -72,7 +80,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
   deleteProduct: () => {},
   addProduct: () => {},
   removeProduct: () => {},
-
+  setPagination: () => {},
   checkout: async () => {},
 
   setIsTerminalConnectedToServer: () => {},
@@ -88,8 +96,6 @@ interface IMoneyValue {
 
 export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<PosSession>({} as PosSession);
-
-  //   const [products, setProducts] = useState<Product[]>([]);
   const [qr, setQr] = useState<string | undefined>();
   const router = useRouter();
 
@@ -101,6 +107,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
   const [cart, setCart] = useState<SaleItemOmitted[]>([]);
   const [hasChanged, setHasChanged] = useState(false);
+  const [isProductsLoading, setIsProductsLoading] = useState(false);
   const initialHashRef = useRef<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isTerminalConnectedToServer, setIsTerminalConnectedToServer] =
@@ -109,17 +116,24 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     useState(false);
   const params = useParams();
   const companyName = String(params.companyName);
+  const queryClient = useQueryClient();
 
-  const pageSize = 20; // adjust
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 20,
+    search: "",
+    sortBy: ESortBy.DSC,
+    companyName: companyName,
+    isDeleted: undefined as boolean | undefined,
+  });
 
   const infiniteQuery = useInfiniteQuery<ApiResponse<Product[]>, Error>({
-    queryKey: ["posSessionProducts", session.id],
+    queryKey: ["posSessionProducts", session.id, pagination],
     queryFn: async ({ pageParam = 1 }) => {
       return GetAllProducts(
         {
-          companyName,
+          ...pagination,
           pageNumber: pageParam as number,
-          pageSize,
         },
         true
       );
@@ -134,6 +148,10 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     staleTime: 1000 * 60 * 5,
   });
 
+  useEffect(() => {
+    setIsProductsLoading(infiniteQuery.isLoading);
+  }, [infiniteQuery.isLoading]);
+
   // Merge all pages into a single array
   const products = infiniteQuery.data?.pages.flatMap((p) => p.data) ?? [];
 
@@ -143,7 +161,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Track changes
   useEffect(() => {
-    console.log(cart, products, session);
     const currentHash = hash({ ...cart, products });
     if (!initialHashRef.current) {
       initialHashRef.current = currentHash;
@@ -152,8 +169,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }, [cart, products, session]);
 
   function setInitialState(init: PosSessionWithProducts) {
-    console.log(init);
-    // setProducts(init.products); // TODO bug?
     setSession(init.posSession);
     initialHashRef.current = hash({ ...init, products });
   }
@@ -284,6 +299,14 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setCart([]);
+    queryClient.invalidateQueries({
+      queryKey: [
+        "posSessionProducts",
+        session.id,
+        { ...pagination, search: undefined },
+      ],
+      exact: false,
+    });
     initialHashRef.current = hash({ ...cart, products: [] });
     setHasChanged(false);
 
@@ -296,11 +319,13 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         session,
         products,
         qr,
+        pagination,
         cart,
         moneyValues,
         isTerminalConnectedToServer,
         isScannerConnectedToServer,
         isSaving,
+        isProductsLoading,
         hasChanged,
         setInitialState,
         loadMore,
@@ -311,7 +336,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         checkout,
         setIsTerminalConnectedToServer,
         setIsScannerConnectedToServer,
-        // setProducts,
+        setPagination,
       }}
     >
       {children}

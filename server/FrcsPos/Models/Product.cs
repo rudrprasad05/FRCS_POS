@@ -10,6 +10,8 @@ namespace FrcsPos.Models
         public string Sku { get; set; } = default!;
         public string Barcode { get; set; } = default!;
         public decimal Price { get; set; }
+        public int FirstWarningInDays { get; set; } = 7;
+        public int SecondWarningInHours { get; set; } = 24;
         public int TaxCategoryId { get; set; }
         public TaxCategory TaxCategory { get; set; } = default!;
         public bool IsPerishable { get; set; } = false;

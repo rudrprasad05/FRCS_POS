@@ -19,6 +19,7 @@ namespace FrcsPos.Response.DTO
         public bool IsPerishable { get; set; } = false;
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
+        public int? MaxStock { get; set; } = 0;
     }
 
     public class InitialProductCreationData : BaseDTO

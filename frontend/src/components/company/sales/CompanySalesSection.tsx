@@ -3,16 +3,20 @@ import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { GetUsersByCompany } from "@/actions/User";
+import { PackagePlus } from "lucide-react";
+import { GetAllProducts } from "@/actions/Product";
 import { Header } from "@/components/global/TestHeader";
-import { CompanyUserColumns } from "@/components/tables/CompanyUserColumns";
+import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
   ESortBy,
+  Product,
   QueryObject,
-  User,
+  Sale,
   UserRoles,
 } from "@/types/models";
 import {
@@ -20,15 +24,13 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import NewWarehouseDialoge from "../warehouse/NewWarehouseDialoge";
-import NewUserDialoge from "@/components/superadmin/users/NewUserDialoge";
-import { buttonVariants } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
-import { columns } from "@/components/superadmin/users/UserColumns";
+import { PosTerminalSalesColumns } from "@/components/tables/PosTerminalSalesColumns";
+import { GetSaleByCompany } from "@/actions/Sale";
 
-export default function UserSection() {
+export default function CompanySalesSection() {
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
   const queryClient = useQueryClient();
@@ -39,12 +41,11 @@ export default function UserSection() {
     search: "",
     sortBy: ESortBy.DSC,
     isDeleted: undefined as boolean | undefined,
-    companyName: companyName,
   });
 
   const query = useQuery({
-    queryKey: ["companyUsers", companyName, pagination],
-    queryFn: () => GetUsersByCompany({ ...pagination, companyName }),
+    queryKey: ["sales", companyName, pagination],
+    queryFn: () => GetSaleByCompany({ ...pagination, companyName }),
     staleTime: FIVE_MINUTE_CACHE,
   });
 
@@ -59,7 +60,7 @@ export default function UserSection() {
           { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
         ],
         queryFn: () =>
-          GetUsersByCompany({
+          GetSaleByCompany({
             ...pagination,
             pageNumber: (pagination.pageNumber as number) + 1,
           }),
@@ -69,19 +70,9 @@ export default function UserSection() {
 
   return (
     <>
-      <Header
-        pagination={pagination}
-        setPagination={setPagination}
-        newButton={
-          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
-            <NewUserButton />
-          </RoleWrapper>
-        }
-      >
-        <H1>Users</H1>
-        <P className="text-muted-foreground">
-          Create and manage your company users
-        </P>
+      <Header pagination={pagination} setPagination={setPagination}>
+        <H1>Sales</H1>
+        <P className="text-muted-foreground">View and manage your sales</P>
       </Header>
 
       <HandleDataSection
@@ -93,27 +84,12 @@ export default function UserSection() {
   );
 }
 
-function NewUserButton() {
-  return (
-    <NewUserDialoge>
-      <div
-        className={`${buttonVariants({
-          variant: "default",
-        })} w-full text-start justify-start px-2 my-2`}
-      >
-        <UserPlus />
-        New User
-      </div>
-    </NewUserDialoge>
-  );
-}
-
 function HandleDataSection({
   query,
   pagination,
   setPagination,
 }: {
-  query: UseQueryResult<ApiResponse<User[]>, Error>;
+  query: UseQueryResult<ApiResponse<Sale[]>, Error>;
   pagination: any;
   setPagination: React.Dispatch<React.SetStateAction<any>>;
 }) {
@@ -122,21 +98,25 @@ function HandleDataSection({
   }
 
   if (query.isError) {
-    return <div className="text-red-500">Error loading Users</div>;
+    return <div className="text-red-500">Error loading sales.</div>;
   }
 
   const data = query.data?.data ?? [];
   const meta = query.data?.meta;
 
   return (
-    <div className="mt-8">
-      <DataTable columns={columns} data={data} />
+    <>
+      <DataTable columns={PosTerminalSalesColumns} data={data} />
       <div className="py-8">
         <PaginationSection
-          pagination={pagination}
+          pagination={{
+            ...pagination,
+            totalCount: meta?.totalCount ?? 0,
+            totalPages: meta?.totalPages ?? 0,
+          }}
           setPagination={setPagination}
         />
       </div>
-    </div>
+    </>
   );
 }

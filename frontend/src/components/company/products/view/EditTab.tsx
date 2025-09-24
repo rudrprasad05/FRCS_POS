@@ -67,11 +67,12 @@ export function EditorTab({
   product: Product;
   taxes: TaxCategory[];
 }) {
+  console.log(product);
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    product?.media?.url as string
+    product?.media?.url ?? null
   );
 
   const queryClient = useQueryClient();
@@ -89,6 +90,12 @@ export function EditorTab({
       isPerishable: product?.isPerishable,
     },
   });
+
+  useEffect(() => {
+    if (product?.media?.url) {
+      setPreviewUrl(product.media.url);
+    }
+  }, [product?.media?.url]);
 
   useEffect(() => {
     if (file && file.type.startsWith("image/")) {

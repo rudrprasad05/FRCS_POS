@@ -23,23 +23,68 @@ namespace FrcsPos.Services
 
         public async Task<T?> GetAsync<T>(string key)
         {
-            var db = _redis.GetDatabase();
-            var value = await db.StringGetAsync(key);
-            if (value.IsNullOrEmpty) return default;
-            return System.Text.Json.JsonSerializer.Deserialize<T>(value!);
+            try
+            {
+                if (_redis == null || !_redis.IsConnected)
+                {
+                    return default;
+                }
+
+                var db = _redis.GetDatabase();
+                var value = await db.StringGetAsync(key);
+
+                if (value.IsNullOrEmpty)
+                    return default;
+
+                return System.Text.Json.JsonSerializer.Deserialize<T>(value!);
+            }
+            catch (Exception ex)
+            {
+                // Optional: log, but don’t crash
+                Console.WriteLine($"Redis unavailable: {ex.Message}");
+                return default;
+            }
         }
 
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
         {
-            var db = _redis.GetDatabase();
-            var json = System.Text.Json.JsonSerializer.Serialize(value);
-            await db.StringSetAsync(key, json, expiry);
+            try
+            {
+                if (_redis == null || !_redis.IsConnected)
+                {
+                    // Redis not configured or offline → just skip
+                    return;
+                }
+
+                var db = _redis.GetDatabase();
+                var json = System.Text.Json.JsonSerializer.Serialize(value);
+                await db.StringSetAsync(key, json, expiry);
+            }
+            catch (Exception ex)
+            {
+                // Optional: log instead of throw
+                Console.WriteLine($"Redis unavailable (Set): {ex.Message}");
+            }
         }
 
         public async Task RemoveAsync(string key)
         {
-            var db = _redis.GetDatabase();
-            await db.KeyDeleteAsync(key);
+            try
+            {
+                if (_redis == null || !_redis.IsConnected)
+                {
+                    // Redis not configured or offline → just skip
+                    return;
+                }
+
+                var db = _redis.GetDatabase();
+                await db.KeyDeleteAsync(key);
+            }
+            catch (Exception ex)
+            {
+                // Optional: log instead of throw
+                Console.WriteLine($"Redis unavailable (Remove): {ex.Message}");
+            }
         }
     }
 

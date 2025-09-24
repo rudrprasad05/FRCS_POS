@@ -13,13 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash, Loader2 } from "lucide-react";
 import { Company } from "@/types/models";
-import { useCompanyData } from "./CompaniesSection";
 import { SoftDeleteCompany } from "@/actions/Company";
 import { toast } from "sonner";
 
 export function DeleteCompanyDialoge({ data }: { data: Company }) {
-  const { refresh } = useCompanyData();
-
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
@@ -32,7 +29,6 @@ export function DeleteCompanyDialoge({ data }: { data: Company }) {
       toast.success("Company Deleted");
       setIsOpen(false);
       setConfirmationText("");
-      refresh();
     } catch (error) {
       setIsLoading(false);
       toast.error("Error Occurred");

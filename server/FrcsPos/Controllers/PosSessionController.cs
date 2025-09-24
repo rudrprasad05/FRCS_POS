@@ -37,7 +37,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCompany([FromBody] CreateNewPosSession request)
+        public async Task<IActionResult> CreatePosSession([FromBody] CreateNewPosSession request)
         {
             // Try to find user by email
             var user = await _userManager.FindByEmailAsync(request.Email);

@@ -14,6 +14,7 @@ import {
   Coins,
   Computer,
   File,
+  Info,
   LayoutDashboard,
   LucideIcon,
   User,
@@ -83,6 +84,11 @@ export function CompanySidebarNavigation() {
       title: "Reports",
       href: `${base}/reports`,
       icon: File,
+    },
+    {
+      title: "Notifications",
+      href: `${base}/notifications`,
+      icon: Info,
     },
   ];
   console.log(user?.role);

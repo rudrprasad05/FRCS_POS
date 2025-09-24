@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Sale } from "@/types/models";
+import { useQueryClient } from "@tanstack/react-query";
 import { Download, Check, ArrowLeftIcon, Mail, Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
@@ -52,6 +53,13 @@ export default function ReceiptPage() {
   const [sale, setSale] = useState<Sale | undefined>(undefined);
   const [recieptUrl, setRecieptUrl] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
+  const checkoutId = String(params.checkoutId);
+  const sessionId = String(params.sessionId);
+  const router = useRouter();
+
+  const queryClient = useQueryClient();
 
   const [state, setState] = useState<EReceiptPageState>(
     EReceiptPageState.LOADING
@@ -60,12 +68,15 @@ export default function ReceiptPage() {
   const { date, time } = formatDateTime(
     sale ? sale.createdOn : Date.now.toString()
   );
-  const params = useParams();
-  const checkoutId = String(params.checkoutId);
 
   useEffect(() => {
     getDate();
   }, [params]);
+
+  queryClient.invalidateQueries({
+    queryKey: ["posSessionProducts", sessionId],
+    exact: false,
+  });
 
   const handleDownloadReceipt = async () => {
     if (!sale) return;
@@ -241,7 +252,7 @@ export default function ReceiptPage() {
             <Button
               variant="outline"
               className=" bg-transparent"
-              onClick={() => window.history.back()}
+              onClick={() => router.back()}
             >
               <ArrowLeftIcon /> Back
             </Button>

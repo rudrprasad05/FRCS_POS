@@ -27,6 +27,10 @@ builder.Services.AddRedisContext(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -56,6 +60,7 @@ builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
+builder.Services.AddHostedService<ExpiryNotificationService>();
 
 
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { CreateCompany } from "@/actions/Company";
+import { GetUnAssignedUsers } from "@/actions/User";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,10 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { QueryObject, User, UserRoles } from "@/types/models";
-import { HousePlus, Loader2, Plus } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -23,8 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -32,15 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GetAllAdmins, GetUnAssignedUsers } from "@/actions/User";
-import { useCompanyData } from "./CompaniesSection";
-import { CreateCompany } from "@/actions/Company";
-import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
-import NewUserDialoge from "../users/NewUserDialoge";
+import { QueryObject, User, UserRoles } from "@/types/models";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { HousePlus, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const formSchema = z.object({
   name: z.string().min(1, {

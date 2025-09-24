@@ -34,7 +34,11 @@ namespace FrcsPos.Repository
             var posTerminal = await _context.PosTerminals.SingleOrDefaultAsync(p => p.UUID == request.PosTerminalUUID);
             if (posTerminal == null)
             {
-                return ApiResponse<PosSessionDTO>.Fail();
+                return ApiResponse<PosSessionDTO>.Fail(message: "invalid uuid");
+            }
+            if (!posTerminal.IsActive)
+            {
+                return ApiResponse<PosSessionDTO>.Fail(message: "terminal not active");
             }
 
             // check if any active sessions exists. mark as inactive
@@ -73,13 +77,24 @@ namespace FrcsPos.Repository
         }
         public async Task<ApiResponse<PosSessionDTO>> ResumePosSession(ResumePosSession request)
         {
+            var now = DateTime.UtcNow;
             var posSession = await _context.PosSessions
                 .Include(ps => ps.PosUser)
-                .FirstOrDefaultAsync(a => a.UUID == request.PosSessionId && a.IsActive == true);
+                .FirstOrDefaultAsync(a =>
+                    a.UUID == request.PosSessionId &&
+                    a.IsActive == true
+                );
 
             if (posSession == null)
             {
                 return ApiResponse<PosSessionDTO>.Fail(message: "no active sessions found");
+            }
+
+            if (posSession.ConnectionTimeOut < now)
+            {
+                posSession.IsActive = false;
+                await _context.SaveChangesAsync();
+                return ApiResponse<PosSessionDTO>.Fail(message: "session expired");
             }
 
             var user = posSession.PosUser;
@@ -99,6 +114,7 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<PosSessionWithProducts>> GetPosSessionByUUID(string uuid)
         {
+            var now = DateTime.UtcNow;
             var posSession = await _context.PosSessions
                 .Include(s => s.PosUser)
                 .Include(s => s.PosTerminal)
@@ -115,6 +131,13 @@ namespace FrcsPos.Repository
             if (posSession == null)
             {
                 return ApiResponse<PosSessionWithProducts>.Fail();
+            }
+
+            if (posSession.ConnectionTimeOut < now)
+            {
+                posSession.IsActive = false;
+                await _context.SaveChangesAsync();
+                return ApiResponse<PosSessionWithProducts>.Fail(message: "session expired");
             }
 
             var result = new PosSessionWithProducts

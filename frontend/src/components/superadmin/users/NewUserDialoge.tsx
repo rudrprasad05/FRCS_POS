@@ -40,7 +40,7 @@ import {
   RotateCw,
   UserPlus,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -83,6 +83,8 @@ export default function NewUserDialoge({
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
 
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -150,7 +152,15 @@ export default function NewUserDialoge({
 
   async function onSubmit(values: NewUserForm) {
     setLoading(true);
-    const res = await CreateUser(values);
+
+    let cName = undefined;
+    let isComany = false;
+    if (companyName && companyName.trim().length > 0) {
+      cName = companyName;
+      isComany = true;
+    }
+
+    const res = await CreateUser(values, { companyName: cName });
     console.log(res);
 
     if (!res.success) {
@@ -169,10 +179,17 @@ export default function NewUserDialoge({
         );
       }
 
-      queryClient.invalidateQueries({
-        queryKey: ["adminUsers", {}],
-        exact: false,
-      });
+      if (isComany) {
+        queryClient.invalidateQueries({
+          queryKey: ["companyUsers", companyName, {}],
+          exact: false,
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ["adminUsers", {}],
+          exact: false,
+        });
+      }
 
       setOpen(false);
     }

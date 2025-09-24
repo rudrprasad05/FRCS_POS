@@ -1,27 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { RemoveUserFromCompany } from "@/actions/Company";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Loader2 } from "lucide-react";
-import { Company } from "@/types/models";
-import { useCompanyData } from "./CompaniesSection";
-import { RemoveUserFromCompany, SoftDeleteCompany } from "@/actions/Company";
+import { Loader2, Trash } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
-import React from "react";
-import { useParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 
 export default function RemoveUserFromCompanyDialoge({
   userId,

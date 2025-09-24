@@ -27,6 +27,8 @@ export interface Product extends BaseModel {
 
   batches?: ProductBatch[];
   saleItems?: SaleItem[];
+
+  maxStock?: number;
 }
 
 export interface Media extends BaseModel {
@@ -212,6 +214,7 @@ export interface PosSession extends BaseModel {
   isActive: boolean;
   connectionTimeOut: Date;
   sales: Sale[];
+  totalSales?: number;
 }
 
 export type PosSessionWithProducts = {
