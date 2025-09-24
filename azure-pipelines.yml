@@ -7,18 +7,32 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js'
 
-- script: npm ci
-  displayName: 'Install dependencies'
+# Install dependencies inside the frontend folder
+- script: |
+    cd frontend
+    if [ -f package-lock.json ]; then
+      npm ci
+    else
+      npm install
+    fi
+  displayName: 'Install frontend dependencies'
 
-- script: npx next lint --fix || true
+# Run ESLint with auto-fix
+- script: |
+    cd frontend
+    npx next lint --fix || true
   displayName: 'Run ESLint (auto-fix)'
 
-- script: node --max-old-space-size=4096 ./node_modules/.bin/next build
+# Build frontend with increased memory
+- script: |
+    cd frontend
+    node --max-old-space-size=4096 ./node_modules/.bin/next build
   displayName: 'Build Next.js frontend'
 
+# Publish build artifacts
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '.next'
+    pathToPublish: 'frontend/.next'
     artifactName: 'frontend-build'
     publishLocation: 'Container'
   displayName: 'Publish build artifacts'
