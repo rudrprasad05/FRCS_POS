@@ -5,7 +5,7 @@ trigger:
       - aure-pipelines   # only trigger on this branch
 
 pool:
-  vmImage: ubuntu-latest
+  name: pool-1
 
 steps:
 - task: NodeTool@0
