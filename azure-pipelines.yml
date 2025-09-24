@@ -1,9 +1,3 @@
-# Azure Pipeline for Next.js frontend (monorepo)
-trigger:
-  branches:
-    include:
-      - aure-pipelines   # only trigger on this branch
-
 pool:
   name: pool-1
 
@@ -13,16 +7,18 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js'
 
-- script: |
-    cd frontend
-    npm ci
-    npm run lint -- --fix || true
-    npm run build
-  displayName: 'Install dependencies, lint, and build frontend'
+- script: npm ci
+  displayName: 'Install dependencies'
+
+- script: npx next lint --fix || true
+  displayName: 'Run ESLint (auto-fix)'
+
+- script: node --max-old-space-size=4096 ./node_modules/.bin/next build
+  displayName: 'Build Next.js frontend'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: 'frontend/.next'
+    pathToPublish: '.next'
     artifactName: 'frontend-build'
     publishLocation: 'Container'
-  displayName: 'Publish frontend build artifacts'
+  displayName: 'Publish build artifacts'
