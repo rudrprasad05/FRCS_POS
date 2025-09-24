@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/UserContext";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -75,10 +76,12 @@ export default function RootLayout({
           enableSystem={false} // ❌ don't follow OS preference
         >
           <TanstackProvider>
-            <AuthProvider>
-              <Toaster />
-              {children}
-            </AuthProvider>
+            <Suspense fallback={<div>Loading session...</div>}>
+              <AuthProvider>
+                <Toaster />
+                {children}
+              </AuthProvider>
+            </Suspense>
           </TanstackProvider>
         </ThemeProvider>
       </body>

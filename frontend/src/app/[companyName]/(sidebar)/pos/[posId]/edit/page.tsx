@@ -7,19 +7,13 @@ import { GetPosTerminalById } from "@/actions/PosTerminal";
 import ConfigTab from "@/components/company/pos/view/ConfigTab";
 import { EditorTab } from "@/components/company/pos/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { PosTerminal, Product } from "@/types/models";
+import { PosTerminal } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
 import { use, useState } from "react";
 import { toast } from "sonner";
-
-export const {
-  Provider: ProductEditorProvider,
-  useGenericData: useProductEditorProvider,
-} = createGenericSingleDataContext<Product>();
 
 type PageProps = {
   params: Promise<{ companyId: string; posId: string; sessionId: string }>;

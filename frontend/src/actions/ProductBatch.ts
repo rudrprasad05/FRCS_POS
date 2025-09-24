@@ -1,4 +1,4 @@
-import { NewBatchFormData } from "@/app/[companyName]/(sidebar)/warehouse/[warehouseId]/batch/new/page";
+import { NewBatchFormData } from "@/components/company/warehouse/batch/new/NewBatchContainer";
 import { ApiResponse, ProductBatch, QueryObject } from "@/types/models";
 import { ILoadPreCreationInfo } from "@/types/res";
 import { RequestWrapper } from "./RequestWrapper";

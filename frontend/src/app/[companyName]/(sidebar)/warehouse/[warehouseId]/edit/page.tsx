@@ -7,20 +7,14 @@ import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
 import ConfigTab from "@/components/company/warehouse/edit/ConfigTab";
 import { EditorTab } from "@/components/company/warehouse/edit/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { createGenericSingleDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { Product, Warehouse } from "@/types/models";
+import { Warehouse } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-
-export const {
-  Provider: ProductEditorProvider,
-  useGenericData: useProductEditorProvider,
-} = createGenericSingleDataContext<Product>();
 
 export default function WarehouseEditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");

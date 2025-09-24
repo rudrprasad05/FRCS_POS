@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl");
 
   // 🔹 Load session from cookies on mount
 
@@ -43,7 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: "Redirecting shortly",
     });
 
-    router.push((returnUrl as string) || "/redirect");
+    router.push(searchParams.get("returnUrl") || "/redirect");
     // router.push("/redirect");
   };
 

@@ -11,7 +11,6 @@ import { Header } from "@/components/global/TestHeader";
 import { WarehouseProductBatchColumn } from "@/components/tables/WarehouseProductBatchColumn";
 import { Button } from "@/components/ui/button";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
@@ -31,9 +30,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-export const { Provider: BatchDataProvider, useGenericData: useBatchData } =
-  createGenericListDataContext<ProductBatch>();
 
 export default function WarehousePage() {
   const params = useParams();
