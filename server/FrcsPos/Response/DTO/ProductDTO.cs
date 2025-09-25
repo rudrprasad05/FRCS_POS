@@ -20,6 +20,8 @@ namespace FrcsPos.Response.DTO
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
         public int? MaxStock { get; set; } = 0;
+        public ExpiryNotificationConfigurationDTO? ExpiryNotificationConfiguration { get; set; } = default!;
+
     }
 
     public class InitialProductCreationData : BaseDTO

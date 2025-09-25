@@ -77,7 +77,7 @@ export const productSchema = z
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
-export default function EditProductContainer() {
+export default function NewProductPage() {
   const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -35,6 +35,11 @@ namespace FrcsPos.Mappers
                 IsPerishable = request.IsPerishable,
             };
 
+            if (request.ExpiryNotificationConfiguration != null)
+            {
+                dto.ExpiryNotificationConfiguration = request.ExpiryNotificationConfiguration.FromModelToDto();
+            }
+
             return dto;
         }
 

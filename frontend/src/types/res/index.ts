@@ -1,13 +1,13 @@
 import { SaleStatus } from "../enum";
 import {
   Company,
-  PosSession,
   Notification,
-  UserRoles,
-  SaleItem,
+  PosSession,
   Product,
-  Warehouse,
+  SaleItem,
   TaxCategory,
+  UserRoles,
+  Warehouse,
 } from "../models";
 
 export interface SuperAdminDashboardDTO {

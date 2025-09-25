@@ -162,6 +162,7 @@ namespace FrcsPos.Repository
 
             var company = await _context.Companies
                 .Include(c => c.Products)
+                    .ThenInclude(p => p.ExpiryNotificationConfiguration)
                 .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
             if (company == null)
             {

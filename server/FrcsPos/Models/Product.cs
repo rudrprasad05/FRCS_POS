@@ -20,5 +20,6 @@ namespace FrcsPos.Models
         public ExpiryNotificationConfiguration? ExpiryNotificationConfiguration { get; set; } = null!;
         public ICollection<ProductBatch> Batches { get; set; } = [];
         public ICollection<SaleItem> SaleItems { get; set; } = [];
+        public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     }
 }

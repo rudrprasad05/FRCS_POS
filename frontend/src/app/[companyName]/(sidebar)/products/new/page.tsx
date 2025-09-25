@@ -1,5 +1,5 @@
-import EditProductContainer from "@/components/company/products/view/EditPage";
+import NewProductPage from "@/components/company/products/view/NewProductPage";
 
 export default function EditProductPage() {
-  return <EditProductContainer />;
+  return <NewProductPage />;
 }
