@@ -89,7 +89,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string CompanyName)
+        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string? CompanyName)
         {
             if (!ModelState.IsValid)
             {

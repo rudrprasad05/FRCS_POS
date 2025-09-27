@@ -368,6 +368,7 @@ namespace FrcsPos.Migrations
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     Location = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),

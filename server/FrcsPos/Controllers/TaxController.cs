@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
@@ -14,31 +11,43 @@ namespace FrcsPos.Controllers
     [ApiController]
     public class TaxController : BaseController
     {
-        private readonly ITaxCategoryRepository taxCategoryRepository;
+        private readonly ITaxCategoryRepository _taxRepository;
 
         public TaxController(
-            IConfiguration configuration,
             ITokenService tokenService,
-            ILogger<TaxController> logger,
-            ITaxCategoryRepository _taxCategoryRepository
+            ITaxCategoryRepository taxRepository,
+            IConfiguration configuration,
+            ILogger<UserController> logger,
+            ICompanyRepository companyRepository
         ) : base(configuration, tokenService, logger)
         {
-            taxCategoryRepository = _taxCategoryRepository;
+            _taxRepository = taxRepository;
         }
 
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllTax([FromQuery] RequestQueryObject queryObject)
         {
-            var model = await taxCategoryRepository.GetAllTaxCategories(queryObject);
-
-            if (model == null || !model.Success)
-            {
-                return BadRequest("model not gotten");
-            }
-
+            var model = await _taxRepository.GetAllTaxCategories(queryObject);
+            if (model == null || !model.Success) return BadRequest("Failed to fetch tax categories");
             return Ok(model);
         }
 
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateTax([FromBody] NewTaxRequest request)
+        {
+            if (request == null) return BadRequest("Invalid request data");
+            var model = await _taxRepository.CreateTaxCategoryAsync(request);
+            if (model == null || !model.Success) return BadRequest("Failed to create tax category");
+            return Ok(model);
+        }
 
+        [HttpDelete("soft-delete")]
+        public async Task<IActionResult> SoftDeleteTax([FromQuery] string uuid)
+        {
+            if (string.IsNullOrWhiteSpace(uuid)) return BadRequest("UUID is required");
+            var model = await _taxRepository.SoftDelete(uuid);
+            if (model == null || !model.Success) return BadRequest("Failed to delete tax category");
+            return Ok(model);
+        }
     }
 }

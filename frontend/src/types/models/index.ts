@@ -217,6 +217,12 @@ export type PosSessionWithProducts = PosSession & {
   products: Product[];
 };
 
+export type NewTaxFormType = {
+  name: string;
+  percentage: number;
+};
+
+
 export interface RefundRequest extends BaseModel {
   companyId: number;
   company?: Company;
