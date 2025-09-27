@@ -1,28 +1,45 @@
 "use client";
 
-import { CreateProduct } from "@/actions/Product";
+import { CreateProduct, GetNewPageInfo } from "@/actions/Product";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { TaxCategory } from "@/types/models";
+import { Supplier } from "@/types/models";
+import { NewProductData } from "@/types/res";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, PackagePlus } from "lucide-react";
+import { Check, PackagePlus, Plus } from "lucide-react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-const steps = ["Select Option", "Fill Details", "Review", "Confirm"];
+const steps = [
+  "Supplier",
+  "Details",
+  "Expiry",
+  "Variants",
+  "Review",
+  "Confirm",
+];
 const customExpiryDays = [1, 2, 3, 5, 7, 10];
 const customExpiryHours = [6, 12, 24, 48, 72];
 
@@ -72,7 +89,9 @@ export const productSchema = z
 export type ProductFormData = z.infer<typeof productSchema>;
 
 export default function StepperForm() {
-  const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
+  const [initData, setInitData] = useState<NewProductData | undefined>(
+    undefined
+  );
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -174,6 +193,35 @@ export default function StepperForm() {
     setIsSubmitting(false);
   };
 
+  useEffect(() => {
+    const loadTaxCategories = async () => {
+      const response = await GetNewPageInfo(companyName?.toString());
+
+      if (response.success && response.data) {
+        setInitData(response.data as NewProductData);
+        form.setValue(
+          "taxCategoryId",
+          String(response?.data.taxCategories[0].id)
+        );
+      } else {
+        toast.error("Failed to get tax", { description: response.message });
+      }
+
+      setIsLoadingTaxCategories(false);
+    };
+
+    loadTaxCategories();
+  }, []);
+
+  useEffect(() => {
+    if (file && file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl("");
+    }
+  }, [file]);
+
   return (
     <div className="mx-auto p-6">
       <div className="mb-8">
@@ -251,8 +299,11 @@ export default function StepperForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Step Content */}
-          {currentStep === 0 && <Step1 form={form} />}
 
+          {currentStep === 0 && (
+            <Step1 form={form} suppliers={initData?.suppliers} />
+          )}
+          {currentStep === 1 && <Step2 form={form} />}
           {/* Navigation Buttons */}
           <div className="flex justify-between pt-4">
             <Button
@@ -278,20 +329,92 @@ export default function StepperForm() {
   );
 }
 
-function Step1({ form }: { form: UseFormReturn<ProductFormData> }) {
+function Step1({
+  form,
+  suppliers,
+}: {
+  form: UseFormReturn<ProductFormData>;
+  suppliers?: Supplier[];
+}) {
   return (
     <FormField
       control={form.control}
-      name="name"
+      name="supplierId"
       render={({ field }) => (
-        <FormItem>
-          <FormLabel className="">Product Name</FormLabel>
-          <FormControl>
-            <Input placeholder="Enter product name" {...field} />
-          </FormControl>
+        <FormItem className="w-full">
+          <FormLabel>Select suppleir</FormLabel>
+          <Select onValueChange={field.onChange} value={field.value}>
+            <FormControl className="w-full">
+              <SelectTrigger>
+                <SelectValue placeholder="Select a supplier" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent className="w-full">
+              {suppliers?.map((user) => (
+                <SelectItem key={user.id} value={user.uuid}>
+                  {user.name ?? user.email}
+                </SelectItem>
+              ))}
+
+              <Link
+                href={{
+                  pathname: "/admin/users",
+                  query: {
+                    open_create: "true",
+                    returnUrl: "/admin/companies",
+                  },
+                }}
+              >
+                <div className="hover:bg-accent focus:bg-accent focus:text-accent-foreground  relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none ">
+                  <Plus className="w-4 h-4" /> New Supplier
+                </div>
+              </Link>
+            </SelectContent>
+          </Select>
+          <FormDescription>Choose a supplier for this product</FormDescription>
           <FormMessage />
         </FormItem>
       )}
     />
+  );
+}
+
+function Step2({ form }: { form: UseFormReturn<ProductFormData> }) {
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="">Product Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter product name" {...field} />
+            </FormControl>
+            <FormDescription>
+              Choose a supplier for this product
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="sku"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="">Product SKU</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter product name" {...field} />
+            </FormControl>
+            <FormDescription>
+              Product name abbreviated to 3 letters (eg. bread - BRD)
+            </FormDescription>
+
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 }

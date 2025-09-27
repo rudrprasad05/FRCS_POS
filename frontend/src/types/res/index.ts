@@ -5,6 +5,7 @@ import {
   PosSession,
   Product,
   SaleItem,
+  Supplier,
   TaxCategory,
   UserRoles,
   Warehouse,
@@ -83,5 +84,9 @@ export interface NewCheckoutRequest {
 
 export interface EditProductData {
   product: Product;
+  taxCategories: TaxCategory[];
+}
+export interface NewProductData {
+  suppliers: Supplier[];
   taxCategories: TaxCategory[];
 }

@@ -26,8 +26,8 @@ namespace FrcsPos.Response.DTO
 
     public class InitialProductCreationData : BaseDTO
     {
-        public string Sku { get; set; } = default!;
         public List<TaxCategoryDTO> TaxCategories { get; set; } = default!;
+        public List<SupplierDTO> Suppliers { get; set; } = default!;
     }
 
     public class ProductEditInfo

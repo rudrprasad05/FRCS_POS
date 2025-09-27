@@ -92,6 +92,19 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpGet("get-new-page-info")]
+        public async Task<IActionResult> GetNewPageInfo([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productRepository.GetCreationInfoAsync(queryObject);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
         [HttpPatch("edit")]
         public async Task<IActionResult> EditProduct(
             [FromQuery] RequestQueryObject queryObject,

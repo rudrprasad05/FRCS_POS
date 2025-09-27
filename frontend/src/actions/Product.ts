@@ -6,7 +6,7 @@ import {
   Product,
   QueryObject,
 } from "@/types/models";
-import { EditProductData } from "@/types/res";
+import { EditProductData, NewProductData } from "@/types/res";
 import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllProducts(
@@ -70,6 +70,13 @@ export async function GetEditProductData(
 ): Promise<ApiResponse<EditProductData>> {
   return RequestWrapper<EditProductData>("GET", `product/get-edit-page-info`, {
     query: { uuid },
+  });
+}
+export async function GetNewPageInfo(
+  cName?: string
+): Promise<ApiResponse<NewProductData>> {
+  return RequestWrapper<NewProductData>("GET", `product/get-new-page-info`, {
+    query: { companyName: cName },
   });
 }
 

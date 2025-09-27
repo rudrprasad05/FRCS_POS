@@ -295,9 +295,27 @@ namespace FrcsPos.Repository
             throw new NotImplementedException();
         }
 
-        public Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync()
+        public async Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync(RequestQueryObject queryObject)
         {
-            throw new NotImplementedException();
+            var company = await _context.Companies.FirstOrDefaultAsync(p => p.Name == queryObject.CompanyName);
+            if (company == null)
+            {
+                return ApiResponse<InitialProductCreationData>.NotFound();
+            }
+
+            var suppliers = await _context.Suppliers
+                .Where(p => p.Company.Id == company.Id)
+                .ToListAsync();
+
+            var taxes = await _context.TaxCategories.Where(x => x.IsActive && !x.IsActive).ToListAsync();
+
+            var dto = new InitialProductCreationData
+            {
+                Suppliers = suppliers.FromModelToDto(),
+                TaxCategories = taxes.FromModelToDto(),
+            };
+
+            return ApiResponse<InitialProductCreationData>.Ok(dto);
         }
 
         public async Task<ApiResponse<ProductDTO>> SoftDelete(RequestQueryObject queryObject)
