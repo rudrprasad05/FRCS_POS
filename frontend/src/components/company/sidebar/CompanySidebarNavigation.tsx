@@ -13,6 +13,7 @@ import {
   Box,
   Coins,
   Computer,
+  Container,
   File,
   Info,
   LayoutDashboard,
@@ -59,6 +60,11 @@ export function CompanySidebarNavigation() {
       title: "Products",
       href: `${base}/products`,
       icon: Box,
+    },
+    {
+      title: "Suppliers",
+      href: `${base}/suppliers`,
+      icon: Container,
     },
     {
       title: "Warehouse",

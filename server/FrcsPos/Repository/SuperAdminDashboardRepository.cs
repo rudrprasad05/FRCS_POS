@@ -45,8 +45,7 @@ namespace FrcsPos.Repository
                 .Include(c => c.Warehouses)
                 .Include(c => c.PosTerminals)
                     .ThenInclude(c => c.Session)
-                        .ThenInclude(t => t.Sales
-                            .Where(s => s.CreatedOn >= startOfMonth))
+                        .ThenInclude(t => t.Sales)
                 .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
 
             if (company == null)
@@ -54,7 +53,7 @@ namespace FrcsPos.Repository
                 return ApiResponse<AdminDashboardDTO>.NotFound();
             }
 
-            var userCount = company.Users.Count;
+            var userCount = company.Users.Count + (company.AdminUser != null ? 1 : 0);
             var productCount = company.Products.Count;
             var warehouseCount = company.Warehouses.Count;
             var posTerminalCount = company.PosTerminals.Count;

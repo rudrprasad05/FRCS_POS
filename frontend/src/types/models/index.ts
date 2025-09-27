@@ -10,6 +10,21 @@ export interface BaseModel {
   isDeleted: boolean;
 }
 
+export interface Supplier extends BaseModel {
+  name: string;
+  code: string;
+
+  contactName: string;
+  phone: string;
+  email: string;
+  address: string;
+
+  taxNumber: string;
+
+  products: Product[];
+  batches: ProductBatch[];
+}
+
 export interface Product extends BaseModel {
   companyId: number;
   company?: Company;

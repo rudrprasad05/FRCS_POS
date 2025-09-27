@@ -17,7 +17,6 @@ namespace FrcsPos.Models
         [Required]
         public string ConnectionUUID { get; set; } = default!;
         [Required]
-        public bool IsActive { get; set; } = true;
         public DateTime ConnectionTimeOut { get; set; } = DateTime.UtcNow.AddHours(8);
 
         public List<Sale> Sales { get; set; } = [];

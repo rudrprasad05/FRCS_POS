@@ -30,9 +30,9 @@ namespace FrcsPos.Mappers
 
             };
 
-            if (request.Product != null)
+            if (request.ProductVariant != null)
             {
-                dto.Product = request.Product.FromModelToDto();
+                dto.ProductVariant = request.ProductVariant.FromModelToDto();
             }
 
             if (includeSale && request.Sale != null)

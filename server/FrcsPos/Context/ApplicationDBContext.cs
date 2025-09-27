@@ -21,17 +21,17 @@ namespace FrcsPos.Context
         public DbSet<PosTerminal> PosTerminals => Set<PosTerminal>();
         public DbSet<PosSession> PosSessions => Set<PosSession>();
         public DbSet<Product> Products => Set<Product>();
-        public DbSet<ExpiryNotificationConfiguration> ExpiryNotificationConfigurations => Set<ExpiryNotificationConfiguration>();
+        public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
         public DbSet<ProductBatch> ProductBatches => Set<ProductBatch>();
         public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
         public DbSet<Sale> Sales => Set<Sale>();
         public DbSet<SaleItem> SaleItems => Set<SaleItem>();
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
         public DbSet<RefundRequest> RefundRequests => Set<RefundRequest>();
         public DbSet<RefundItem> RefundItems => Set<RefundItem>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
         public DbSet<Media> Medias { get; set; }
-        public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -58,37 +58,72 @@ namespace FrcsPos.Context
             b.Entity<Company>(e =>
             {
                 e.HasOne(x => x.AdminUser)
-                .WithMany()
-                .HasForeignKey(x => x.AdminUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                    .WithMany()
+                    .HasForeignKey(x => x.AdminUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasIndex(x => x.Name).IsUnique(); ;
+            });
+
+            b.Entity<Supplier>(e =>
+            {
+                e.HasMany(x => x.Products)
+                    .WithOne(x => x.Supplier)
+                    .OnDelete(DeleteBehavior.Restrict);
+                e.HasMany(x => x.Batches)
+                    .WithOne(x => x.Supplier)
+                    .OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Company)
+                    .WithMany(x => x.Suppliers)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasIndex(x => x.Name).IsUnique();
+                e.HasIndex(x => x.Code).IsUnique();
+                e.HasIndex(x => x.Email).IsUnique();
+                e.HasIndex(x => x.TaxNumber).IsUnique();
             });
 
             b.Entity<CompanyUser>(e =>
             {
                 e.HasKey(x => new { x.CompanyId, x.UserId });
-                e.HasOne(x => x.Company).WithMany(x => x.Users).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.User).WithMany(x => x.Companies).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.Company)
+                    .WithMany(x => x.Users)
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.User)
+                    .WithMany(x => x.Companies)
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             b.Entity<Warehouse>(e =>
             {
                 e.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique();
+                e.HasOne(x => x.Company)
+                    .WithMany(x => x.Warehouses)
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             b.Entity<PosTerminal>(e =>
             {
                 e.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique();
-                e.HasIndex(x => x.SerialNumber);
+                e.HasIndex(x => x.SerialNumber).IsUnique(true);
+
+                e.HasOne(x => x.Company)
+                    .WithMany(x => x.PosTerminals)
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             b.Entity<PosSession>(e =>
             {
-                e.HasOne(x => x.PosTerminal).WithMany(x => x.Session)
+                e.HasOne(x => x.PosTerminal)
+                    .WithMany(x => x.Session)
                     .HasForeignKey(x => x.PosTerminalId)
                     .OnDelete(DeleteBehavior.Cascade);
-                e.HasOne(x => x.PosUser).WithMany()
+                e.HasOne(x => x.PosUser)
+                    .WithMany()
                     .HasForeignKey(x => x.PosUserId)
                     .OnDelete(DeleteBehavior.Cascade);
                 e.HasOne(x => x.QuickConnect)
@@ -100,41 +135,56 @@ namespace FrcsPos.Context
 
             b.Entity<TaxCategory>(e =>
             {
-                e.Property(x => x.RatePercent).HasPrecision(5, 2); // e.g., 0, 15.00
+                e.Property(x => x.RatePercent).HasPrecision(6, 5);
             });
 
             b.Entity<Product>(e =>
             {
-                e.HasOne(p => p.ExpiryNotificationConfiguration)
-                    .WithOne(ec => ec.Product)
-                    .HasForeignKey<ExpiryNotificationConfiguration>(ec => ec.ProductId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
                 e.Property(x => x.Price).HasPrecision(18, 2);
 
-                e.HasIndex(x => new { x.CompanyId, x.Sku }).IsUnique();
-
+                e.HasIndex(x => new { x.CompanyId, x.Sku })
+                    .IsUnique();
                 e.HasIndex(x => new { x.CompanyId, x.Barcode })
                     .IsUnique()
                     .HasFilter("[Barcode] IS NOT NULL");
+
+                e.HasOne(x => x.Company)
+                    .WithMany(x => x.Products)
+                    .HasForeignKey(x => x.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(x => x.TaxCategory)
+                    .WithMany(x => x.Products)
+                    .HasForeignKey(x => x.TaxCategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            b.Entity<ProductVariant>(e =>
+            {
+                e.HasIndex(x => new { x.ProductId, x.Name }).IsUnique();
+
+                e.HasOne(x => x.Product)
+                    .WithMany(x => x.Variants)
+                    .HasForeignKey(x => x.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             b.Entity<ProductBatch>(e =>
             {
-                e.HasIndex(x => new { x.CompanyId, x.ProductId, x.WarehouseId });
+                e.HasIndex(x => new { x.CompanyId, x.ProductVariantId, x.WarehouseId });
 
                 e.HasOne(x => x.Company)
                     .WithMany()
                     .HasForeignKey(x => x.CompanyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(x => x.Product)
+                e.HasOne(x => x.ProductVariant)
                     .WithMany(p => p.Batches) // important
-                    .HasForeignKey(x => x.ProductId) // <- explicitly use ProductId
+                    .HasForeignKey(x => x.ProductVariantId) // <- explicitly use ProductId
                     .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasOne(x => x.Warehouse)
-                    .WithMany()
+                    .WithMany(x => x.ProductBatches)
                     .HasForeignKey(x => x.WarehouseId) // explicitly
                     .OnDelete(DeleteBehavior.Restrict);
             });
@@ -148,7 +198,6 @@ namespace FrcsPos.Context
 
                 e.HasIndex(x => new { x.CompanyId, x.InvoiceNumber }).IsUnique();
 
-                // Configure the relationship to PosSession using composite key
                 e.HasOne(x => x.PosSession)
                     .WithMany(x => x.Sales)
                     .HasForeignKey(x => new { x.PosSessionId })
@@ -165,9 +214,9 @@ namespace FrcsPos.Context
                 e.Property(x => x.UnitPrice).HasPrecision(18, 2);
                 e.Property(x => x.TaxRatePercent).HasPrecision(5, 2);
                 e.Property(x => x.LineTotal).HasPrecision(18, 2);
-                e.HasOne(x => x.Product)
+                e.HasOne(x => x.ProductVariant)
                     .WithMany()
-                    .HasForeignKey(x => x.ProductId)
+                    .HasForeignKey(x => x.ProductVariantId)
                     .OnDelete(DeleteBehavior.Restrict); // ✅ Changed
 
                 e.HasOne(x => x.Sale)
@@ -191,26 +240,6 @@ namespace FrcsPos.Context
                     .HasForeignKey(x => x.RefundRequestId).OnDelete(DeleteBehavior.Cascade);
 
                 e.HasOne(x => x.SaleItem).WithMany().HasForeignKey(x => x.SaleItemId).OnDelete(DeleteBehavior.Restrict);
-            });
-
-            b.Entity<StockTransfer>(e =>
-            {
-                e.HasOne(x => x.Company).WithMany()
-                    .HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
-
-                e.HasOne(x => x.SourceWarehouse).WithMany()
-                    .HasForeignKey(x => x.SourceWarehouseId).OnDelete(DeleteBehavior.Restrict);
-
-                e.HasOne(x => x.DestinationWarehouse).WithMany()
-                    .HasForeignKey(x => x.DestinationWarehouseId).OnDelete(DeleteBehavior.Restrict);
-
-                e.HasOne(x => x.Product).WithMany()
-                    .HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
-
-                e.HasOne(x => x.TransferredByUser).WithMany()
-                    .HasForeignKey(x => x.TransferredByUserId).OnDelete(DeleteBehavior.Restrict);
-
-                e.HasIndex(x => new { x.CompanyId, x.CreatedOn });
             });
         }
     }

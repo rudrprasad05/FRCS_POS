@@ -10,8 +10,8 @@ namespace FrcsPos.Response.DTO
     {
         public int SaleId { get; set; }
         public SaleDTO? Sale { get; set; } = null;
-        public int ProductId { get; set; }
-        public ProductDTO Product { get; set; } = default!;
+        public int ProductVariantId { get; set; }
+        public ProductVariantDTO ProductVariant { get; set; } = default!;
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TaxRatePercent { get; set; }

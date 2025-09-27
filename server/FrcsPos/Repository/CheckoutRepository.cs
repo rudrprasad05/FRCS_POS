@@ -69,7 +69,7 @@ namespace FrcsPos.Repository
             // Generate InvoiceNumber (example: CompanyID-YYYYMMDD-HHMMSS)
             var invoiceNumber = $"{request.CompanyName[0..2]}-{DateTime.UtcNow:yyyyMMddHHmmss}";
 
-            var productIds = request.Items.Select(i => i.ProductId).ToList();
+            var productIds = request.Items.Select(i => i.ProductVariant.ProductId).ToList();
             var products = await _context.Products
                 .Include(p => p.TaxCategory)
                 .Where(p => productIds.Contains(p.Id))
@@ -77,8 +77,8 @@ namespace FrcsPos.Repository
 
             // Load product batches for this company
             var productBatches = await _context.ProductBatches
-                .Include(pb => pb.Product)
-                .Where(pb => productIds.Contains(pb.ProductId)
+                .Include(pb => pb.ProductVariant.Product)
+                .Where(pb => productIds.Contains(pb.ProductVariant.ProductId)
                             && pb.Warehouse.CompanyId == company.Id
                             && (pb.ExpiryDate == null || pb.ExpiryDate > DateTime.UtcNow))
                 .ToListAsync();
@@ -87,13 +87,13 @@ namespace FrcsPos.Repository
             foreach (var item in request.Items)
             {
                 var availableQty = productBatches
-                    .Where(pb => pb.ProductId == item.ProductId)
+                    .Where(pb => pb.ProductVariant.ProductId == item.ProductVariant.ProductId)
                     .Sum(pb => pb.Quantity);
 
                 if (availableQty < item.Quantity)
                 {
                     return ApiResponse<SaleDTO>.Fail(
-                        message: $"Not enough stock for product {item.Product.Name}. Requested {item.Quantity}, available {availableQty}"
+                        message: $"Not enough stock for product Requested {item.Quantity}, available {availableQty}"
                     );
                 }
             }
@@ -103,7 +103,7 @@ namespace FrcsPos.Repository
                 var needed = item.Quantity;
 
                 var batches = productBatches
-                    .Where(pb => pb.ProductId == item.ProductId)
+                    .Where(pb => pb.ProductVariant.ProductId == item.ProductVariant.ProductId)
                     .OrderBy(pb => pb.ExpiryDate ?? DateTime.MaxValue) // oldest first
                     .ToList();
 
@@ -119,7 +119,7 @@ namespace FrcsPos.Repository
                 if (needed > 0)
                 {
                     return ApiResponse<SaleDTO>.Fail(
-                        message: $"Not enough stock for product {item.ProductId}"
+                        message: $"Not enough stock for product {item.ProductVariant.ProductId}"
                     );
                 }
             }
@@ -130,10 +130,10 @@ namespace FrcsPos.Repository
 
             var saleItems = request.Items.Select(i =>
             {
-                if (!products.TryGetValue(i.ProductId, out var product))
-                    throw new Exception($"Product {i.ProductId} not found");
+                if (!products.TryGetValue(i.ProductVariant.ProductId, out var product))
+                    throw new Exception($"Product {i.ProductVariant.ProductId} not found");
 
-                var lineSubtotal = i.Quantity * i.Product.Price;
+                var lineSubtotal = i.Quantity * i.ProductVariant.Price;
                 var lineTax = lineSubtotal * product.TaxCategory.RatePercent;
 
                 subtotal += lineSubtotal;
@@ -141,7 +141,7 @@ namespace FrcsPos.Repository
 
                 return new SaleItem
                 {
-                    ProductId = i.ProductId,
+                    ProductVariantId = i.ProductVariant.ProductId,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
                     LineTotal = lineSubtotal + lineTax
@@ -178,7 +178,7 @@ namespace FrcsPos.Repository
             var sale = await _context.Sales
                 .Include(s => s.Company)
                 .Include(s => s.Items)
-                    .ThenInclude(si => si.Product)
+                    .ThenInclude(si => si.ProductVariant.Product)
                         .ThenInclude(p => p.TaxCategory)
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
@@ -199,7 +199,7 @@ namespace FrcsPos.Repository
             var sale = await _context.Sales
                 .Include(s => s.Company)
                 .Include(s => s.Items)
-                    .ThenInclude(si => si.Product)
+                    .ThenInclude(si => si.ProductVariant.Product)
                         .ThenInclude(p => p.TaxCategory)
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
@@ -324,10 +324,10 @@ namespace FrcsPos.Repository
                                 {
                                     row.RelativeItem(3).Column(itemDetails =>
                                     {
-                                        itemDetails.Item().Text(item.Product.Name)
+                                        itemDetails.Item().Text(item.ProductVariant.Product.Name)
                                             .FontSize(12)
                                             .FontColor("#ffffff");
-                                        itemDetails.Item().Text($"SKU: {item.Product.Sku}")
+                                        itemDetails.Item().Text($"SKU: {item.ProductVariant.Product.Sku}")
                                             .FontSize(10)
                                             .FontColor("#9ca3af");
                                         itemDetails.Item().Text($"{item.Quantity} x {item.UnitPrice:C}")
@@ -412,7 +412,7 @@ namespace FrcsPos.Repository
             var sale = await _context.Sales
                     .Include(s => s.Company)
                     .Include(s => s.Items)
-                        .ThenInclude(si => si.Product)
+                        .ThenInclude(si => si.ProductVariant.Product)
                             .ThenInclude(p => p.TaxCategory)
                     .Include(s => s.PosSession)
                         .ThenInclude(ps => ps.PosTerminal)

@@ -1,0 +1,144 @@
+"use client";
+import { GetAllSuppliers } from "@/actions/Supplier";
+import { H1, P } from "@/components/font/HeaderFonts";
+import { DataTable } from "@/components/global/DataTable";
+import { TableSkeleton } from "@/components/global/LoadingContainer";
+import PaginationSection from "@/components/global/PaginationSection";
+import { Header } from "@/components/global/TestHeader";
+import { CompanySuppliersColumns } from "@/components/tables/CompanySuppliersColumns";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
+import {
+  ApiResponse,
+  ESortBy,
+  QueryObject,
+  Supplier,
+  UserRoles,
+} from "@/types/models";
+import {
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "@tanstack/react-query";
+import { PackagePlus } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+export default function CompanySuppliersSection() {
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
+  const queryClient = useQueryClient();
+
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 10,
+    search: "",
+    sortBy: ESortBy.DSC,
+    isDeleted: undefined as boolean | undefined,
+  });
+
+  const query = useQuery({
+    queryKey: ["suppliers", companyName, pagination],
+    queryFn: () => GetAllSuppliers({ ...pagination, companyName }),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
+
+  useEffect(() => {
+    if (
+      query.data?.meta?.totalPages &&
+      (pagination.pageNumber as number) < query.data.meta.totalPages
+    ) {
+      queryClient.prefetchQuery({
+        queryKey: [
+          "suppliers",
+          { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
+        ],
+        queryFn: () =>
+          GetAllSuppliers({
+            ...pagination,
+            pageNumber: (pagination.pageNumber as number) + 1,
+          }),
+      });
+    }
+  }, [query.data, pagination, queryClient]);
+
+  return (
+    <>
+      <Header
+        pagination={pagination}
+        setPagination={setPagination}
+        newButton={
+          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+            <NewButton />
+          </RoleWrapper>
+        }
+      >
+        <H1>Suppliers</H1>
+        <P className="text-muted-foreground">
+          Create and manage your suppliers
+        </P>
+      </Header>
+
+      <HandleDataSection
+        query={query}
+        pagination={pagination}
+        setPagination={setPagination}
+      />
+    </>
+  );
+}
+
+function NewButton() {
+  return (
+    <Button
+      asChild
+      className={`${buttonVariants({
+        variant: "default",
+      })} text-start justify-start px-2 my-2`}
+    >
+      <Link href="suppliers/new">
+        <PackagePlus />
+        New Supplier
+      </Link>
+    </Button>
+  );
+}
+
+function HandleDataSection({
+  query,
+  pagination,
+  setPagination,
+}: {
+  query: UseQueryResult<ApiResponse<Supplier[]>, Error>;
+  pagination: any;
+  setPagination: React.Dispatch<React.SetStateAction<any>>;
+}) {
+  if (query.isLoading) {
+    return <TableSkeleton columns={3} rows={8} showHeader />;
+  }
+
+  if (query.isError) {
+    return <div className="text-red-500">Error loading POS terminals.</div>;
+  }
+
+  const data = query.data?.data ?? [];
+  const meta = query.data?.meta;
+
+  return (
+    <>
+      <DataTable columns={CompanySuppliersColumns} data={data} />
+      <div className="py-8">
+        <PaginationSection
+          pagination={{
+            ...pagination,
+            totalCount: meta?.totalCount ?? 0,
+            totalPages: meta?.totalPages ?? 0,
+          }}
+          setPagination={setPagination}
+        />
+      </div>
+    </>
+  );
+}

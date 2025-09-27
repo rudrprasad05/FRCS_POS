@@ -13,7 +13,6 @@ namespace FrcsPos.Models
         public string Name { get; set; } = default!;
         public string? LocationDescription { get; set; }
         public string? SerialNumber { get; set; }
-        public bool IsActive { get; set; } = true;
 
         public ICollection<PosSession> Session { get; set; } = [];
         public ICollection<Sale> Sales { get; set; } = [];

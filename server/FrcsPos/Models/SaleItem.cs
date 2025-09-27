@@ -10,13 +10,13 @@ namespace FrcsPos.Models
         public int SaleId { get; set; }
         public Sale Sale { get; set; } = default!;
 
-        public int ProductId { get; set; }
-        public Product Product { get; set; } = default!;
+        public int ProductVariantId { get; set; }
+        public ProductVariant ProductVariant { get; set; } = default!;
 
         public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }     
-        public decimal TaxRatePercent { get; set; } 
-        public decimal LineTotal { get; set; }     
-    
+        public decimal UnitPrice { get; set; }
+        public decimal TaxRatePercent { get; set; }
+        public decimal LineTotal { get; set; }
+
     }
 }

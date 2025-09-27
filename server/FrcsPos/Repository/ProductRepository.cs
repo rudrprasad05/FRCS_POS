@@ -97,17 +97,17 @@ namespace FrcsPos.Repository
             var model = await _context.Products.AddAsync(modelToBeCreated);
             await _context.SaveChangesAsync();
 
-            if (request.FirstWarningInDays != null && request.CriticalWarningInHours != null && request.IsPerishable)
-            {
-                var expiryConfig = new ExpiryNotificationConfiguration
-                {
-                    FirstWarningInDays = (int)request.FirstWarningInDays,
-                    CriticalWarningInHours = (int)request.CriticalWarningInHours,
-                    ProductId = modelToBeCreated.Id,
-                };
-                var expiryConfigModel = await _context.ExpiryNotificationConfigurations.AddAsync(expiryConfig);
-                await _context.SaveChangesAsync();
-            }
+            // if (request.FirstWarningInDays != null && request.CriticalWarningInHours != null && request.IsPerishable)
+            // {
+            //     var expiryConfig = new ExpiryNotificationConfiguration
+            //     {
+            //         FirstWarningInDays = (int)request.FirstWarningInDays,
+            //         CriticalWarningInHours = (int)request.CriticalWarningInHours,
+            //         ProductId = modelToBeCreated.Id,
+            //     };
+            //     var expiryConfigModel = await _context.ExpiryNotificationConfigurations.AddAsync(expiryConfig);
+            //     await _context.SaveChangesAsync();
+            // }
 
             var result = model.Entity.FromModelToDto();
             var notification = new NotificationDTO
@@ -133,13 +133,13 @@ namespace FrcsPos.Repository
             var query = _context.Products
                 .Include(p => p.TaxCategory)
                 .Include(p => p.Media)
-                .Include(p => p.Batches)
+                // .Include(p => p.Batches)
                 .Where(p => p.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
 
             if (isForPos)
             {
-                query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
+                // query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
                 query = query.Where(p => p.IsDeleted != true);
 
             }
@@ -185,9 +185,9 @@ namespace FrcsPos.Repository
                 var dto = product.FromModelToDto();
                 result.Add(dto);
 
-                dto.MaxStock = product.Batches
-                    .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
-                    .Sum(b => b.Quantity);
+                // dto.MaxStock = product.Batches
+                //     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
+                //     .Sum(b => b.Quantity);
 
 
             }

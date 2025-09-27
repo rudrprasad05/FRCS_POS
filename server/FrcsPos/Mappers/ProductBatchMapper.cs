@@ -24,7 +24,7 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 IsDeleted = request.IsDeleted,
                 CompanyId = request.CompanyId,
-                ProductId = request.ProductId,
+                ProductVariantId = request.ProductVariantId,
                 Quantity = request.Quantity,
                 ExpiryDate = request.ExpiryDate
             };
@@ -34,11 +34,11 @@ namespace FrcsPos.Mappers
                 dto.Company = request.Company.FromModelToOnlyDto();
 
             }
-            if (request.Product != null)
-            {
-                dto.Product = request.Product.FromModelToOnlyDto();
+            // if (request.ProductVariant != null)
+            // {
+            //     dto.ProductVariant = request.ProductVariant.FromModelToOnlyDto();
 
-            }
+            // }
             if (request.Warehouse != null && setWarehouse)
             {
                 dto.Warehouse = request.Warehouse.FromModelToOnlyDto();

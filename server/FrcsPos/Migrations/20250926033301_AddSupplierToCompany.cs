@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FrcsPos.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class AddSupplierToCompany : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -74,7 +74,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,11 +92,11 @@ namespace FrcsPos.Migrations
                     Model = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
                     Location = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
                     ConnectionTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -114,7 +115,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -244,7 +246,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -264,12 +267,7 @@ namespace FrcsPos.Migrations
                 {
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    Role = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -299,11 +297,11 @@ namespace FrcsPos.Migrations
                     Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     LocationDescription = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_general_ci"),
                     SerialNumber = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_general_ci"),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -318,42 +316,32 @@ namespace FrcsPos.Migrations
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "Suppliers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    Code = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    ContactName = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    Phone = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    Email = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    Address = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    TaxNumber = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
-                    Sku = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    Barcode = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TaxCategoryId = table.Column<int>(type: "int", nullable: false),
-                    IsPerishable = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    MediaId = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_Suppliers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Companies_CompanyId",
+                        name: "FK_Suppliers_Companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Products_Medias_MediaId",
-                        column: x => x.MediaId,
-                        principalTable: "Medias",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Products_TaxCategories_TaxCategoryId",
-                        column: x => x.TaxCategoryId,
-                        principalTable: "TaxCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -368,11 +356,11 @@ namespace FrcsPos.Migrations
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     Location = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -395,7 +383,6 @@ namespace FrcsPos.Migrations
                     PosTerminalId = table.Column<int>(type: "int", nullable: false),
                     PosUserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     ConnectionUUID = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     ConnectionTimeOut = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     CompanyUserCompanyId = table.Column<int>(type: "int", nullable: true),
                     CompanyUserUserId = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_general_ci"),
@@ -403,7 +390,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -434,106 +422,52 @@ namespace FrcsPos.Migrations
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateTable(
-                name: "ProductBatches",
+                name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    WarehouseId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    ProductId1 = table.Column<int>(type: "int", nullable: true),
-                    WarehouseId1 = table.Column<int>(type: "int", nullable: true),
+                    SupplierId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    Sku = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    Barcode = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    FirstWarningInDays = table.Column<int>(type: "int", nullable: false),
+                    CriticalWarningInHours = table.Column<int>(type: "int", nullable: false),
+                    TaxCategoryId = table.Column<int>(type: "int", nullable: false),
+                    IsPerishable = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    MediaId = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductBatches", x => x.Id);
+                    table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductBatches_Companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProductBatches_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProductBatches_Products_ProductId1",
-                        column: x => x.ProductId1,
-                        principalTable: "Products",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ProductBatches_Warehouses_WarehouseId",
-                        column: x => x.WarehouseId,
-                        principalTable: "Warehouses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProductBatches_Warehouses_WarehouseId1",
-                        column: x => x.WarehouseId1,
-                        principalTable: "Warehouses",
-                        principalColumn: "Id");
-                })
-                .Annotation("Relational:Collation", "utf8mb4_general_ci");
-
-            migrationBuilder.CreateTable(
-                name: "StockTransfers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CompanyId = table.Column<int>(type: "int", nullable: false),
-                    SourceWarehouseId = table.Column<int>(type: "int", nullable: false),
-                    DestinationWarehouseId = table.Column<int>(type: "int", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Notes = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_general_ci"),
-                    TransferredByUserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StockTransfers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_StockTransfers_AspNetUsers_TransferredByUserId",
-                        column: x => x.TransferredByUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StockTransfers_Companies_CompanyId",
+                        name: "FK_Products_Companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_StockTransfers_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
+                        name: "FK_Products_Medias_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Medias",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Products_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_StockTransfers_Warehouses_DestinationWarehouseId",
-                        column: x => x.DestinationWarehouseId,
-                        principalTable: "Warehouses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StockTransfers_Warehouses_SourceWarehouseId",
-                        column: x => x.SourceWarehouseId,
-                        principalTable: "Warehouses",
+                        name: "FK_Products_TaxCategories_TaxCategoryId",
+                        column: x => x.TaxCategoryId,
+                        principalTable: "TaxCategories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
@@ -550,7 +484,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -587,7 +522,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -619,43 +555,33 @@ namespace FrcsPos.Migrations
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateTable(
-                name: "Notifications",
+                name: "ProductVariants",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Title = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
-                    Message = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
-                    IsRead = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_general_ci"),
-                    CompanyId = table.Column<int>(type: "int", nullable: true),
-                    IsSuperAdmin = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    ActionUrl = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
-                    ProductBatchId = table.Column<int>(type: "int", nullable: true),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    Sku = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    Barcode = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    Price = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    FirstWarningInDays = table.Column<int>(type: "int", nullable: true),
+                    CriticalWarningInHours = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.PrimaryKey("PK_ProductVariants", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Notifications_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Notifications_Companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Notifications_ProductBatches_ProductBatchId",
-                        column: x => x.ProductBatchId,
-                        principalTable: "ProductBatches",
-                        principalColumn: "Id");
+                        name: "FK_ProductVariants_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
@@ -674,7 +600,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -707,36 +634,86 @@ namespace FrcsPos.Migrations
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateTable(
+                name: "ProductBatches",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    CompanyId = table.Column<int>(type: "int", nullable: false),
+                    SupplierId = table.Column<int>(type: "int", nullable: false),
+                    ProductVariantId = table.Column<int>(type: "int", nullable: false),
+                    WarehouseId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    RecievedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductBatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_ProductVariants_ProductVariantId",
+                        column: x => x.ProductVariantId,
+                        principalTable: "ProductVariants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_Warehouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
                 name: "SaleItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     SaleId = table.Column<int>(type: "int", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    ProductVariantId = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TaxRatePercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     LineTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ProductId1 = table.Column<int>(type: "int", nullable: true),
+                    ProductVariantId1 = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SaleItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SaleItems_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
+                        name: "FK_SaleItems_ProductVariants_ProductVariantId",
+                        column: x => x.ProductVariantId,
+                        principalTable: "ProductVariants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_SaleItems_Products_ProductId1",
-                        column: x => x.ProductId1,
-                        principalTable: "Products",
+                        name: "FK_SaleItems_ProductVariants_ProductVariantId1",
+                        column: x => x.ProductVariantId1,
+                        principalTable: "ProductVariants",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_SaleItems_Sales_SaleId",
@@ -744,6 +721,48 @@ namespace FrcsPos.Migrations
                         principalTable: "Sales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Title = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    Message = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    IsRead = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_general_ci"),
+                    CompanyId = table.Column<int>(type: "int", nullable: true),
+                    ProductBatchId = table.Column<int>(type: "int", nullable: true),
+                    IsSuperAdmin = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    ActionUrl = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
+                    UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Notifications_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Notifications_ProductBatches_ProductBatchId",
+                        column: x => x.ProductBatchId,
+                        principalTable: "ProductBatches",
+                        principalColumn: "Id");
                 })
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
@@ -761,7 +780,8 @@ namespace FrcsPos.Migrations
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -858,12 +878,6 @@ namespace FrcsPos.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CompanyUsers_UUID",
-                table: "CompanyUsers",
-                column: "UUID",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Medias_UUID",
                 table: "Medias",
                 column: "UUID",
@@ -925,7 +939,8 @@ namespace FrcsPos.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_PosTerminals_SerialNumber",
                 table: "PosTerminals",
-                column: "SerialNumber");
+                column: "SerialNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PosTerminals_UUID",
@@ -934,19 +949,19 @@ namespace FrcsPos.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductBatches_CompanyId_ProductId_WarehouseId",
+                name: "IX_ProductBatches_CompanyId_ProductVariantId_WarehouseId",
                 table: "ProductBatches",
-                columns: new[] { "CompanyId", "ProductId", "WarehouseId" });
+                columns: new[] { "CompanyId", "ProductVariantId", "WarehouseId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductBatches_ProductId",
+                name: "IX_ProductBatches_ProductVariantId",
                 table: "ProductBatches",
-                column: "ProductId");
+                column: "ProductVariantId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductBatches_ProductId1",
+                name: "IX_ProductBatches_SupplierId",
                 table: "ProductBatches",
-                column: "ProductId1");
+                column: "SupplierId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductBatches_UUID",
@@ -958,11 +973,6 @@ namespace FrcsPos.Migrations
                 name: "IX_ProductBatches_WarehouseId",
                 table: "ProductBatches",
                 column: "WarehouseId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductBatches_WarehouseId1",
-                table: "ProductBatches",
-                column: "WarehouseId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CompanyId_Barcode",
@@ -983,6 +993,11 @@ namespace FrcsPos.Migrations
                 column: "MediaId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_SupplierId",
+                table: "Products",
+                column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_TaxCategoryId",
                 table: "Products",
                 column: "TaxCategoryId");
@@ -990,6 +1005,18 @@ namespace FrcsPos.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Products_UUID",
                 table: "Products",
+                column: "UUID",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_ProductId_Name",
+                table: "ProductVariants",
+                columns: new[] { "ProductId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_UUID",
+                table: "ProductVariants",
                 column: "UUID",
                 unique: true);
 
@@ -1059,14 +1086,14 @@ namespace FrcsPos.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_SaleItems_ProductId",
+                name: "IX_SaleItems_ProductVariantId",
                 table: "SaleItems",
-                column: "ProductId");
+                column: "ProductVariantId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SaleItems_ProductId1",
+                name: "IX_SaleItems_ProductVariantId1",
                 table: "SaleItems",
-                column: "ProductId1");
+                column: "ProductVariantId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SaleItems_SaleId",
@@ -1112,33 +1139,37 @@ namespace FrcsPos.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTransfers_CompanyId_CreatedOn",
-                table: "StockTransfers",
-                columns: new[] { "CompanyId", "CreatedOn" });
+                name: "IX_Suppliers_Code",
+                table: "Suppliers",
+                column: "Code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTransfers_DestinationWarehouseId",
-                table: "StockTransfers",
-                column: "DestinationWarehouseId");
+                name: "IX_Suppliers_CompanyId",
+                table: "Suppliers",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTransfers_ProductId",
-                table: "StockTransfers",
-                column: "ProductId");
+                name: "IX_Suppliers_Email",
+                table: "Suppliers",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTransfers_SourceWarehouseId",
-                table: "StockTransfers",
-                column: "SourceWarehouseId");
+                name: "IX_Suppliers_Name",
+                table: "Suppliers",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTransfers_TransferredByUserId",
-                table: "StockTransfers",
-                column: "TransferredByUserId");
+                name: "IX_Suppliers_TaxNumber",
+                table: "Suppliers",
+                column: "TaxNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTransfers_UUID",
-                table: "StockTransfers",
+                name: "IX_Suppliers_UUID",
+                table: "Suppliers",
                 column: "UUID",
                 unique: true);
 
@@ -1189,9 +1220,6 @@ namespace FrcsPos.Migrations
                 name: "RefundItems");
 
             migrationBuilder.DropTable(
-                name: "StockTransfers");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -1210,19 +1238,25 @@ namespace FrcsPos.Migrations
                 name: "Warehouses");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "ProductVariants");
 
             migrationBuilder.DropTable(
                 name: "Sales");
 
             migrationBuilder.DropTable(
-                name: "Medias");
-
-            migrationBuilder.DropTable(
-                name: "TaxCategories");
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "PosSessions");
+
+            migrationBuilder.DropTable(
+                name: "Medias");
+
+            migrationBuilder.DropTable(
+                name: "Suppliers");
+
+            migrationBuilder.DropTable(
+                name: "TaxCategories");
 
             migrationBuilder.DropTable(
                 name: "CompanyUsers");
