@@ -1,7 +1,16 @@
 "use client";
 
 import { CreateProduct, GetNewPageInfo } from "@/actions/Product";
+import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -12,6 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,17 +30,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Supplier } from "@/types/models";
+import { ProductVariant, Supplier } from "@/types/models";
 import { NewProductData } from "@/types/res";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, PackagePlus, Plus } from "lucide-react";
+import {
+  Check,
+  Image as ImageIcon,
+  PackagePlus,
+  Plus,
+  PlusCircle,
+  Upload,
+  X,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
-import z from "zod";
+import z, { uuid } from "zod";
 
 const steps = [
   "Supplier",
@@ -103,10 +122,14 @@ export default function StepperForm() {
 
   const [file, setFile] = useState<File | undefined>(undefined);
   const params = useParams();
+  const searchParams = useSearchParams();
+
   const companyName = params.companyName;
+  const step = Number(searchParams.get("step") || undefined);
+
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(step || 0);
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -139,17 +162,31 @@ export default function StepperForm() {
 
   const nextStep = () => {
     if (validateStep()) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+      setCurrentStep((prev) => {
+        let x = Math.min(prev + 1, steps.length - 1);
+        router.push("?step=" + x);
+        return x;
+      });
     } else toast.info("Complete current step first");
   };
 
   const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
+    setCurrentStep((prev) => {
+      let x = Math.max(prev - 1, 0);
+
+      router.push("?step=" + x);
+      return x;
+    });
   };
 
   const goToStep = (index: number) => {
     if (index < currentStep || validateStep()) {
-      setCurrentStep(index);
+      setCurrentStep((prev) => {
+        let x = index;
+
+        router.push("?step=" + x);
+        return x;
+      });
     }
   };
 
@@ -304,6 +341,8 @@ export default function StepperForm() {
             <Step1 form={form} suppliers={initData?.suppliers} />
           )}
           {currentStep === 1 && <Step2 form={form} />}
+          {currentStep === 2 && <Step3 form={form} />}
+          {currentStep === 3 && <Step4 form={form} />}
           {/* Navigation Buttons */}
           <div className="flex justify-between pt-4">
             <Button
@@ -337,51 +376,61 @@ function Step1({
   suppliers?: Supplier[];
 }) {
   return (
-    <FormField
-      control={form.control}
-      name="supplierId"
-      render={({ field }) => (
-        <FormItem className="w-full">
-          <FormLabel>Select suppleir</FormLabel>
-          <Select onValueChange={field.onChange} value={field.value}>
-            <FormControl className="w-full">
-              <SelectTrigger>
-                <SelectValue placeholder="Select a supplier" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent className="w-full">
-              {suppliers?.map((user) => (
-                <SelectItem key={user.id} value={user.uuid}>
-                  {user.name ?? user.email}
-                </SelectItem>
-              ))}
+    <div className="flex flex-col gap-6">
+      <div>
+        <LargeText>Supplier Information</LargeText>
+        <MutedText>select a supplier</MutedText>
+      </div>
+      <FormField
+        control={form.control}
+        name="supplierId"
+        render={({ field }) => (
+          <FormItem className="w-full">
+            <FormLabel>Select suppleir</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl className="w-full">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a supplier" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="w-full">
+                {suppliers?.map((user) => (
+                  <SelectItem key={user.id} value={user.uuid}>
+                    {user.name ?? user.email}
+                  </SelectItem>
+                ))}
 
-              <Link
-                href={{
-                  pathname: "/admin/users",
-                  query: {
-                    open_create: "true",
-                    returnUrl: "/admin/companies",
-                  },
-                }}
-              >
-                <div className="hover:bg-accent focus:bg-accent focus:text-accent-foreground  relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none ">
-                  <Plus className="w-4 h-4" /> New Supplier
-                </div>
-              </Link>
-            </SelectContent>
-          </Select>
-          <FormDescription>Choose a supplier for this product</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+                <Link
+                  href={{
+                    pathname: "/admin/users",
+                    query: {
+                      open_create: "true",
+                      returnUrl: "/admin/companies",
+                    },
+                  }}
+                >
+                  <div className="hover:bg-accent focus:bg-accent focus:text-accent-foreground  relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none ">
+                    <Plus className="w-4 h-4" /> New Supplier
+                  </div>
+                </Link>
+              </SelectContent>
+            </Select>
+
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 }
 
 function Step2({ form }: { form: UseFormReturn<ProductFormData> }) {
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-6">
+      <div>
+        <LargeText>Product Information</LargeText>
+        <MutedText>Basic product info</MutedText>
+      </div>
       <FormField
         control={form.control}
         name="name"
@@ -416,5 +465,385 @@ function Step2({ form }: { form: UseFormReturn<ProductFormData> }) {
         )}
       />
     </div>
+  );
+}
+
+function Step3({ form }: { form: UseFormReturn<ProductFormData> }) {
+  const [isSelectCustom, setIsSelectCustom] = useState({
+    customExpiryDays: false,
+    customExpiryHours: false,
+  });
+  return (
+    <div className="grid grid-cols-1 gap-6">
+      <div>
+        <LargeText>Expiry Information</LargeText>
+        <MutedText>set warning times or set it as non-perishable</MutedText>
+      </div>
+      <FormField
+        control={form.control}
+        name="isPerishable"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+            <div className="space-y-1 leading-none">
+              <FormLabel>Perishable Product</FormLabel>
+            </div>
+          </FormItem>
+        )}
+      />
+
+      {form.watch("isPerishable") && (
+        <div className="flex gap-4 items-center">
+          {/* Days Select */}
+          <FormField
+            control={form.control}
+            name="firstWarningInDays"
+            render={({ field }) => {
+              const value = Number(field.value);
+
+              return (
+                <FormItem>
+                  <FormLabel>First Warning (Days)</FormLabel>
+                  <FormControl>
+                    {isSelectCustom.customExpiryDays ? (
+                      <Input
+                        type="number"
+                        min={1}
+                        placeholder="Enter days"
+                        value={value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onBlur={(e) => {
+                          if (!e.target.value) field.onChange(""); // reset if cleared
+                        }}
+                      />
+                    ) : (
+                      <Select
+                        onValueChange={(val) => {
+                          if (val === "custom") {
+                            field.onChange("");
+                            setIsSelectCustom((prev) => ({
+                              ...prev,
+                              customExpiryDays: true,
+                            }));
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
+                        value={value.toString()}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select days" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {customExpiryDays.map((d) => (
+                            <SelectItem key={d} value={d.toString()}>
+                              {d} day{d !== 1 && "s"}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </FormControl>
+                  <FormDescription>
+                    When to send the first expiry warning.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+
+          {/* Hours Select */}
+          <FormField
+            control={form.control}
+            name="criticalWarningInHours"
+            render={({ field }) => {
+              const value = Number(field.value);
+              const isCustom = !customExpiryHours.includes(value);
+
+              return (
+                <FormItem>
+                  <FormLabel>Critical Warning (Hours)</FormLabel>
+                  <FormControl>
+                    {isCustom ? (
+                      <Input
+                        type="number"
+                        min={1}
+                        placeholder="Enter hours"
+                        value={value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onBlur={(e) => {
+                          if (!e.target.value) field.onChange(""); // reset if cleared
+                        }}
+                      />
+                    ) : (
+                      <Select
+                        onValueChange={(val) => {
+                          if (val === "custom") {
+                            field.onChange(""); // switch to input
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
+                        value={value.toString()}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select hours" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {["12", "24", "48", "72"].map((h) => (
+                            <SelectItem key={h} value={h}>
+                              {h} hours
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </FormControl>
+                  <FormDescription>
+                    When to send the critical expiry warning.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
+  const defaultProd: Partial<ProductVariant> = {
+    uuid: String(uuid()),
+    name: form.getValues("name"),
+    sku: form.getValues("sku") + "-1",
+    firstWarningInDays: form.getValues("firstWarningInDays"),
+    criticalWarningInHours: form.getValues("criticalWarningInHours"),
+  };
+  const [variants, setVariants] = useState<ProductVariant[]>([
+    defaultProd as ProductVariant,
+  ]);
+
+  const rmVar = (i: string) => {
+    setVariants((prev) => prev.filter((x) => x.uuid !== i));
+  };
+  const addVar = () => {
+    setVariants((prev) => [
+      ...prev,
+      { uuid: String(uuid()) } as ProductVariant,
+    ]);
+  };
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <div className="flex justify-between">
+        <div>
+          <LargeText>Variant Information</LargeText>
+          <MutedText>Create and manage variants</MutedText>
+        </div>
+
+        <Button variant={"outline"} onClick={() => addVar()}>
+          <PlusCircle />
+          Add Variant
+        </Button>
+      </div>
+      {variants.map((v, i) => (
+        <div className="relative border border-solid rounded-lg p-6 flex gap-4 items-start">
+          <AddMediaDialoge variant={v} />
+
+          <div className="grid grid-cols-2 grow gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="name">Variant Name</Label>
+              <Input id="name" placeholder="variant name" value={v.name} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="sku">Variant SKU</Label>
+              <Input id="sku" placeholder="variant sku" value={v.sku} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="barcode">Barcode</Label>
+              <Input id="barcode" placeholder="Barcode" value={v.barcode} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="Price">Price</Label>
+              <Input id="Price" placeholder="Price" value={v.barcode} />
+            </div>
+          </div>
+          <div
+            onClick={() => {
+              if (i == 0) return;
+              rmVar(v.uuid);
+            }}
+            className={cn(
+              "bg-muted p-1 rounded-full absolute top-0 right-0 translate-x-[50%] -translate-y-[50%]",
+              i == 0 && "hidden"
+            )}
+          >
+            <X className="w-4 h-4" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File>();
+
+  const handleFileSelect = (f: File) => {
+    if (f && f.type.startsWith("image/")) {
+      setFile(f);
+      const url = URL.createObjectURL(f);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (file) {
+      setIsOpen(false);
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setIsDragOver(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <div className="w-14 h-14 aspect-square grid grid-cols-1 place-items-center outline outline-border rounded-lg">
+          {!file && <Upload className="h-4 w-4" />}
+          {file && previewUrl && (
+            <Image
+              className="w-full h-full object-cover rounded-lg"
+              alt="image"
+              src={previewUrl}
+              height={50}
+              width={50}
+            />
+          )}
+        </div>
+      </DialogTrigger>
+      <DialogContent className="">
+        <DialogHeader>
+          <DialogTitle>Upload Product Image</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {!file ? (
+            <div
+              className={`
+                border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+                ${
+                  isDragOver
+                    ? "border-primary bg-primary/5"
+                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
+                }
+            `}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={handleClick}
+            >
+              <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  Drop your image here, or click to browse
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Supports: JPG, PNG, GIF, WebP, Avif
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.avif"
+                onChange={handleFileInputChange}
+                className="hidden"
+              />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="relative rounded-lg overflow-hidden border">
+                <Image
+                  width={200}
+                  height={200}
+                  src={previewUrl! || "/placeholder.svg"}
+                  alt="Preview"
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <p className="font-medium">{file.name}</p>
+                  <p className="text-muted-foreground">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFile(undefined);
+                    setPreviewUrl(null);
+                  }}
+                >
+                  Remove
+                </Button>
+              </div>
+              <Button onClick={() => handleSubmit()} className="w-full">
+                Submit Image
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

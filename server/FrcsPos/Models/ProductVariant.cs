@@ -15,6 +15,9 @@ namespace FrcsPos.Models
         public string Barcode { get; set; } = default!;
         public decimal Price { get; set; }
 
+        public Media? Media { get; set; } = null!;
+        public int? MediaId { get; set; } = null!;
+
         public ICollection<ProductBatch> Batches { get; set; } = new List<ProductBatch>();
         public ICollection<SaleItem> SaleItems { get; set; } = [];
 

@@ -1,7 +1,5 @@
 import { CompanyRole, RefundStatus, SaleStatus } from "@/types/enum";
 
-export * from "./inventory";
-
 export interface BaseModel {
   id: number;
   uuid: string;
@@ -44,6 +42,25 @@ export interface Product extends BaseModel {
   saleItems?: SaleItem[];
 
   maxStock?: number;
+}
+
+export interface ProductVariant extends BaseModel {
+  productId: number;
+  product: Product;
+
+  name: string;
+  sku: string;
+  barcode: string;
+  price: number;
+
+  batches: ProductBatch[];
+  saleItems: SaleItem[];
+
+  media?: Media | null;
+  mediaId?: number | null;
+
+  firstWarningInDays?: number | null;
+  criticalWarningInHours?: number | null;
 }
 
 export interface Media extends BaseModel {
