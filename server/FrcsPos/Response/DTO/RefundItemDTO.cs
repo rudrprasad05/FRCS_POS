@@ -8,7 +8,6 @@ namespace FrcsPos.Response.DTO
 {
     public class RefundItemDTO : BaseDTO
     {
-        public int Id { get; set; }             // RefundItem.Id
         public int SaleItemId { get; set; }
         public int ProductId { get; set; }
         public string? ProductName { get; set; }

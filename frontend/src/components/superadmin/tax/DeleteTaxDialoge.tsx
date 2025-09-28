@@ -1,21 +1,22 @@
 "use client";
-import { useState } from "react";
+import { SoftDeleteTax } from "@/actions/Tax";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Trash } from "lucide-react";
-import { useTaxData } from "./TaxSection";
-import { SoftDeleteTax } from "@/actions/Tax";
+import { Input } from "@/components/ui/input";
 import { TaxCategory } from "@/types/models";
+import { Loader2, Trash } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { useTaxData } from "./TaxSection";
 
 export default function DeleteTaxDialoge({ data }: { data: TaxCategory }) {
   const { refresh } = useTaxData();
@@ -51,13 +52,23 @@ export default function DeleteTaxDialoge({ data }: { data: TaxCategory }) {
             Type <b>delete</b> to confirm.
           </DialogDescription>
         </DialogHeader>
-        <Input value={confirmationText} onChange={e => setConfirmationText(e.target.value)} placeholder="Type delete to confirm" className="mt-2" />
+        <Input
+          value={confirmationText}
+          onChange={(e) => setConfirmationText(e.target.value)}
+          placeholder="Type delete to confirm"
+          className="mt-2"
+        />
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={handleDelete} disabled={!isConfirmValid || isLoading} variant="destructive">
-            Delete {isLoading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+          <Button
+            onClick={handleDelete}
+            disabled={!isConfirmValid || isLoading}
+            variant="destructive"
+          >
+            Delete{" "}
+            {isLoading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         </DialogFooter>
       </DialogContent>

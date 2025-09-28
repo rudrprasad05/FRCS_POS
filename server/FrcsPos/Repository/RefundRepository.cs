@@ -9,6 +9,7 @@ using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,15 +75,17 @@ namespace FrcsPos.Repository
             await _context.RefundRequests.AddAsync(refund);
             await _context.SaveChangesAsync();
 
-            // Notify admins asynchronously without awaiting
-            Task.Run(() => _notificationService.CreateBackgroundNotification(
-                title: "Refund Requested",
-                message: $"Refund requested for Sale #{sale.Id}",
-                type: NotificationType.INFO,
-                actionUrl: $"/admin/refunds/{refund.Id}",
-                isSuperAdmin: true,
-                companyId: sale.CompanyId
-            ));
+            var notification = new NotificationDTO
+            {
+                Title = "Refund Requested",
+                Message = $"Refund requested for Sale #{sale.Id}",
+                Type = NotificationType.INFO,
+                ActionUrl = $"/admin/refunds/{refund.Id}",
+                IsSuperAdmin = true,
+                CompanyId = sale.CompanyId
+            };
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
+
 
             return ApiResponse<RefundDTO>.Ok(MapRefundToDTO(refund));
         }
