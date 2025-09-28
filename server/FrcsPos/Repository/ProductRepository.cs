@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
@@ -256,6 +257,72 @@ namespace FrcsPos.Repository
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
 
+        public async Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request)
+        {
+            var productData = JsonSerializer.Deserialize<ProductDTO>(request.Product);
+
+            // Create product
+            var product = new Product
+            {
+                Name = productData.Name,
+                Sku = productData.Sku,
+                Barcode = productData.Barcode,
+                Price = productData.Price,
+                TaxCategoryId = productData.TaxCategoryId,
+                IsPerishable = productData.IsPerishable,
+                // FirstWarningInDays = productData.FirstWarningInDays,
+                // CriticalWarningInHours = productData.CriticalWarningInHours
+            };
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            // Process variants
+            for (int i = 0; i < request.Variants.Count; i++)
+            {
+                var variantData = JsonSerializer.Deserialize<ProductVariantDTO>(request.Variants[i]);
+
+                var variant = new ProductVariant
+                {
+                    ProductId = product.Id,
+                    Name = variantData.Name,
+                    Sku = variantData.Sku,
+                    Barcode = variantData.Barcode,
+                    Price = variantData.Price,
+                    // FirstWarningInDays = variantData.FirstWarningInDays,
+                    // CriticalWarningInHours = variantData.CriticalWarningInHours
+                };
+
+                if (request.VariantFiles != null && request.VariantFiles.Count > i)
+                {
+                    var file = request.VariantFiles[i];
+                    var mediaToBeCreated = new Media
+                    {
+                        AltText = file.FileName,
+                        FileName = file.FileName,
+                        ShowInGallery = true,
+                    };
+
+                    if (file != null)
+                    {
+                        mediaToBeCreated.SizeInBytes = file.Length;
+                        mediaToBeCreated.ContentType = file.ContentType;
+                    }
+
+                    var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
+                    variant.MediaId = newMedia.Data?.Id;
+                    // Save file to disk or cloud and attach path
+                    // variant.MediaPath = await SaveFileAsync(file);
+                }
+
+                _context.ProductVariants.Add(variant);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<ProductDTO>.Ok(product.FromModelToDto());
+        }
+
 
         public async Task<ApiResponse<ProductEditInfo>> GetProductEditPageAsync(RequestQueryObject queryObject)
         {
@@ -307,7 +374,7 @@ namespace FrcsPos.Repository
                 .Where(p => p.Company.Id == company.Id)
                 .ToListAsync();
 
-            var taxes = await _context.TaxCategories.Where(x => x.IsActive && !x.IsActive).ToListAsync();
+            var taxes = await _context.TaxCategories.Where(x => x.IsActive && !x.IsDeleted).ToListAsync();
 
             var dto = new InitialProductCreationData
             {

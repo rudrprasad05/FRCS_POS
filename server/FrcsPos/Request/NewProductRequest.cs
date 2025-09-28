@@ -18,4 +18,12 @@ namespace FrcsPos.Request
         public int? FirstWarningInDays { get; set; } = null;
         public int? CriticalWarningInHours { get; set; } = null;
     }
+
+    public class ProductRequest
+    {
+        public string Product { get; set; } = string.Empty; // JSON string
+        public List<string> Variants { get; set; } = new();
+        public List<IFormFile> VariantFiles { get; set; } = new();
+    }
+
 }

@@ -29,10 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { ProductVariant, Supplier } from "@/types/models";
-import { NewProductData } from "@/types/res";
+import { ProductVariant, Supplier, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
@@ -46,7 +48,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import z, { uuid } from "zod";
@@ -108,19 +110,8 @@ export const productSchema = z
 export type ProductFormData = z.infer<typeof productSchema>;
 
 export default function StepperForm() {
-  const [initData, setInitData] = useState<NewProductData | undefined>(
-    undefined
-  );
-  const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  const [isSelectCustom, setIsSelectCustom] = useState({
-    customExpiryDays: false,
-    customExpiryHours: false,
-  });
-
-  const [file, setFile] = useState<File | undefined>(undefined);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -191,29 +182,33 @@ export default function StepperForm() {
   };
 
   const onSubmit = async (data: ProductFormData) => {
+    console.log(data, variants);
+    // return;
     setIsSubmitting(true);
-    data.image = file;
 
     const formData = new FormData();
-    formData.append("ProductName", data.name);
-    formData.append("SKU", data.sku);
-    formData.append("Price", data.price.toString()); // decimal -> string
-    formData.append("Barcode", data.barcode as string);
-    formData.append("IsPerishable", data.isPerishable ? "true" : "false");
-    formData.append("TaxCategoryId", data.taxCategoryId as string);
-    formData.append(
-      "FirstWarningInDays",
-      data?.firstWarningInDays?.toString() || "0"
-    );
-    formData.append(
-      "CriticalWarningInHours",
-      data?.criticalWarningInHours?.toString() || "0"
-    );
-    formData.append("CompanyName", companyName as string);
 
-    if (data.image) {
-      formData.append("File", data.image); // IFormFile
-    }
+    // Main product info
+    formData.append("product", JSON.stringify(data));
+
+    // Append variants individually
+    variants.forEach((variant, index) => {
+      formData.append(
+        `variants[${index}]`,
+        JSON.stringify({
+          name: variant.name,
+          sku: variant.sku,
+          barcode: variant.barcode,
+          price: variant.price,
+          firstWarningInDays: variant.firstWarningInDays,
+          criticalWarningInHours: variant.criticalWarningInHours,
+        })
+      );
+
+      if (variant.mediaFile) {
+        formData.append(`variantFiles`, variant.mediaFile || "undefined");
+      }
+    });
 
     console.log("Submitting FormData:", formData);
 
@@ -230,37 +225,27 @@ export default function StepperForm() {
     setIsSubmitting(false);
   };
 
-  useEffect(() => {
-    const loadTaxCategories = async () => {
-      const response = await GetNewPageInfo(companyName?.toString());
-
-      if (response.success && response.data) {
-        setInitData(response.data as NewProductData);
-        form.setValue(
-          "taxCategoryId",
-          String(response?.data.taxCategories[0].id)
-        );
-      } else {
-        toast.error("Failed to get tax", { description: response.message });
-      }
-
-      setIsLoadingTaxCategories(false);
-    };
-
-    loadTaxCategories();
-  }, []);
+  const { data } = useQuery({
+    queryKey: ["NewProductData", companyName],
+    queryFn: () => GetNewPageInfo(companyName?.toString()),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
 
   useEffect(() => {
-    if (file && file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    } else {
-      setPreviewUrl("");
-    }
-  }, [file]);
+    form.setValue("taxCategoryId", String(data?.data?.taxCategories[0].uuid));
+  }, [data]);
+
+  //   useEffect(() => {
+  //     if (file && file.type.startsWith("image/")) {
+  //       const url = URL.createObjectURL(file);
+  //       setPreviewUrl(url);
+  //     } else {
+  //       setPreviewUrl("");
+  //     }
+  //   }, [file]);
 
   return (
-    <div className="mx-auto p-6">
+    <div className="mx-auto p-6 h-full flex flex-col">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <PackagePlus className="text-primary h-6 w-6" />
@@ -315,14 +300,13 @@ export default function StepperForm() {
               {/* Progress Line */}
               {index !== steps.length - 1 && (
                 <motion.div
-                  className={cn(
-                    "h-0.5 flex-1 rounded-full",
-                    index < currentStep ? "bg-primary" : "bg-border"
-                  )}
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: index < currentStep ? 1 : 0 }}
+                  className="h-0.5 flex-1 rounded-full"
+                  initial={{ backgroundColor: "var(--border)" }} // muted color
+                  animate={{
+                    backgroundColor:
+                      index < currentStep ? "var(--primary)" : "var(--border)", // primary vs muted
+                  }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
-                  style={{ transformOrigin: "left center" }}
                 />
               )}
             </div>
@@ -333,22 +317,34 @@ export default function StepperForm() {
         ))}
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Step Content */}
+      <Separator className="my-4" />
 
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 grow flex flex-col"
+        >
           {currentStep === 0 && (
-            <Step1 form={form} suppliers={initData?.suppliers} />
+            <Step1 form={form} suppliers={data?.data?.suppliers} />
           )}
-          {currentStep === 1 && <Step2 form={form} />}
+          {currentStep === 1 && (
+            <Step2 form={form} taxes={data?.data?.taxCategories} />
+          )}
           {currentStep === 2 && <Step3 form={form} />}
-          {currentStep === 3 && <Step4 form={form} />}
-          {/* Navigation Buttons */}
-          <div className="flex justify-between pt-4">
+          {currentStep === 3 && (
+            <Step4 form={form} variants={variants} setVariants={setVariants} />
+          )}
+          {currentStep === 4 && <Step5 form={form} />}
+          {currentStep === 5 && <Step6 form={form} />}
+
+          <Separator className="my-4 mt-auto" />
+
+          <div className="flex gap-4 pt-4 ">
             <Button
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 0}
+              type="button"
             >
               Back
             </Button>
@@ -424,7 +420,13 @@ function Step1({
   );
 }
 
-function Step2({ form }: { form: UseFormReturn<ProductFormData> }) {
+function Step2({
+  form,
+  taxes,
+}: {
+  form: UseFormReturn<ProductFormData>;
+  taxes?: TaxCategory[];
+}) {
   return (
     <div className="grid grid-cols-1 gap-6">
       <div>
@@ -460,6 +462,38 @@ function Step2({ form }: { form: UseFormReturn<ProductFormData> }) {
               Product name abbreviated to 3 letters (eg. bread - BRD)
             </FormDescription>
 
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="taxCategoryId"
+        render={({ field }) => (
+          <FormItem className="flex items-center">
+            <FormLabel>Tax Category</FormLabel>
+            <div className="gap-2 flex items-center">
+              <Select
+                onValueChange={field.onChange}
+                value={field.value ? field.value.toString() : ""}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={"Select VAT"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {taxes?.map((category) => (
+                    <SelectItem
+                      key={category.uuid}
+                      value={String(category.uuid)}
+                    >
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <FormMessage />
           </FormItem>
         )}
@@ -621,7 +655,15 @@ function Step3({ form }: { form: UseFormReturn<ProductFormData> }) {
   );
 }
 
-function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
+function Step4({
+  form,
+  variants,
+  setVariants,
+}: {
+  form: UseFormReturn<ProductFormData>;
+  variants: ProductVariant[];
+  setVariants: Dispatch<SetStateAction<ProductVariant[]>>;
+}) {
   const defaultProd: Partial<ProductVariant> = {
     uuid: String(uuid()),
     name: form.getValues("name"),
@@ -629,9 +671,6 @@ function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
     firstWarningInDays: form.getValues("firstWarningInDays"),
     criticalWarningInHours: form.getValues("criticalWarningInHours"),
   };
-  const [variants, setVariants] = useState<ProductVariant[]>([
-    defaultProd as ProductVariant,
-  ]);
 
   const rmVar = (i: string) => {
     setVariants((prev) => prev.filter((x) => x.uuid !== i));
@@ -639,9 +678,18 @@ function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
   const addVar = () => {
     setVariants((prev) => [
       ...prev,
-      { uuid: String(uuid()) } as ProductVariant,
+      {
+        uuid: String(uuid()),
+        sku: form.getValues("sku") + "-" + prev.length + 1,
+        firstWarningInDays: form.getValues("firstWarningInDays"),
+        criticalWarningInHours: form.getValues("criticalWarningInHours"),
+      } as ProductVariant,
     ]);
   };
+
+  useEffect(() => {
+    setVariants([defaultProd as ProductVariant]);
+  }, [setVariants]);
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="flex justify-between">
@@ -650,14 +698,14 @@ function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
           <MutedText>Create and manage variants</MutedText>
         </div>
 
-        <Button variant={"outline"} onClick={() => addVar()}>
+        <Button type="button" variant={"outline"} onClick={() => addVar()}>
           <PlusCircle />
           Add Variant
         </Button>
       </div>
       {variants.map((v, i) => (
         <div className="relative border border-solid rounded-lg p-6 flex gap-4 items-start">
-          <AddMediaDialoge variant={v} />
+          <AddMediaDialoge variant={v} setVariants={setVariants} />
 
           <div className="grid grid-cols-2 grow gap-4">
             <div className="flex flex-col gap-2">
@@ -695,7 +743,47 @@ function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
   );
 }
 
-function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
+function Step5({ form }: { form: UseFormReturn<ProductFormData> }) {
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <div>
+        <LargeText>Review Product</LargeText>
+        <MutedText>Final check before creating product</MutedText>
+      </div>
+      <div>
+        <LargeText>Product Info </LargeText>
+        <div>SKU: {form.getValues("sku")}</div>
+      </div>
+      <div>
+        <LargeText>Expiry Info </LargeText>
+        <div>SKU: {form.getValues("sku")}</div>
+      </div>
+      <div>
+        <LargeText>Variants</LargeText>
+        <div>SKU: {form.getValues("sku")}</div>
+      </div>
+    </div>
+  );
+}
+
+function Step6({ form }: { form: UseFormReturn<ProductFormData> }) {
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <div>
+        <LargeText>Confirm Submission</LargeText>
+        <MutedText>Are you sure you want to proceed?</MutedText>
+      </div>
+    </div>
+  );
+}
+
+function AddMediaDialoge({
+  variant,
+  setVariants,
+}: {
+  variant: ProductVariant;
+  setVariants: Dispatch<SetStateAction<ProductVariant[]>>;
+}) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -705,6 +793,9 @@ function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
   const handleFileSelect = (f: File) => {
     if (f && f.type.startsWith("image/")) {
       setFile(f);
+      setVariants((prev) =>
+        prev.map((v) => (v.uuid === variant.uuid ? { ...v, mediaFile: f } : v))
+      );
       const url = URL.createObjectURL(f);
       setPreviewUrl(url);
     }
@@ -756,7 +847,7 @@ function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
+      <DialogTrigger type="button" asChild>
         <div className="w-14 h-14 aspect-square grid grid-cols-1 place-items-center outline outline-border rounded-lg">
           {!file && <Upload className="h-4 w-4" />}
           {file && previewUrl && (
@@ -829,6 +920,7 @@ function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
                 <Button
                   variant="outline"
                   size="sm"
+                  type="button"
                   onClick={() => {
                     setFile(undefined);
                     setPreviewUrl(null);
@@ -837,7 +929,11 @@ function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
                   Remove
                 </Button>
               </div>
-              <Button onClick={() => handleSubmit()} className="w-full">
+              <Button
+                type="button"
+                onClick={() => handleSubmit()}
+                className="w-full"
+              >
                 Submit Image
               </Button>
             </div>

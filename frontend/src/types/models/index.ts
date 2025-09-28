@@ -61,6 +61,8 @@ export interface ProductVariant extends BaseModel {
 
   firstWarningInDays?: number | null;
   criticalWarningInHours?: number | null;
+
+  mediaFile?: File;
 }
 
 export interface Media extends BaseModel {
