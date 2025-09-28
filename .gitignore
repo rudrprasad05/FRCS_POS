@@ -7,3 +7,5 @@
 /.vs/project
 /cert
 /ssl
+/test
+.DS_Store

@@ -15,10 +15,19 @@ namespace FrcsPos.Response.DTO
         public DateTime ConnectionTimeOut { get; set; } = default!;
         public List<ProductDTO> Products { get; set; } = [];
         public List<SaleDTO> Sales { get; set; } = [];
+        public decimal? TotalSales { get; set; } = 0;
 
         public UserDTO PosUser { get; set; } = default!;
-        public string PosUserId { get; set; } = null!;
+        public string PosUserId { get; set; } = default!;
         public bool IsActive { get; set; } = default!;
+
+    }
+
+    public class PosSessionWithProducts
+    {
+        public PosSessionDTO PosSession { get; set; } = default!;
+        public List<ProductDTO> Products { get; set; } = default!;
+
 
     }
 

@@ -2,7 +2,6 @@
 
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DashboardStats } from "@/components/superadmin/dashboard/DashboardStats";
-import SuperAdminSalesGraph from "@/components/superadmin/dashboard/SuperAdminSalesGraph";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 

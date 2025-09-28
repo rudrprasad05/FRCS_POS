@@ -22,7 +22,6 @@ import { useAuth } from "@/context/UserContext";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -50,6 +49,7 @@ export default function LoginPage() {
       await login(values.email, values.password, redirect as string);
     } catch (error) {
       toast.error("Failed login");
+      console.log(error);
     }
 
     setIsLoading(false);

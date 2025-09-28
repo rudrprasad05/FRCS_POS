@@ -1,30 +1,30 @@
-import { ApiResponse, QueryObject } from "@/types/models";
-import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
-import { buildMediaQueryParams } from "@/lib/params";
+import {
+  ApiResponse,
+  Notification as AppNotification,
+  QueryObject,
+} from "@/types/models";
+import { RequestWrapper } from "./RequestWrapper";
+import { GetToken } from "./User";
 
 export async function GetAllNotificationsSuperAdmin(
   query?: QueryObject
-): Promise<ApiResponse<Notification[]>> {
-  const token = await GetToken();
-  const params = buildMediaQueryParams(query);
-
-  const res = await axiosGlobal.get<ApiResponse<Notification[]>>(
-    `notification/get-all-superadmin?${params}`,
+): Promise<ApiResponse<AppNotification[]>> {
+  return RequestWrapper<AppNotification[]>(
+    "GET",
+    `notification/get-all-superadmin`,
     {
-      headers: { Authorization: `Bearer ${token}` },
+      query,
     }
   );
-
-  return res.data;
 }
 
 export async function MarkAsRead(
   uuid?: string
-): Promise<ApiResponse<Notification>> {
+): Promise<ApiResponse<AppNotification>> {
   const token = await GetToken();
 
-  const res = await axiosGlobal.get<ApiResponse<Notification>>(
+  const res = await axiosGlobal.get<ApiResponse<AppNotification>>(
     `notification/mark-read?uuid=${uuid}`,
     {
       headers: { Authorization: `Bearer ${token}` },
@@ -36,10 +36,10 @@ export async function MarkAsRead(
 
 export async function SafeDeleteNotification(
   uuid?: string
-): Promise<ApiResponse<Notification>> {
+): Promise<ApiResponse<AppNotification>> {
   const token = await GetToken();
 
-  const res = await axiosGlobal.delete<ApiResponse<Notification>>(
+  const res = await axiosGlobal.delete<ApiResponse<AppNotification>>(
     `notification/safe-delete?uuid=${uuid}`,
     {
       headers: { Authorization: `Bearer ${token}` },

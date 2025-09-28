@@ -21,17 +21,19 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly UserManager<User> _userManager;
+        private readonly IUserContext _userContext;
 
         public CompanyRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IUserContext userContext
         )
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
-
+            _userContext = userContext;
 
         }
 
@@ -50,24 +52,28 @@ namespace FrcsPos.Repository
 
             var result = model.Entity.FromModelToDto();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New Company",
-                message: $"The company '{result.Name}' was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: $"/admin/companies/{result.UUID}",
-                isSuperAdmin: true,
-                companyId: result.Id
-            ));
+            var adminNotification = new NotificationDTO
+            {
+                Title = "Company created",
+                Message = $"The company {result.Name} was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/admin/companies/{result.Id}/view",
+                IsSuperAdmin = true,
+            };
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New company",
-                message: $"You've been assigned the company " + result.Name,
-                type: NotificationType.SUCCESS,
-                actionUrl: "/",
-                isSuperAdmin: false,
-                companyId: result.Id,
-                userId: request.AdminUserId
-            ));
+            var userNotification = new NotificationDTO
+            {
+                Title = "Company Created",
+                Message = $"The company {result.Name} was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = "#",
+                IsSuperAdmin = false,
+                CompanyId = result.Id,
+                UserId = _userContext.UserId
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
 
             return new ApiResponse<CompanyDTO>
@@ -88,14 +94,31 @@ namespace FrcsPos.Repository
             }
 
             model.IsDeleted = true;
+            model.UpdatedOn = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "Company Deleted",
-                message: "The company '" + model.Name + "' was deleted",
-                type: NotificationType.WARNING,
-                actionUrl: "/admin/cake/" + model.UUID
-            ));
+            var adminNotification = new NotificationDTO
+            {
+                Title = "Company Deleted",
+                Message = $"The company {model.Name} was deleted",
+                Type = NotificationType.WARNING,
+                ActionUrl = "#",
+                IsSuperAdmin = true,
+            };
+
+            var userNotification = new NotificationDTO
+            {
+                Title = "Company Deleted",
+                Message = $"The company {model.Name} was deleted",
+                Type = NotificationType.WARNING,
+                ActionUrl = "#",
+                IsSuperAdmin = false,
+                CompanyId = model.Id,
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             return new ApiResponse<CompanyDTO>
             {
@@ -115,6 +138,12 @@ namespace FrcsPos.Repository
             if (queryObject.IsDeleted.HasValue)
             {
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.ToLower();
+                query = query.Where(c => c.Name.ToLower().Contains(search));
             }
 
             // Sorting
@@ -229,8 +258,66 @@ namespace FrcsPos.Repository
                 return ApiResponse<CompanyDTO>.Fail(message: "Company not found");
             }
 
-            return ApiResponse<CompanyDTO>.Ok(model.FromModelToDto());
+            // Map company → DTO
+            var dto = model.FromModelToDto();
 
+            // Populate user DTOs (CompanyUser → User → UserDTO with role)
+            var userDtos = new List<UserDTO>();
+            foreach (var companyUser in model.Users)
+            {
+                var user = companyUser.User;
+                if (user != null)
+                {
+                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
+                }
+            }
+
+            var companyUserDtos = new List<CompanyUserDTO>();
+            foreach (var user in userDtos)
+            {
+                if (user != null)
+                {
+                    companyUserDtos.Add(new CompanyUserDTO
+                    {
+                        CompanyId = dto.Id,
+                        UserId = user.Id,
+                        User = user
+                    });
+                }
+            }
+
+            dto.Users = companyUserDtos;
+
+            // Populate AdminUser (with role as well)
+            if (model.AdminUser != null)
+            {
+                dto.AdminUser = await model.AdminUser.FromUserToDtoAsync(_userManager);
+            }
+
+
+            return ApiResponse<CompanyDTO>.Ok(dto);
+        }
+
+        public async Task<ApiResponse<CompanyDTO>> RemoveUserAsync(RemoveUserFromCompany request)
+        {
+            var company = await _context.Companies.FirstOrDefaultAsync(x => x.UUID == request.CompanyId);
+            if (company == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "company not found");
+            }
+
+            var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == company.Id && x.UserId == request.UserId);
+            if (companyUser == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "company user not found");
+            }
+
+            _context.CompanyUsers.Remove(companyUser);
+            await _context.SaveChangesAsync();
+
+            var dto = company.FromModelToDto();
+
+            return ApiResponse<CompanyDTO>.Ok(dto);
         }
 
         public async Task<ApiResponse<CompanyDTO>> AddUserToCompanyAsync(AddUserToCompany request)

@@ -5,12 +5,10 @@ import {
   Notification,
   UserRoles,
   SaleItem,
+  Product,
+  Warehouse,
+  TaxCategory,
 } from "../models";
-
-// export interface SuperAdminDashboardDTO {
-//   users: User[];
-//   companies: Company[];
-// }
 
 export interface SuperAdminDashboardDTO {
   totalCompanies: number;
@@ -18,7 +16,23 @@ export interface SuperAdminDashboardDTO {
   totalUsers: number;
   totalProducts: number;
   totalSales: number;
+  totalVat: number;
   notifications: Notification[];
+}
+export interface CompanyAdminDashboardDTO {
+  totalCompanies: number;
+  totalMedia: number;
+  totalUsers: number;
+  totalProducts: number;
+  totalSales: number;
+  totalVat: number;
+  notifications: Notification[];
+}
+
+export interface ILoadPreCreationInfo {
+  company: Company;
+  products: Product[];
+  warehouses: Warehouse[];
 }
 
 export interface AdminDashboardDTO {
@@ -65,4 +79,9 @@ export interface NewCheckoutRequest {
   total: number;
   status: SaleStatus; // defaults to PENDING in C#
   items: SaleItem[];
+}
+
+export interface EditProductData {
+  product: Product;
+  taxCategories: TaxCategory[];
 }

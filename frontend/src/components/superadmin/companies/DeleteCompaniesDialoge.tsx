@@ -1,42 +1,39 @@
-import { useState } from "react";
+import { SoftDeleteCompany } from "@/actions/Company";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Loader2 } from "lucide-react";
 import { Company } from "@/types/models";
-import { useCompanyData } from "./CompaniesSection";
-import { SoftDeleteCompany } from "@/actions/Company";
+import { Loader2, Trash } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export function DeleteCompanyDialoge({ data }: { data: Company }) {
-  const { refresh } = useCompanyData();
-
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
 
   async function handleDelete() {
     setIsLoading(true);
-    try {
-      const res = await SoftDeleteCompany(data.uuid);
-      setIsLoading(false);
+
+    const res = await SoftDeleteCompany(data.uuid);
+
+    if (res.success) {
       toast.success("Company Deleted");
       setIsOpen(false);
       setConfirmationText("");
-      refresh();
-    } catch (error) {
-      setIsLoading(false);
+    } else {
       toast.error("Error Occurred");
     }
+    setIsLoading(false);
   }
 
   const isConfirmValid = confirmationText.trim().toLowerCase() === "delete";

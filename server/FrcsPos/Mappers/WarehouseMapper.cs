@@ -26,13 +26,38 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 CompanyId = request.CompanyId,
                 Location = request.Location,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                IsDeleted = request.IsDeleted
             };
 
             if (request.ProductBatches != null)
             {
                 dto.ProductBatches = request.ProductBatches.FromModelToDto(false);
             }
+
+            return dto;
+        }
+
+        public static WarehouseDTO FromModelToOnlyDto(this Warehouse request)
+        {
+            if (request == null)
+            {
+                return new WarehouseDTO();
+            }
+
+            var dto = new WarehouseDTO
+            {
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+                Name = request.Name,
+                CompanyId = request.CompanyId,
+                Location = request.Location,
+                IsActive = request.IsActive,
+                IsDeleted = request.IsDeleted
+
+            };
 
             return dto;
         }

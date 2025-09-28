@@ -36,6 +36,31 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+        [HttpGet("get-by-company")]
+        public async Task<IActionResult> GetSaleByCompany([FromQuery] RequestQueryObject requestQuery)
+        {
+            var model = await _checkoutRepository.GetSaleByCompanyAsync(requestQuery);
+
+            if (model == null || !model.Success || model.Success == false)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-by-invoice")]
+        public async Task<IActionResult> GetReceipt([FromQuery] string uuid)
+        {
+            var model = await _checkoutRepository.GetReceiptAsync(uuid);
+
+            if (model == null || !model.Success || model.Success == false)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
 
 
     }

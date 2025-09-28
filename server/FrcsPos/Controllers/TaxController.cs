@@ -29,6 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _taxRepository.GetAllTaxCategories(queryObject);
             if (model == null || !model.Success) return BadRequest("Failed to fetch tax categories");
+
             return Ok(model);
         }
 

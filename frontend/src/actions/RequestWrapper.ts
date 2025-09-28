@@ -1,8 +1,8 @@
-import { ApiResponse, QueryObject } from "@/types/models";
-import axios, { AxiosRequestConfig, Method } from "axios";
-import { GetToken } from "./User";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
+import { ApiResponse, QueryObject } from "@/types/models";
+import { AxiosRequestConfig, Method } from "axios";
+import { GetToken } from "./User";
 
 export async function RequestWrapper<T>(
   method: Method,
@@ -18,9 +18,7 @@ export async function RequestWrapper<T>(
   const params = buildMediaQueryParams(query);
 
   url = `${url}?${params}`;
-
   console.log(url);
-  console.log(params);
 
   try {
     const res = await axiosGlobal({
@@ -34,9 +32,11 @@ export async function RequestWrapper<T>(
       ...config,
     });
 
+    console.log("RequestWrapper", res);
+
     return res.data;
   } catch (error) {
-    console.log("RES WRAPPER", error);
+    console.dir(error);
     return {
       data: null,
       success: false,

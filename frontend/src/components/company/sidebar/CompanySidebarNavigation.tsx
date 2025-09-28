@@ -10,22 +10,18 @@ import { useAuth } from "@/context/UserContext";
 import { cn } from "@/lib/utils";
 import { UserRoles } from "@/types/models";
 import {
-  BookText,
   Box,
-  Building2,
   Coins,
   Computer,
   File,
-  Flag,
+  Info,
   LayoutDashboard,
   LucideIcon,
   User,
-  UsersIcon,
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
 
 interface INavArr {
   title: string;
@@ -89,9 +85,14 @@ export function CompanySidebarNavigation() {
       href: `${base}/reports`,
       icon: File,
     },
+    {
+      title: "Notifications",
+      href: `${base}/notifications`,
+      icon: Info,
+    },
   ];
   console.log(user?.role);
-  let navArr =
+  const navArr =
     user?.role?.toUpperCase() === UserRoles.ADMIN
       ? adminNavigationItems
       : cashierNavigationItems;

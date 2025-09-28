@@ -1,105 +1,91 @@
 "use client";
 import { GetAllCompanies } from "@/actions/Company";
-import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
+import { Header } from "@/components/global/TestHeader";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { Company } from "@/types/models";
-import { Search } from "lucide-react";
+  ApiResponse,
+  Company,
+  ESortBy,
+  QueryObject,
+  UserRoles,
+} from "@/types/models";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useState } from "react";
 import { CompanyOnlyColumn } from "../../tables/CompaniesColumns";
 import NewCompanyDialoge from "./NewCompanyDialoge";
 
-export const { Provider: CompanyDataProvider, useGenericData: useCompanyData } =
-  createGenericListDataContext<Company>();
-
 export default function CompanySection() {
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 10,
+    search: "",
+    sortBy: ESortBy.DSC,
+    isDeleted: undefined as boolean | undefined,
+  });
+
+  const query = useQuery({
+    queryKey: ["adminCompanies", pagination],
+    queryFn: () => GetAllCompanies({ ...pagination }),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
   return (
-    <CompanyDataProvider
-      fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
-    >
-      <CompanyDataProvider
-        fetchFn={() => GetAllCompanies({ pageNumber: 1, pageSize: 10 })}
+    <>
+      <Header
+        pagination={pagination}
+        setPagination={setPagination}
+        newButton={
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <NewCompanyDialoge />
+          </RoleWrapper>
+        }
       >
-        <Header />
-        <HandleDataSection />
-      </CompanyDataProvider>
-    </CompanyDataProvider>
+        <H1>Companies</H1>
+        <P className="text-muted-foreground">Create and manage the companies</P>
+      </Header>
+
+      <HandleDataSection
+        query={query}
+        pagination={pagination}
+        setPagination={setPagination}
+      />
+    </>
   );
 }
 
-function Header() {
-  return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Companies</H1>
-        <P className="text-muted-foreground">Create and manage companies</P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <NewCompanyDialoge />
-      </div>
-    </div>
-  );
-}
-
-function HandleDataSection() {
-  const { items, loading, pagination, setPagination } = useCompanyData();
-  const data = items as Company[];
-
-  if (loading) {
+function HandleDataSection({
+  query,
+  pagination,
+  setPagination,
+}: {
+  query: UseQueryResult<ApiResponse<Company[]>, Error>;
+  pagination: any;
+  setPagination: React.Dispatch<React.SetStateAction<any>>;
+}) {
+  if (query.isLoading) {
     return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!data) {
-    return <>Invalid URL</>;
+  if (query.isError) {
+    return <div className="text-red-500">Error loading POS terminals.</div>;
   }
-  if (data.length === 0) {
-    return <NoDataContainer />;
-  }
+
+  const data = query.data?.data ?? [];
+  const meta = query.data?.meta;
   return (
     <>
       <DataTable columns={CompanyOnlyColumn} data={data} />
       <div className="py-8">
         <PaginationSection
-          pagination={pagination}
+          pagination={{
+            ...pagination,
+            totalCount: meta?.totalCount ?? 0,
+            totalPages: meta?.totalPages ?? 0,
+          }}
           setPagination={setPagination}
         />
       </div>

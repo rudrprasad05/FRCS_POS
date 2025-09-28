@@ -1,0 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace FrcsPos.Request
+{
+    public class EditProductRequest
+    {
+        public string ProductName { get; set; } = string.Empty;
+        public string SKU { get; set; } = string.Empty;
+        public decimal Price { get; set; } = 0;
+        public string Barcode { get; set; } = string.Empty;
+        public bool IsPerishable { get; set; } = false;
+        public IFormFile? File { get; set; } = null!;
+        public int TaxCategoryId { get; set; } = default!;
+        public int MediaId { get; set; } = default!;
+
+    }
+}

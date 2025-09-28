@@ -27,6 +27,8 @@ export interface Product extends BaseModel {
 
   batches?: ProductBatch[];
   saleItems?: SaleItem[];
+
+  maxStock?: number;
 }
 
 export interface Media extends BaseModel {
@@ -112,6 +114,7 @@ export interface QueryObject {
   companyName?: string;
   role?: UserRoles;
   isAvailable?: boolean;
+  search?: string;
 }
 
 export enum ESortBy {
@@ -136,7 +139,7 @@ export interface Warehouse extends BaseModel {
   name: string;
   location?: string;
 
-  batches?: ProductBatch[];
+  productBatches?: ProductBatch[];
 }
 
 export enum UserRoles {
@@ -156,7 +159,7 @@ export interface User {
   createdOn: string;
   updatedOn: string;
 }
-export interface ProductBatchDTO {}
+
 export interface CompanyUser extends BaseModel {
   companyId: number;
   company?: Company;
@@ -211,9 +214,11 @@ export interface PosSession extends BaseModel {
   isActive: boolean;
   connectionTimeOut: Date;
   sales: Sale[];
+  totalSales?: number;
 }
 
-export type PosSessionWithProducts = PosSession & {
+export type PosSessionWithProducts = {
+  posSession: PosSession;
   products: Product[];
 };
 

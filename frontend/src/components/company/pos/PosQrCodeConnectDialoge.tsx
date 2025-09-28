@@ -1,5 +1,7 @@
 "use client";
-import QRCode from "react-qr-code";
+import { GenerateQr } from "@/actions/PosSession";
+import { MutedText } from "@/components/font/HeaderFonts";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,14 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, QrCode } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useParams } from "next/navigation";
-import { GenerateQr } from "@/actions/PosSession";
 import { usePosSession } from "@/context/PosContext";
+import { Loader2, QrCode } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import QRCode from "react-qr-code";
 import { toast } from "sonner";
-import { MutedText } from "@/components/font/HeaderFonts";
 
 export default function PosQrCodeConnectDialoge() {
   const params = useParams();
@@ -33,7 +33,7 @@ export default function PosQrCodeConnectDialoge() {
       console.log(res);
       setIsQrGenerated(true);
 
-      const baseUrl = process.env.NEXT_PUBLIC_IP || "http://localhost:3000";
+      const baseUrl = "https://localhost:3000"; // CHANGE ME
       setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
     } catch (error) {
       toast.error("Error generating QR Code");
@@ -105,9 +105,7 @@ export default function PosQrCodeConnectDialoge() {
 }
 
 function HandleQr({ isGenerated }: { isGenerated: boolean }) {
-  const { qr, setQr } = usePosSession();
-
-  console.log(qr, isGenerated);
+  const { qr } = usePosSession();
 
   if (isGenerated && qr && qr?.length > 0)
     return (

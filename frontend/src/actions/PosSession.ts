@@ -5,18 +5,14 @@ import {
   ApiResponse,
   PosSession,
   PosSessionWithProducts,
-  PosTerminal,
   QuickConnect,
   Sale,
 } from "@/types/models";
-import {
-  ICreateNewPosSession,
-  IPosSessionData,
-  NewCheckoutRequest,
-} from "@/types/res";
+import { ICreateNewPosSession, NewCheckoutRequest } from "@/types/res";
 
-import { GetToken } from "./User";
+import axios from "axios";
 import { RequestWrapper } from "./RequestWrapper";
+import { GetToken } from "./User";
 
 export async function CreateNewPosSession(
   data: ICreateNewPosSession
@@ -39,8 +35,9 @@ export async function ResumeSession(
   data: ICreateNewPosSession,
   uuid: string
 ): Promise<ApiResponse<PosSession>> {
-  return RequestWrapper<PosSession>("POST", `pos-session/resume?uuid=${uuid}`, {
+  return RequestWrapper<PosSession>("POST", `pos-session/resume`, {
     data,
+    query: { uuid },
   });
 }
 
@@ -61,11 +58,9 @@ export async function GetPosSession(
 export async function GenerateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
-  return RequestWrapper<QuickConnect>(
-    "GET",
-    `quickconnect/generate?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<QuickConnect>("GET", `quickconnect/generate`, {
+    query: { uuid },
+  });
 }
 
 export async function Checkout(
@@ -77,9 +72,24 @@ export async function Checkout(
 export async function ValidateQr(
   uuid: string
 ): Promise<ApiResponse<QuickConnect>> {
-  return RequestWrapper<QuickConnect>(
-    "GET",
-    `quickconnect/validate?uuid=${uuid}`,
-    {}
-  );
+  try {
+    const res = await axios.get<ApiResponse<QuickConnect>>(
+      `https://192.168.1.184:5081/api/quickconnect/validate`,
+      {
+        params: { uuid }, // axios automatically serializes query params
+      }
+    );
+    return res.data;
+  } catch (error: any) {
+    console.error("ValidateQr error:", error);
+    return {
+      data: {},
+      success: false,
+      statusCode: error?.response?.status || 400,
+      errors: error?.response?.data?.errors ?? ["Request failed"],
+      timestamp: Date.now.toString(),
+    } as ApiResponse<QuickConnect>;
+  }
 }
+
+// https://192.168.1.184:5081

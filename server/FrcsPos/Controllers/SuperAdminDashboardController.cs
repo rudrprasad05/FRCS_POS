@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Models;
+using FrcsPos.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -35,20 +36,20 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
         }
 
-        [HttpGet("get-admin-dashboard")]
-        public async Task<IActionResult> GetAdminDashboard([FromQuery][Required] string companyName, [FromQuery][Required] string userId)
+        [HttpGet("company-dashboard")]
+        public async Task<IActionResult> GetAdminDashboard([FromQuery] RequestQueryObject queryObject)
         {
-            var model = await _superAdminDashboardRepository.GetAdminDashboard(companyName, userId);
+            var model = await _superAdminDashboardRepository.GetAdminDashboard(queryObject);
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);

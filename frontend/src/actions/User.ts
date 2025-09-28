@@ -7,7 +7,6 @@ import { cookies } from "next/headers";
 
 import https from "https";
 import { RequestWrapper } from "./RequestWrapper";
-import { buildMediaQueryParams } from "@/lib/params";
 
 const agent = new https.Agent({
   rejectUnauthorized: false, // Allow self-signed cert
@@ -24,17 +23,9 @@ export async function GetUser() {
 export async function GetAllAdmins(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  const token = await GetToken();
-  const params = buildMediaQueryParams(query);
-
-  const res = await axiosGlobal.get<ApiResponse<User[]>>(
-    `user/get-all-users?${params}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  console.log(res.data);
-  return res.data;
+  return RequestWrapper<User[]>("GET", `user/get-all-users`, {
+    query,
+  });
 }
 export async function GetUsersByCompany(
   query?: QueryObject
@@ -45,36 +36,16 @@ export async function GetUsersByCompany(
 export async function GetUnAssignedUsers(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {
-  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {});
+  return RequestWrapper<User[]>("GET", `user/get-all-users-not-in-company`, {
+    query,
+  });
 }
 
 export async function CreateUser(
-  data: NewUserForm
-): Promise<ApiResponse<User[]>> {
-  const token = await GetToken();
-
-  try {
-    const res = await axiosGlobal.post<ApiResponse<User[]>>(
-      "user/create",
-      data,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<User[]>;
-    }
-
-    return {
-      success: false,
-      statusCode: 500,
-      data: [],
-      errors: ["Network error"],
-      message: "Unable to reach the server",
-      timestamp: Date.now.toString(),
-    };
-  }
+  data: NewUserForm,
+  query?: QueryObject
+): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("POST", `user/create`, { data, query });
 }
 
 export async function Logout(): Promise<ApiResponse<string>> {

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { usePosSession } from "@/context/PosContext";
 import { cn } from "@/lib/utils";
 import { Product, SaleItemOmitted } from "@/types/models";
-import { ImageIcon, Plus } from "lucide-react";
+import { Coins, ImageIcon, Plus, Warehouse } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -13,22 +13,23 @@ export function RecentProductCard({ item }: { item: Product }) {
   const [isImageValid, setIsImageValid] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  const { addProduct } = usePosSession();
+  const { addProduct, cart } = usePosSession();
 
   const handleAddProduct = (product: Product) => {
-    let sI: SaleItemOmitted = {
+    const sI: SaleItemOmitted = {
       productId: product.id,
       product: product,
       quantity: 1,
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: product.price,
+      isDeleted: false,
     };
     addProduct(sI);
   };
 
   return (
-    <Card key={item.id} className="bg-card/20">
+    <Card key={item.id} className="bg-card/20 py-0">
       <div className="w-full grow h-full">
         <div className="relative aspect-square h-48  w-full border-b border-solid rounded-t-lg overflow-hidden">
           {isImageValid ? (
@@ -63,20 +64,34 @@ export function RecentProductCard({ item }: { item: Product }) {
           )}
         </div>
         <div className="p-4 flex-1/2 flex flex-col">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-start">
             <h3 className="text-xl font-semibold mb-2">
-              {item.name as string}
+              <div>{item.name as string}</div>
+              <div className="text-xs font-light">
+                SKU: {item.sku as string}
+              </div>
             </h3>
-            <div className="text-xs text-primary-foreground font-bold">
-              {"$" + item.price}
+            <div className="flex flex-col items-start">
+              <div className="flex items-center gap-2">
+                <Coins className="w-3 h-3 text-muted-foreground" />
+                <p className="text-xs font-light">{"$" + item.price}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Warehouse className="w-3 h-3 text-muted-foreground" />
+                <p className="text-xs font-light">{item.maxStock}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="px-4 mt-auto">
+      <div className="p-4 mt-auto">
         <Button
           size="sm"
-          //   disabled={item.batches?.length === 0}
+          disabled={
+            item.maxStock !== undefined &&
+            (cart.find((c) => c.productId === item.id)?.quantity ?? 0) >=
+              item.maxStock
+          }
           onClick={(e) => {
             e.stopPropagation();
             handleAddProduct(item);

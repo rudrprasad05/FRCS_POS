@@ -1,12 +1,13 @@
 "use client";
 
 import { GetPosSession } from "@/actions/PosSession";
-import { PosSessionWithProducts } from "@/types/models";
-import { useEffect, useState } from "react";
-import PosTerminal from "./PosTerminal";
 import { usePosSession } from "@/context/PosContext";
-import * as signalR from "@microsoft/signalr";
 import { WebSocketUrl } from "@/lib/utils";
+import { Product, SaleItemOmitted } from "@/types/models";
+import * as signalR from "@microsoft/signalr";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import PosTerminal from "./PosTerminal";
 
 export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const [loading, setLoading] = useState(true);
@@ -16,8 +17,27 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     setIsTerminalConnectedToServer,
     setIsScannerConnectedToServer,
     addProduct,
-    products,
   } = usePosSession();
+
+  const productsRef = useRef<Product[]>([]);
+
+  const handleProductAdd = useCallback(
+    async (scan: string) => {
+      const product = productsRef.current.find((p) => p.barcode === scan);
+      if (!product) return;
+      const sI: SaleItemOmitted = {
+        productId: product.id,
+        product: product,
+        quantity: 1,
+        unitPrice: product.price,
+        taxRatePercent: product.taxCategory?.ratePercent as number,
+        lineTotal: product.price,
+        isDeleted: false,
+      };
+      addProduct(sI);
+    },
+    [productsRef, addProduct]
+  );
 
   useEffect(() => {
     const getData = async () => {
@@ -30,9 +50,8 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     };
 
     getData();
-  }, []);
+  }, [setInitialState, uuid]);
 
-  // 🔥 Setup SignalR once we have UUID
   useEffect(() => {
     if (!uuid) return;
 
@@ -64,21 +83,25 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     });
     connection.on("ScannerConnected", (scan) => {
       setIsScannerConnectedToServer(true);
+      toast.success("Scanner connected");
       console.log("📩 Scan received:", scan);
+    });
+    connection.on("ScannerDisconnected", (scan) => {
+      setIsScannerConnectedToServer(false);
+      toast.warning("Scanner disconnected");
+      console.log("📩 scanner left:", scan);
     });
 
     return () => {
       setIsTerminalConnectedToServer(false);
       connection.stop();
     };
-  }, [uuid]);
-
-  const handleProductAdd = (scan: string) => {
-    console.log("handleProductAdd");
-    console.log(products);
-    console.log(scan);
-    console.log("handleProductAdd end");
-  };
+  }, [
+    uuid,
+    handleProductAdd,
+    setIsScannerConnectedToServer,
+    setIsTerminalConnectedToServer,
+  ]);
 
   if (loading) return <>loading</>;
 

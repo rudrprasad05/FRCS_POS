@@ -1,11 +1,11 @@
 "use client";
-import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import type { PosSession, Sale, User } from "@/types/models";
+import type { PosSession, User } from "@/types/models";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Pause } from "lucide-react";
+import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
 import { P } from "../font/HeaderFonts";
 import { Button } from "../ui/button";
-import { Pause, Play, Square, SquarePauseIcon } from "lucide-react";
-import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
 
 export const PosSessionColumns: ColumnDef<PosSession>[] = [
   {
@@ -39,18 +39,15 @@ export const PosSessionColumns: ColumnDef<PosSession>[] = [
     },
   },
   {
-    accessorKey: "sales",
+    accessorKey: "totalSales",
     header: "Total Sales",
     cell: ({ row }) => {
-      const sales = row.getValue("sales") as Sale[];
-      let amount = 0;
-      sales.forEach((s) => {
-        amount += s.total;
-      });
+      const sales = row.getValue("totalSales") as number;
+
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount);
+      }).format(sales);
       return formatted;
     },
   },

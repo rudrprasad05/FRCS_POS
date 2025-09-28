@@ -20,6 +20,9 @@ namespace FrcsPos.Mappers
                 Id = request.Id,
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
+                IsActive = request.IsActive,
+                LocationDescription = request.LocationDescription ?? string.Empty,
+                SerialNumber = request.SerialNumber ?? string.Empty
             };
         }
 
@@ -32,7 +35,10 @@ namespace FrcsPos.Mappers
                 Id = request.Id,
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
+                IsActive = request.IsActive,
                 Name = request.Name,
+                LocationDescription = request.LocationDescription ?? string.Empty,
+                SerialNumber = request.SerialNumber ?? string.Empty,
                 Sales = request.Sales.FromModelToDto(),
                 Company = request.Company.FromModelToDTOWithoutPosTerminals(),
                 Session = request.Session.FromPosSessionListToPosSessionDTOList(),
@@ -48,6 +54,8 @@ namespace FrcsPos.Mappers
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
+                LocationDescription = request.LocationDescription ?? string.Empty,
+                SerialNumber = request.SerialNumber ?? string.Empty
             };
         }
 

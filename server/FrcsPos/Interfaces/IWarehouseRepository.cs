@@ -11,9 +11,12 @@ namespace FrcsPos.Interfaces
     public interface IWarehouseRepository
     {
         public Task<ApiResponse<WarehouseDTO>> CreateAsync(NewWarehouseRequest request);
+        public Task<ApiResponse<WarehouseDTO>> EditAsync(EditWarehouseData request, RequestQueryObject requestQueryObject);
         public Task<ApiResponse<List<WarehouseDTO>>> GetAllAsync(RequestQueryObject requestQueryObject);
         public Task<ApiResponse<WarehouseDTO>> GetOneAsync(RequestQueryObject requestQueryObject);
-        public Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(string uuid);
+        public Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(RequestQueryObject queryObject);
+        public Task<ApiResponse<WarehouseDTO>> Activate(RequestQueryObject queryObject);
+
 
     }
 }

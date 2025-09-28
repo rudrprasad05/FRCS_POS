@@ -22,6 +22,16 @@ export const formatDate = (dateString: string) => {
   }
 };
 
+export const formatDateIntoFormat = (dateString: string) => {
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 export function generateStrongPassword(length = 12) {
   const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lowercase = "abcdefghijklmnopqrstuvwxyz";
@@ -29,7 +39,7 @@ export function generateStrongPassword(length = 12) {
   const specials = "!@#$%^&*()_+[]{}|;:,.<>?/~`-=";
 
   // Ensure at least one of each required character
-  let password = [
+  const password = [
     uppercase[Math.floor(Math.random() * uppercase.length)],
     lowercase[Math.floor(Math.random() * lowercase.length)],
     numbers[Math.floor(Math.random() * numbers.length)],
@@ -59,4 +69,16 @@ export const formatFileSize = (bytes: number) => {
   return (
     Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   );
+};
+
+export const formatFullDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString([], {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };

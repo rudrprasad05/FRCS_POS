@@ -11,7 +11,6 @@ import {
 import { AlertTriangle, ArrowLeft, Home, LogIn } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import React from "react";
 
 export default function UnAssigned() {
   return (

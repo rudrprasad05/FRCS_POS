@@ -19,19 +19,19 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IMediaRepository _mediaRepository;
-
+        private readonly IUserContext _userContext;
 
         public WarehouseRepository(
            ApplicationDbContext applicationDbContext,
            INotificationService notificationService,
-           IMediaRepository mediaRepository
-
+           IMediaRepository mediaRepository,
+            IUserContext userContext
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
-
+            _userContext = userContext;
         }
 
         public async Task<ApiResponse<WarehouseDTO>> CreateAsync(NewWarehouseRequest request)
@@ -51,16 +51,38 @@ namespace FrcsPos.Repository
 
             var finalModel = result.Entity.FromModelToDto();
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New Company",
-                message: $"The warehouse '{model.Name}' was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: $"/{company.Name}/warehouse/{model.UUID}",
-                isSuperAdmin: false,
-                companyId: company.Id
-            ));
+            var userNotification = new NotificationDTO
+            {
+                Title = "New warehouse",
+                Message = "A new warehouse was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/{company.Name}/warehouse/${model.UUID}/view",
+                IsSuperAdmin = false,
+                CompanyId = company.Id,
+                UserId = _userContext.UserId
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             return ApiResponse<WarehouseDTO>.Ok(model.FromModelToDto());
+        }
+
+        public async Task<ApiResponse<WarehouseDTO>> EditAsync(EditWarehouseData request, RequestQueryObject queryObject)
+        {
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(w => w.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.Fail(message: "warehouse not found");
+            }
+
+            wh.Location = request.Location;
+            wh.Name = request.Name;
+            wh.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var whDTO = wh.FromModelToDto();
+            return ApiResponse<WarehouseDTO>.Ok(whDTO);
         }
 
         public async Task<ApiResponse<List<WarehouseDTO>>> GetAllAsync(RequestQueryObject requestQueryObject)
@@ -77,7 +99,16 @@ namespace FrcsPos.Repository
             // filtering
             if (requestQueryObject.IsDeleted.HasValue)
             {
-                query = query.Where(c => c.IsDeleted == requestQueryObject.IsDeleted.Value);
+                query = query.Where(c => c.IsActive != requestQueryObject.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(requestQueryObject.Search))
+            {
+                var search = requestQueryObject.Search.ToLower();
+                query = query.Where(c =>
+                    c.Name.ToLower().Contains(search) ||
+                    c.Location.ToLower().Contains(search)
+                );
             }
 
             // Sorting
@@ -140,9 +171,43 @@ namespace FrcsPos.Repository
             return ApiResponse<WarehouseDTO>.Ok(dto);
         }
 
-        public Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(string uuid)
+        public async Task<ApiResponse<WarehouseDTO>> SoftDeleteAsync(RequestQueryObject queryObject)
         {
-            throw new NotImplementedException();
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.NotFound();
+            }
+
+            wh.IsDeleted = true;
+            wh.IsActive = false;
+            wh.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var warehouseDTO = wh.FromModelToDto();
+
+            return ApiResponse<WarehouseDTO>.Ok(warehouseDTO);
+        }
+
+        public async Task<ApiResponse<WarehouseDTO>> Activate(RequestQueryObject queryObject)
+        {
+            var wh = await _context.Warehouses.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<WarehouseDTO>.NotFound();
+            }
+
+            wh.IsDeleted = false;
+            wh.IsActive = true;
+            wh.UpdatedOn = DateTime.UtcNow;
+
+
+            await _context.SaveChangesAsync();
+
+            var warehouseDTO = wh.FromModelToDto();
+
+            return ApiResponse<WarehouseDTO>.Ok(warehouseDTO);
         }
     }
 }

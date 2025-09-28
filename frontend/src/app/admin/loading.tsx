@@ -1,6 +1,4 @@
 import { Loader2 } from "lucide-react";
-import { redirect } from "next/navigation";
-import React from "react";
 
 export default function LoadingPage() {
   return (

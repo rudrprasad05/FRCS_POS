@@ -19,32 +19,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/UserContext";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
+import { PosTerminal } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, Play } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { validate as uuidValidate } from "uuid";
 
 interface NewSessionDialogProps {
-  terminalId: string;
+  terminal: PosTerminal;
 }
 
-export default function NewSessionDialog({
-  terminalId,
-}: NewSessionDialogProps) {
+export default function NewSessionDialog({ terminal }: NewSessionDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect");
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInForm),
@@ -56,38 +51,41 @@ export default function NewSessionDialog({
 
   async function onSubmit(values: SignInFormType) {
     setLoading(true);
-    try {
-      const res = await CreateNewPosSession({
-        PosTerminalUUID: terminalId,
-        email: values.email,
-        password: values.password,
-      });
 
+    if (!terminal.isActive) {
+      toast.error("Activate terminal first");
+      setLoading(false);
+
+      return;
+    }
+
+    const res = await CreateNewPosSession({
+      PosTerminalUUID: terminal.uuid,
+      email: values.email,
+      password: values.password,
+    });
+
+    if (res.success) {
       const url = res.data?.uuid;
       if (uuidValidate(url)) {
         toast.success("Session created. Redirecting");
-        router.push(`${terminalId}/session/${url}`);
+        router.push(`session/${url}`);
       } else {
         toast.error("Session url was invalid");
         console.error("Invalid UUID:", url);
       }
-    } catch (error) {
-      console.error("Failed to start session:", error);
-      toast.error("Failed to start session");
-    } finally {
-      setLoading(false);
-      setOpen(false);
+    } else {
+      console.error("Failed to start session:", res.message);
+      toast.error("Failed to start session", { description: res.message });
     }
-  }
 
-  useEffect(() => {
-    console.log("redirect prefecthed");
-    router.prefetch("/redirect");
-  }, [router]);
+    setLoading(false);
+    setOpen(false);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild disabled={!terminal.isActive}>
         <Button className="gap-2">
           <Play className="h-4 w-4" />
           Start New Session
@@ -112,7 +110,7 @@ export default function NewSessionDialog({
                     <FormControl>
                       <Input
                         placeholder="Enter your email"
-                        disabled={isLoading}
+                        disabled={loading}
                         className="bg-background"
                         {...field}
                       />
@@ -133,7 +131,7 @@ export default function NewSessionDialog({
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          disabled={isLoading}
+                          disabled={loading}
                           className=" pr-10"
                           {...field}
                         />

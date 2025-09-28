@@ -23,6 +23,7 @@ namespace FrcsPos.Mappers
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
+                IsDeleted = request.IsDeleted,
                 CompanyId = request.CompanyId,
                 Sku = request.Sku,
                 Barcode = request.Barcode,
@@ -30,6 +31,33 @@ namespace FrcsPos.Mappers
                 MediaId = request.MediaId ?? 0,
                 Media = request.Media?.FromModelToDTO(),
                 TaxCategory = request.TaxCategory.FromModelToDto(),
+                TaxCategoryId = request.TaxCategoryId,
+                IsPerishable = request.IsPerishable,
+            };
+
+            return dto;
+        }
+
+        public static ProductDTO FromModelToOnlyDto(this Product request)
+        {
+            if (request == null)
+            {
+                return new ProductDTO();
+            }
+
+            var dto = new ProductDTO
+            {
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+                IsDeleted = request.IsDeleted,
+                Name = request.Name,
+                CompanyId = request.CompanyId,
+                Sku = request.Sku,
+                Barcode = request.Barcode,
+                Price = request.Price,
+                MediaId = request.MediaId ?? 0,
                 TaxCategoryId = request.TaxCategoryId,
                 IsPerishable = request.IsPerishable,
             };

@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "next-themes";
+import TanstackProvider from "@/context/TanstackProvider";
 import { AuthProvider } from "@/context/UserContext";
+import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,10 +75,14 @@ export default function RootLayout({
           defaultTheme="dark" // ✅ default to dark
           enableSystem={false} // ❌ don't follow OS preference
         >
-          <AuthProvider>
-            <Toaster />
-            {children}
-          </AuthProvider>
+          <TanstackProvider>
+            <Suspense fallback={<div>Loading session...</div>}>
+              <AuthProvider>
+                <Toaster />
+                {children}
+              </AuthProvider>
+            </Suspense>
+          </TanstackProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,35 +1,27 @@
+import { EditCompanyData } from "@/components/superadmin/companies/EditTab";
+import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
+import { axiosGlobal } from "@/lib/axios";
 import {
   ApiResponse,
   ApiResponseFail,
   Company,
   QueryObject,
 } from "@/types/models";
-import { GetToken } from "./User";
-import { axiosGlobal } from "@/lib/axios";
-import { buildMediaQueryParams } from "@/lib/params";
-import { NewCompanyFormType } from "@/components/superadmin/companies/NewCompanyDialoge";
 import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllCompanies(
   query?: QueryObject
 ): Promise<ApiResponse<Company[]>> {
-  const token = await GetToken();
-  const params = buildMediaQueryParams(query);
-
-  const res = await axiosGlobal.get<ApiResponse<Company[]>>(
-    `company/get-all?${params}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
-  return res.data;
+  console.log("GetAllCompanies", query);
+  return RequestWrapper<Company[]>("GET", `company/get-all`, {
+    query,
+  });
 }
 
 export async function GetCompanyByAdminUserId(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  let query: QueryObject = {
+  const query: QueryObject = {
     uuid: uuid,
   };
   return RequestWrapper<Company>("GET", `company/get-one-by-admin-id`, {
@@ -42,19 +34,17 @@ export async function GetCompanyForAssociatedUsers(
 ): Promise<ApiResponse<Company>> {
   return RequestWrapper<Company>(
     "GET",
-    `company/get-one-by-associated-admin-id?uuid=${uuid}`,
-    {}
+    `company/get-one-by-associated-admin-id`,
+    { query: { uuid } }
   );
 }
 
 export async function GetFullCompanyByUUID(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  return RequestWrapper<Company>(
-    "GET",
-    `company/get-full-by-uuid?uuid=${uuid}`,
-    {}
-  );
+  return RequestWrapper<Company>("GET", `company/get-full-by-uuid`, {
+    query: { uuid },
+  });
 }
 
 export async function AddUserToCompany(
@@ -94,19 +84,37 @@ export async function CreateCompany(
   }
 }
 
+export async function RemoveUserFromCompany(
+  userId: string,
+  companyId: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("DELETE", `company/remove-user`, {
+    data: { userId, companyId },
+  });
+}
+
 export async function SoftDeleteCompany(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  try {
-    const res = await axiosGlobal.delete<ApiResponse<Company>>(
-      `company/soft-delete?uuid=${uuid}`
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<Company>;
-    }
+  return RequestWrapper<Company>("DELETE", `company/soft-delete`, {
+    query: { uuid },
+  });
+}
 
-    return ApiResponseFail<Company>();
-  }
+export async function ActivateCompany(
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("DELETE", `company/activate`, {
+    query: { uuid },
+  });
+}
+
+export async function EditCompany(
+  data: EditCompanyData,
+  uuid: string
+): Promise<ApiResponse<Company>> {
+  return RequestWrapper<Company>("PATCH", `company/edit`, {
+    query: { uuid },
+    data: data,
+  });
 }

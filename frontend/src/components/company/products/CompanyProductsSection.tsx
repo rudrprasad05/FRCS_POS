@@ -1,128 +1,145 @@
 "use client";
-import NoDataContainer from "@/components/containers/NoDataContainer";
+import { GetAllProducts } from "@/actions/Product";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { HousePlus, PackagePlus, Search } from "lucide-react";
-// import NewCompanyDialoge from "./NewCompanyDialoge";
-import { GetAllProducts } from "@/actions/Product";
+import { Header } from "@/components/global/TestHeader";
 import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { ESortBy, Product } from "@/types/models";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
+import {
+  ApiResponse,
+  ESortBy,
+  Product,
+  QueryObject,
+  UserRoles,
+} from "@/types/models";
+import {
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "@tanstack/react-query";
+import { PackagePlus } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
-export const {
-  Provider: CompanyProductsSectionProvider,
-  useGenericData: useCompanyProductData,
-} = createGenericListDataContext<Product>();
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function CompanySection() {
-  return (
-    <CompanyProductsSectionProvider
-      fetchFn={() =>
-        GetAllProducts({ pageNumber: 1, pageSize: 10, sortBy: ESortBy.DSC })
-      }
-    >
-      <Header />
-      <HandleDataSection />
-    </CompanyProductsSectionProvider>
-  );
-}
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
+  const queryClient = useQueryClient();
 
-function Header() {
-  const router = useRouter();
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 10,
+    search: "",
+    sortBy: ESortBy.DSC,
+    isDeleted: undefined as boolean | undefined,
+  });
+
+  const query = useQuery({
+    queryKey: ["products", companyName, pagination],
+    queryFn: () => GetAllProducts({ ...pagination, companyName }),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
+
   useEffect(() => {
-    console.log("prefecthed");
-    router.prefetch("products/new");
-  }, [router]);
+    if (
+      query.data?.meta?.totalPages &&
+      (pagination.pageNumber as number) < query.data.meta.totalPages
+    ) {
+      queryClient.prefetchQuery({
+        queryKey: [
+          "products",
+          { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
+        ],
+        queryFn: () =>
+          GetAllProducts(
+            {
+              ...pagination,
+              pageNumber: (pagination.pageNumber as number) + 1,
+            },
+            false
+          ),
+      });
+    }
+  }, [query.data, pagination, queryClient]);
+
   return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Products</H1>
+    <>
+      <Header
+        pagination={pagination}
+        setPagination={setPagination}
+        newButton={
+          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+            <NewButton />
+          </RoleWrapper>
+        }
+      >
+        <H1>Products</H1>
         <P className="text-muted-foreground">Create and manage your products</P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
+      </Header>
 
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button
-          asChild
-          className={`${buttonVariants({
-            variant: "default",
-          })} text-start justify-start px-2 my-2`}
-        >
-          <Link href="products/new">
-            <PackagePlus />
-            New Product
-          </Link>
-        </Button>{" "}
-      </div>
-    </div>
+      <HandleDataSection
+        query={query}
+        pagination={pagination}
+        setPagination={setPagination}
+      />
+    </>
   );
 }
 
-function HandleDataSection() {
-  const { items, loading, pagination, setPagination } = useCompanyProductData();
-  const data = items as Product[];
+function NewButton() {
+  return (
+    <Button
+      asChild
+      className={`${buttonVariants({
+        variant: "default",
+      })} text-start justify-start px-2 my-2`}
+    >
+      <Link href="products/new">
+        <PackagePlus />
+        New Product
+      </Link>
+    </Button>
+  );
+}
 
-  if (loading) {
-    return (
-      <div className="mt-8">
-        <TableSkeleton columns={3} rows={8} showHeader />;
-      </div>
-    );
+function HandleDataSection({
+  query,
+  pagination,
+  setPagination,
+}: {
+  query: UseQueryResult<ApiResponse<Product[]>, Error>;
+  pagination: any;
+  setPagination: React.Dispatch<React.SetStateAction<any>>;
+}) {
+  if (query.isLoading) {
+    return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!data) {
-    return <>Invalid URL</>;
+  if (query.isError) {
+    return <div className="text-red-500">Error loading POS terminals.</div>;
   }
+
+  const data = query.data?.data ?? [];
+  const meta = query.data?.meta;
 
   return (
-    <div className="mt-8">
+    <>
       <DataTable columns={ProductsOnlyColumns} data={data} />
       <div className="py-8">
         <PaginationSection
-          pagination={pagination}
+          pagination={{
+            ...pagination,
+            totalCount: meta?.totalCount ?? 0,
+            totalPages: meta?.totalPages ?? 0,
+          }}
           setPagination={setPagination}
         />
       </div>
-    </div>
+    </>
   );
 }

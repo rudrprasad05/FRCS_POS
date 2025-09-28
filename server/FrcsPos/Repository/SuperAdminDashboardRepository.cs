@@ -32,16 +32,22 @@ namespace FrcsPos.Repository
 
         }
 
-        public async Task<ApiResponse<AdminDashboardDTO>> GetAdminDashboard(string companyName, string userId)
+        public async Task<ApiResponse<AdminDashboardDTO>> GetAdminDashboard(RequestQueryObject queryObject)
         {
+            var now = DateTime.UtcNow;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+
             var company = await _context.Companies
                 .Include(c => c.AdminUser)
                 .Include(c => c.Users)
                 .Include(c => c.Products)
+                    .ThenInclude(c => c.Media)
                 .Include(c => c.Warehouses)
                 .Include(c => c.PosTerminals)
-                    .ThenInclude(t => t.Sales)
-                .FirstOrDefaultAsync(c => c.Name == companyName);
+                    .ThenInclude(c => c.Session)
+                        .ThenInclude(t => t.Sales
+                            .Where(s => s.CreatedOn >= startOfMonth))
+                .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
 
             if (company == null)
             {
@@ -52,19 +58,29 @@ namespace FrcsPos.Repository
             var productCount = company.Products.Count;
             var warehouseCount = company.Warehouses.Count;
             var posTerminalCount = company.PosTerminals.Count;
-            var saleCount = company.PosTerminals.Sum(t => t.Sales.Count);
+            var totalSalesAmount = company.PosTerminals
+                .SelectMany(t => t.Session
+                    .SelectMany(s => s.Sales))
+                        .Sum(s => s.Total);
+            var mediaCount = company.Products
+                .Select(p => p.Media)
+                .Sum(m => m?.SizeInBytes);
 
-            var notifications = await _notificationRepository.GetNotificationByUserId(
-                new RequestQueryObject { PageSize = 5, SortBy = ESortBy.DSC },
-                userId: userId
-            );
+            var notifications = await _notificationRepository.GetNotificationByCompany(new RequestQueryObject
+            {
+                CompanyName = queryObject.CompanyName,
+                PageSize = 5,
+                PageNumber = 1,
+                SortBy = ESortBy.DSC,
+            });
 
             var dto = new AdminDashboardDTO
             {
                 TotalUsers = userCount,
                 TotalProducts = productCount,
-                TotalSales = saleCount,
+                TotalSales = totalSalesAmount,
                 Notifications = notifications.Data ?? [],
+                TotalMedia = mediaCount ?? 0,
             };
 
             return new ApiResponse<AdminDashboardDTO>
@@ -82,6 +98,7 @@ namespace FrcsPos.Repository
             var mediaCount = await _context.Medias.SumAsync(m => m.SizeInBytes);
             var productCount = await _context.Products.CountAsync();
             var saleCount = await _context.Sales.CountAsync();
+            var taxTotal = await _context.Sales.SumAsync(s => s.TaxTotal);
 
             var notifications = await _notificationRepository.GetSuperAdminNotifications(new RequestQueryObject { PageSize = 5, SortBy = ESortBy.DSC });
 
@@ -93,6 +110,7 @@ namespace FrcsPos.Repository
                 TotalProducts = productCount,
                 TotalSales = saleCount,
                 Notifications = notifications.Data ?? [],
+                TotalVat = (long)taxTotal,
             };
 
             return new ApiResponse<SuperAdminDashboardDTO>

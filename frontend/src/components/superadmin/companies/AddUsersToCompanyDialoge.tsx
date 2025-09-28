@@ -1,8 +1,7 @@
 "use client";
 
-import { AddUserToCompany } from "@/actions/Company";
+import { AddUserToCompany, GetFullCompanyByUUID } from "@/actions/Company";
 import { GetUnAssignedUsers } from "@/actions/User";
-import { useCompanyData } from "@/app/admin/companies/[companyId]/page";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,9 +28,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User } from "@/types/models";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
+import { Company, User } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, UserPlus } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Plus, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -46,19 +49,31 @@ const formSchema = z.object({
 export type AddUsersToCompanyFormType = z.infer<typeof formSchema>;
 
 export default function AddUsersToCompanyDialoge() {
-  const { refresh, setItem, item } = useCompanyData();
-
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const params = useParams();
+  const searchParams = useSearchParams();
+
+  const companyId = String(params.companyId);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const { data } = useQuery({
+    queryKey: ["editCompany", companyId],
+    queryFn: () => GetFullCompanyByUUID(companyId),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
 
   const form = useForm<AddUsersToCompanyFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      adminUserId: "",
+      adminUserId: searchParams.get("selectedUser") || "",
     },
   });
+
+  const company = data?.data as Company;
 
   useEffect(() => {
     const getData = async () => {
@@ -71,21 +86,46 @@ export default function AddUsersToCompanyDialoge() {
     getData();
   }, []);
 
+  useEffect(() => {
+    console.log(searchParams.get("open_create"));
+    if (searchParams.get("open_create") === "true") {
+      setOpen(true);
+    }
+  }, [searchParams]);
+
+  function handleOpenChange(value: boolean) {
+    setOpen(value);
+    if (!value) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("open_create");
+      router.replace(`${window.location.pathname}?${params.toString()}`);
+    }
+  }
+
   async function onSubmit(values: AddUsersToCompanyFormType) {
     setLoading(true);
     console.log(values);
 
     const res = await AddUserToCompany(
       values.adminUserId,
-      item?.uuid as string
+      company?.uuid as string
     );
 
     if (!res.success) {
       toast.error("Error adding user", { description: res.message });
       setError(res.message);
     } else {
+      const innerParams = new URLSearchParams(searchParams.toString());
+      innerParams.delete("selectedUser");
+      innerParams.delete("open_create");
+
       toast.success("User added");
-      refresh();
+      router.replace(`${window.location.pathname}?${innerParams.toString()}`);
+
+      queryClient.invalidateQueries({
+        queryKey: ["editCompany", companyId],
+        exact: false,
+      });
       setOpen(false);
     }
 
@@ -93,7 +133,7 @@ export default function AddUsersToCompanyDialoge() {
   }
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogTrigger>
         <div
           className={`${buttonVariants({
@@ -133,6 +173,19 @@ export default function AddUsersToCompanyDialoge() {
                           {user.username ?? user.email}
                         </SelectItem>
                       ))}
+                      <Link
+                        href={{
+                          pathname: "/admin/users",
+                          query: {
+                            open_create: "true",
+                            returnUrl: `/admin/companies/${companyId}/view`,
+                          },
+                        }}
+                      >
+                        <div className="hover:bg-accent focus:bg-accent focus:text-accent-foreground  relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none ">
+                          <Plus className="w-4 h-4" /> New User
+                        </div>
+                      </Link>
                     </SelectContent>
                   </Select>
                   <FormDescription>

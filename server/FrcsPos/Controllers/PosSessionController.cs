@@ -37,7 +37,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCompany([FromBody] CreateNewPosSession request)
+        public async Task<IActionResult> CreatePosSession([FromBody] CreateNewPosSession request)
         {
             // Try to find user by email
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -62,7 +62,7 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -95,7 +95,7 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -108,7 +108,7 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -122,7 +122,7 @@ namespace FrcsPos.Controllers
             if (model == null || !model.Success)
             {
 
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);

@@ -1,97 +1,109 @@
 "use client";
-import { GetAllCompanies } from "@/actions/Company";
-import NoDataContainer from "@/components/containers/NoDataContainer";
+import { GetAllAdmins } from "@/actions/User";
 import { H1, P } from "@/components/font/HeaderFonts";
+import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
+import { Header } from "@/components/global/TestHeader";
+import { buttonVariants } from "@/components/ui/button";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Company, MetaData, User } from "@/types/models";
-import { Search } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-// import { columns } from "./CompaniesColumns";
-// import { DataTable } from "./CompaniesDataTable";
+  ApiResponse,
+  ESortBy,
+  QueryObject,
+  User,
+  UserRoles,
+} from "@/types/models";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { UserPlus } from "lucide-react";
+import { useState } from "react";
 import NewUserDialoge from "./NewUserDialoge";
-import { GetAllAdmins } from "@/actions/User";
 import { columns } from "./UserColumns";
-import { UserDataProvider, useUsers } from "@/context/UserDataContext";
-import { DataTable } from "@/components/global/DataTable";
 
-export default function CompanySection() {
+export default function UsersSection() {
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 10,
+    search: "",
+    sortBy: ESortBy.DSC,
+    isDeleted: undefined as boolean | undefined,
+  });
+
+  const query = useQuery({
+    queryKey: ["adminUsers", pagination],
+    queryFn: () => GetAllAdmins({ ...pagination }),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
   return (
-    <UserDataProvider>
-      <Header />
-      <HandleDataSection />
-    </UserDataProvider>
+    <>
+      <Header
+        pagination={pagination}
+        setPagination={setPagination}
+        newButton={
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <NewUserButton />
+          </RoleWrapper>
+        }
+      >
+        <H1>Users</H1>
+        <P className="text-muted-foreground">Create and manage your users</P>
+      </Header>
+
+      <HandleDataSection
+        query={query}
+        pagination={pagination}
+        setPagination={setPagination}
+      />
+    </>
   );
 }
 
-function Header() {
+function NewUserButton() {
   return (
-    <div>
-      <div className="space-b-2">
-        <H1 className="">Users</H1>
-        <P className="text-muted-foreground">Create and manage user accounts</P>
+    <NewUserDialoge>
+      <div
+        className={`${buttonVariants({
+          variant: "default",
+        })} w-full text-start justify-start px-2 my-2`}
+      >
+        <UserPlus />
+        New User
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <NewUserDialoge />
-      </div>
-    </div>
+    </NewUserDialoge>
   );
 }
-function HandleDataSection() {
-  const { users, loading, pagination, setPagination } = useUsers();
 
-  if (loading) {
+function HandleDataSection({
+  query,
+  pagination,
+  setPagination,
+}: {
+  query: UseQueryResult<ApiResponse<User[]>, Error>;
+  pagination: any;
+  setPagination: React.Dispatch<React.SetStateAction<any>>;
+}) {
+  if (query.isLoading) {
     return <TableSkeleton columns={3} rows={8} showHeader />;
   }
 
-  if (!users) {
-    return <>Invalid URL</>;
+  if (query.isError) {
+    return <div className="text-red-500">Error loading users.</div>;
   }
+
+  const data = query.data?.data ?? [];
+  const meta = query.data?.meta;
 
   return (
     <>
-      <DataTable columns={columns} data={users} />
+      <DataTable columns={columns} data={data} />
       <div className="py-8">
         <PaginationSection
-          pagination={pagination}
+          pagination={{
+            ...pagination,
+            totalCount: meta?.totalCount ?? 0,
+            totalPages: meta?.totalPages ?? 0,
+          }}
           setPagination={setPagination}
         />
       </div>

@@ -11,4 +11,11 @@ namespace FrcsPos.Request
         public string CompanyUUID { get; set; } = default!;
 
     }
+
+    public class RemoveUserFromCompany
+    {
+        public string UserId { get; set; } = default!;
+        public string CompanyId { get; set; } = default!;
+
+    }
 }

@@ -110,7 +110,7 @@ namespace FrcsPos.Controllers
 
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);

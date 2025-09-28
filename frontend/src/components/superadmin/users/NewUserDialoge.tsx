@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { CreateUser } from "@/actions/User";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,31 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@/types/models";
-import {
-  Copy,
-  CopyCheck,
-  File,
-  HousePlus,
-  Loader2,
-  RotateCcw,
-  RotateCw,
-  UserPlus,
-} from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -41,11 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateUser, GetAllAdmins } from "@/actions/User";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { generateStrongPassword } from "@/lib/utils";
+import { User, UserRoles } from "@/types/models";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { Copy, CopyCheck, File, Loader2, RotateCw } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
-import { useUsers } from "@/context/UserDataContext";
+import { z } from "zod";
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -72,10 +64,20 @@ const formSchema = z.object({
 
 export type NewUserForm = z.infer<typeof formSchema>;
 
-export default function NewUserDialoge() {
-  const { refresh } = useUsers();
+export default function NewUserDialoge({
+  children,
+  onSuccess,
+}: {
+  onSuccess?: (newUser: User) => void;
+  children: React.ReactNode;
+}) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const params = useParams();
+  const companyName = decodeURIComponent(params.companyName as string);
 
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -125,9 +127,33 @@ export default function NewUserDialoge() {
     URL.revokeObjectURL(url);
   }
 
+  useEffect(() => {
+    console.log(searchParams.get("open_create"));
+    if (searchParams.get("open_create") === "true") {
+      setOpen(true);
+    }
+  }, [searchParams]);
+
+  function handleOpenChange(value: boolean) {
+    setOpen(value);
+    if (!value) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("open_create");
+      router.replace(`${window.location.pathname}?${params.toString()}`);
+    }
+  }
+
   async function onSubmit(values: NewUserForm) {
     setLoading(true);
-    const res = await CreateUser(values);
+
+    let cName = undefined;
+    let isComany = false;
+    if (companyName && companyName.trim().length > 0) {
+      cName = companyName;
+      isComany = true;
+    }
+
+    const res = await CreateUser(values, { companyName: cName });
     console.log(res);
 
     if (!res.success) {
@@ -135,7 +161,29 @@ export default function NewUserDialoge() {
       setError(res.message);
     } else {
       toast.success("User created");
-      refresh();
+      const newUser = res.data as User;
+
+      if (onSuccess) onSuccess(res.data as User);
+      if (searchParams.get("returnUrl")) {
+        router.replace(
+          `${searchParams.get("returnUrl")}?selectedUser=${
+            newUser.id
+          }&open_create=true`
+        );
+      }
+
+      if (isComany) {
+        queryClient.invalidateQueries({
+          queryKey: ["companyUsers", companyName, {}],
+          exact: false,
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ["adminUsers", {}],
+          exact: false,
+        });
+      }
+
       setOpen(false);
     }
 
@@ -143,17 +191,8 @@ export default function NewUserDialoge() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <div
-          className={`${buttonVariants({
-            variant: "default",
-          })} w-full text-start justify-start px-2 my-2`}
-        >
-          <UserPlus />
-          New User
-        </div>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="">
         <DialogHeader>
           <DialogTitle>Create new user</DialogTitle>
@@ -236,7 +275,9 @@ export default function NewUserDialoge() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="w-full">
-                      <SelectItem value={"SUPERADMIN"}>superadmin</SelectItem>
+                      <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+                        <SelectItem value={"SUPERADMIN"}>superadmin</SelectItem>
+                      </RoleWrapper>
                       <SelectItem value={"ADMIN"}>admin</SelectItem>
                       <SelectItem value={"CASHIER"}>cashier</SelectItem>
                     </SelectContent>

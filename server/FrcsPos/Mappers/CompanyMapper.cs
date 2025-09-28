@@ -44,6 +44,25 @@ namespace FrcsPos.Mappers
             return dto;
         }
 
+        public static CompanyDTO FromModelToOnlyDto(this Company request)
+        {
+            if (request == null)
+            {
+                return new CompanyDTO();
+            }
+
+            var dto = new CompanyDTO
+            {
+                UUID = request.UUID,
+                Id = request.Id,
+                CreatedOn = request.CreatedOn,
+                UpdatedOn = request.UpdatedOn,
+                Name = request.Name,
+            };
+
+            return dto;
+        }
+
         public static CompanyDTO FromModelToDTOWithoutPosTerminals(this Company request)
         {
             if (request == null)

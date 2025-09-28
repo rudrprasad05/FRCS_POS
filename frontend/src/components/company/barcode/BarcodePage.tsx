@@ -1,26 +1,24 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { ValidateQr } from "@/actions/PosSession";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import * as signalR from "@microsoft/signalr";
+import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import {
+  Camera,
+  CheckCircle,
+  Copy,
+  Loader2,
   Maximize,
   Minimize,
-  Camera,
-  Trash2,
-  Copy,
-  CheckCircle,
   OctagonX,
-  Loader2,
+  Trash2,
 } from "lucide-react";
-import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useParams } from "next/navigation";
-import { ValidateQr } from "@/actions/PosSession";
-import * as signalR from "@microsoft/signalr";
-import { WebSocketUrl } from "@/lib/utils";
-import { usePosSession } from "@/context/PosContext";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ScannedItem {
   id: string;
@@ -39,7 +37,6 @@ export default function BarcodeScanner() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const { setInitialState, setIsScannerConnectedToServer } = usePosSession();
 
   const params = useParams();
   const id = params.id as string;
@@ -47,21 +44,20 @@ export default function BarcodeScanner() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
-  const beep = new Audio("/scanner-beep.mp3");
+  const beep = useMemo(() => new Audio("/scanner-beep.mp3"), []);
   const [connection, setConnection] = useState<any>(null);
-
-  useEffect(() => {
-    validateUUID();
-  }, [id]);
 
   function createConnection(terminalId: string) {
     return new signalR.HubConnectionBuilder()
-      .withUrl(`${WebSocketUrl}/socket/posHub?terminalId=${terminalId}`)
+      .withUrl(
+        `${"https://localhost:5081"}/socket/posHub?terminalId=${terminalId}`,
+        { withCredentials: true }
+      )
       .withAutomaticReconnect()
       .build();
   }
 
-  const validateUUID = async () => {
+  const validateUUID = useCallback(async () => {
     setInitialLoad(true);
     try {
       const res = await ValidateQr(id);
@@ -83,7 +79,6 @@ export default function BarcodeScanner() {
         });
 
         conn.on("ReceivedJoinScanner", (msg) => {
-          setIsScannerConnectedToServer(true);
           console.log("📩 Scan received:", msg);
         });
 
@@ -96,7 +91,7 @@ export default function BarcodeScanner() {
     } finally {
       setInitialLoad(false);
     }
-  };
+  }, [setIsUUIDValidated, id]);
 
   const startScanning = useCallback(async () => {
     try {
@@ -148,7 +143,7 @@ export default function BarcodeScanner() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start camera");
     }
-  }, [lastScanned, connection, id]);
+  }, [beep, lastScanned, connection, id]);
 
   const stopScanning = useCallback(() => {
     if (codeReader.current) {
@@ -184,6 +179,26 @@ export default function BarcodeScanner() {
       console.error("Copy failed:", err);
     }
   }, []);
+
+  useEffect(() => {
+    validateUUID();
+  }, [id, validateUUID]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: any) => {
+      event.preventDefault();
+      connection
+        ?.invoke("SendScan", id)
+        .catch((err: any) => console.error("SendScan failed", err));
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [connection, id]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {

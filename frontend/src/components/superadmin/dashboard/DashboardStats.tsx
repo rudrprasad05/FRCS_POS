@@ -2,15 +2,35 @@
 
 import { GetSuperAdminDashboard } from "@/actions/SuperAdminDashboard";
 import { SmallLoadingHorizontialCard } from "@/components/global/LoadingContainer";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Notification, NotificationTypes } from "@/types/models";
 import { SuperAdminDashboardDTO } from "@/types/res";
-import { Box, BuildingIcon, Coins, Database, User } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  BuildingIcon,
+  CheckCircle,
+  Info,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import DashboardStatsCard from "./DashboardStatsCard";
 import { QuickActions } from "./QuickActions";
+
+function getNotificationIcon(type: Notification["type"]) {
+  switch (type) {
+    case NotificationTypes.ERROR:
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
+    case NotificationTypes.WARNING:
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    case NotificationTypes.SUCCESS:
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    default:
+      return <Info className="h-4 w-4 text-blue-500" />;
+  }
+}
 
 export function DashboardStats() {
   const [data, setdata] = useState<SuperAdminDashboardDTO>();
@@ -45,8 +65,8 @@ export function DashboardStats() {
         />
         <DashboardStatsCard
           input={{
-            title: "Estimated VAT",
-            val: data?.totalUsers ?? 0,
+            title: "Estimated VAT FJD",
+            val: data?.totalVat ?? 0,
             icon: User,
             isLoading: !data,
           }}
@@ -69,13 +89,9 @@ export function DashboardStats() {
               {data?.notifications &&
                 data?.notifications.map((activity, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt={activity.user?.email}
-                      />
-                      <AvatarFallback className="0 text-xs">US</AvatarFallback>
-                    </Avatar>
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getNotificationIcon(activity.type as NotificationTypes)}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm ">
                         <span className="font-medium">

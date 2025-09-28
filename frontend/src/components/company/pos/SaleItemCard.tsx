@@ -1,24 +1,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { usePosSession } from "@/context/PosContext";
-import { Product, SaleItem, SaleItemOmitted } from "@/types/models";
+import { Product, SaleItemOmitted } from "@/types/models";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import React from "react";
 
 export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
-  const { products, addProduct, deleteProduct, removeProduct } =
-    usePosSession();
+  const { cart, addProduct, deleteProduct, removeProduct } = usePosSession();
 
   const handleAddProduct = (product: Product) => {
-    let sI: SaleItemOmitted = {
+    const sI: SaleItemOmitted = {
       productId: product.id,
       product: product,
       quantity: 1,
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: 0,
+      isDeleted: false,
     };
     addProduct(sI);
   };
@@ -54,6 +52,11 @@ export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
         <Button
           variant="outline"
           size="sm"
+          disabled={
+            item.product.maxStock !== undefined &&
+            (cart.find((c) => c.productId === item.product.id)?.quantity ??
+              0) >= item.product.maxStock
+          }
           onClick={() => handleAddProduct(item.product as Product)}
         >
           <Plus className="w-3 h-3" />

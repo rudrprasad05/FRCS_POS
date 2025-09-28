@@ -1,5 +1,5 @@
-import React from "react";
+import CompanySalesSection from "@/components/company/sales/CompanySalesSection";
 
 export default function SalesDataPage() {
-  return <div>here we can CRUD sales</div>;
+  return <CompanySalesSection />;
 }

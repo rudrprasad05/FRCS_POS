@@ -52,16 +52,30 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
   },
 
   {
+    accessorKey: "updatedOn",
+    header: "Updated On",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("updatedOn"));
+      return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+  },
+
+  {
     id: "actions",
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const company = row.original; // Get the entire row data (of type companyType)
+      const company = row.original;
 
       return (
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
+              prefetch
               href={`warehouse/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
             >
@@ -69,10 +83,11 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
               <Edit className="" />
             </Link>
           </Button>
-          {/* <DeleteCompanyDialoge data={company} /> */}
+
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`warehouse/${company.uuid}`}
+              prefetch
+              href={`warehouse/${company.uuid}/view`}
               className="w-24 flex items-center justify-between"
             >
               View

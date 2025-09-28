@@ -37,8 +37,8 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
-        [HttpGet("receipt")]
-        public async Task<IActionResult> CreateCheckout([FromQuery] string uuid)
+        [HttpGet("download-receipt")]
+        public async Task<IActionResult> Download([FromQuery] string uuid)
         {
             var model = await _checkoutRepository.GenerateReceiptPDF(uuid);
 
@@ -53,3 +53,4 @@ namespace FrcsPos.Controllers
 
     }
 }
+

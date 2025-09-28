@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
+using FrcsPos.Mappers;
 using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
@@ -27,7 +28,7 @@ namespace FrcsPos.Controllers
         private readonly INotificationService _notificationService;
 
         private readonly ICompanyRepository _companyRepository;
-
+        private readonly IUserContext _userContext;
 
         public UserController(
             UserManager<User> userManager,
@@ -38,8 +39,8 @@ namespace FrcsPos.Controllers
             IWebHostEnvironment env,
             ILogger<UserController> logger,
             IUserRepository userRepository,
-            INotificationService notificationService
-
+            INotificationService notificationService,
+            IUserContext userContext
 
         ) : base(configuration, tokenService, logger)
         {
@@ -49,16 +50,16 @@ namespace FrcsPos.Controllers
             _userRepository = userRepository;
             _notificationService = notificationService;
             _companyRepository = companyRepository;
-
+            _userContext = userContext;
         }
 
         [HttpGet("get-all-users")]
-        public async Task<IActionResult> GetAllSuperAdmins([FromQuery] string? role)
+        public async Task<IActionResult> GetAllSuperAdmins([FromQuery] RequestQueryObject requestQuery)
         {
-            var model = await _userRepository.GetAllUsers(role);
+            var model = await _userRepository.GetAllUsers(requestQuery);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -70,7 +71,7 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetAllSuperAdminsNotInCompany(role);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
@@ -82,14 +83,14 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetUserByCompany(queryObject);
             if (model == null || !model.Success)
             {
-                return BadRequest("model not gotten");
+                return BadRequest(model);
             }
 
             return Ok(model);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] string? CompanyName)
+        public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] RequestQueryObject queryObject)
         {
             if (!ModelState.IsValid)
             {
@@ -162,42 +163,47 @@ namespace FrcsPos.Controllers
 
                 // Include role(s) in JWT
                 var roles = await _userManager.GetRolesAsync(user);
-                var dto = new UserDTO
-                {
-                    Username = model.Username ?? "",
-                    Email = model.Email ?? "",
-                };
+                var dto = user.FromUserToDto();
+                var isSuperAdmin = true;
 
-                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                    title: "New user added",
-                    message: "user " + model.Username + " was created",
-                    type: NotificationType.SUCCESS,
-                    isSuperAdmin: true,
-                    actionUrl: "/admin/users/" + user.Id
-                ));
-
-                FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                    title: "Welcome to the Tap N Go",
-                    message: "refer to our guide on how to setup your account",
-                    type: NotificationType.SUCCESS,
-                    isSuperAdmin: false,
-                    actionUrl: "/admin/users/" + user.Id,
-                    userId: user.Id
-                ));
-
-                if (!string.IsNullOrEmpty(CompanyName))
+                if (!string.IsNullOrEmpty(queryObject.CompanyName))
                 {
                     var request = new AddUserToCompany
                     {
                         UserId = user.Id,
-                        CompanyUUID = CompanyName,
+                        CompanyUUID = queryObject.CompanyName,
                     };
                     var company = await _companyRepository.AddUserToCompanyAsync(request);
                     if (company.Success != true)
                     {
                         return BadRequest(company);
                     }
+                    isSuperAdmin = false;
                 }
+
+                var adminNotification = new NotificationDTO
+                {
+                    Title = "User created",
+                    Message = $"The user {user.UserName} was created",
+                    Type = NotificationType.SUCCESS,
+                    ActionUrl = $"/admin/users/{user.Id}/view",
+                    IsSuperAdmin = isSuperAdmin,
+                };
+
+                var userNotification = new NotificationDTO
+                {
+                    Title = "Welcome to Tap N Go",
+                    Message = $"Contact an admin for further information",
+                    Type = NotificationType.SUCCESS,
+                    ActionUrl = "#",
+                    IsSuperAdmin = isSuperAdmin,
+                    UserId = user.Id
+                };
+
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+                FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
+
+
 
 
                 return Ok(ApiResponse<UserDTO>.Ok(

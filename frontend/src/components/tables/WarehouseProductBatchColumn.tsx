@@ -1,57 +1,88 @@
 "use client";
+import type { Product, ProductBatch } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import type { PosSession, ProductBatch, Sale, User } from "@/types/models";
+import { Pause } from "lucide-react";
+import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
 import { P } from "../font/HeaderFonts";
 import { Button } from "../ui/button";
-import { Pause, Play, Square, SquarePauseIcon } from "lucide-react";
-import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
 
 export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
   {
-    accessorKey: "id",
-    header: "Session ID",
-  },
-  {
-    accessorKey: "createdOn",
-    header: "Start Time",
+    accessorKey: "product",
+    header: "Product",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("createdOn"));
-      return date.toLocaleString();
-    },
-  },
-  {
-    accessorKey: "isActive",
-    header: "Is Active",
-    cell: ({ row }) => {
-      const endTime = row.getValue("isActive");
-      if (endTime) return <Badge variant="secondary">Active</Badge>;
-      return <Badge variant="destructive">Inactive</Badge>;
-    },
-  },
-  {
-    accessorKey: "posUser",
-    header: "Operator",
-    cell: ({ row }) => {
-      const user = row.getValue("posUser") as User;
+      const user = row.getValue("product") as Product;
       if (!user) return <P>N/A</P>;
-      return <P>{user.email}</P>;
+      return <P>{user.name}</P>;
     },
   },
   {
-    accessorKey: "sales",
-    header: "Total Sales",
+    accessorKey: "quantity",
+    header: "Quantity",
     cell: ({ row }) => {
-      const sales = row.getValue("sales") as Sale[];
-      let amount = 0;
-      sales.forEach((s) => {
-        amount += s.total;
+      const user = row.getValue("quantity") as number;
+      if (!user) return <P>N/A</P>;
+      return <P>{user}</P>;
+    },
+  },
+
+  {
+    accessorKey: "expiryDate",
+    header: "Expiry",
+    cell: ({ row }) => {
+      const expiry = row.getValue("expiryDate") as string | null | undefined;
+      if (!expiry) return <P>N/A</P>;
+
+      // Convert to Date object
+      const date = new Date(expiry);
+
+      // Format nicely
+      const formatted = date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-      return formatted;
+
+      return <P>{formatted}</P>;
+    },
+  },
+  {
+    accessorKey: "expiryDate",
+    header: "Expiry",
+    cell: ({ row }) => {
+      const expiry = row.getValue("expiryDate") as string | null | undefined;
+      if (!expiry) return <P>N/A</P>;
+
+      const now = new Date();
+      const expiryDate = new Date(expiry);
+
+      // time difference in ms
+      const diffMs = expiryDate.getTime() - now.getTime();
+      console.log(diffMs);
+
+      if (diffMs <= 0) {
+        return <P className="text-red-600 font-semibold">Expired</P>;
+      }
+
+      // calculate days/hours left
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      let text = "";
+      let colorClass = "text-green-600"; // default (safe)
+
+      if (diffDays < 1) {
+        text = `${Math.floor(diffHours)}h left`;
+        colorClass = "text-red-600 font-semibold";
+      } else if (diffDays <= 5) {
+        text = `${Math.floor(diffDays)}d left`;
+        colorClass = "text-orange-500 font-semibold";
+      } else {
+        text = `${Math.floor(diffDays)}d left`;
+        colorClass = "text-green-600";
+      }
+
+      return <P className={colorClass}>{text}</P>;
     },
   },
   {

@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";
 
-import { User, UserRoles, Warehouse } from "@/types/models";
+import { User, UserRoles } from "@/types/models";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 
 export const CompanyUserColumns: ColumnDef<User>[] = [
   {
     accessorKey: "username",
+
     header: "Username",
   },
   {

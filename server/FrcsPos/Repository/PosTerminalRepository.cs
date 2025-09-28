@@ -10,6 +10,7 @@ using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
 using FrcsPos.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
@@ -18,14 +19,22 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IUserContext _userContext;
+        private readonly UserManager<User> _userManager;
+
 
         public PosTerminalRepository(
             ApplicationDbContext applicationDbContext,
-            INotificationService notificationService
+            INotificationService notificationService,
+            IUserContext userContext,
+            UserManager<User> userManager
+
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
+            _userContext = userContext;
+            _userManager = userManager;
 
         }
 
@@ -35,12 +44,32 @@ namespace FrcsPos.Repository
             var company = await _context.Companies
                 .Include(c => c.PosTerminals)
                 .FirstOrDefaultAsync(c => c.Name == request.CompanyName);
-
             if (company == null)
             {
                 return ApiResponse<PosTerminalDTO>.NotFound();
             }
 
+            // get and verify user
+            var user = await _userManager.FindByIdAsync(_userContext.UserId ?? "");
+            if (user == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "Invalid credentials");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var isAdmin = roles.Contains("admin");
+            if (!isAdmin)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "Invalid credentials");
+            }
+
+            var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == company.Id && x.UserId == user.Id);
+            if (companyUser == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "not associated with current company");
+            }
+
+            // auto generate the name according to the index of the last created terminal
             var lastTerminal = company.PosTerminals
                 .OrderByDescending(t => t.CreatedOn)
                 .FirstOrDefault();
@@ -68,13 +97,18 @@ namespace FrcsPos.Repository
             await _context.SaveChangesAsync();
 
             var result = model.Entity.FromModelToDto();
+            var notification = new NotificationDTO
+            {
+                Title = "New POS Terminal",
+                Message = $"The terminal {result.Name} was created",
+                Type = NotificationType.SUCCESS,
+                ActionUrl = $"/{company.Name}/pos/{result.UUID}",
+                IsSuperAdmin = false,
+                CompanyId = company.Id,
+                UserId = _userContext.UserId
+            };
 
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(
-                title: "New POS Terminal",
-                message: $"The terminal {result.Name} was created",
-                type: NotificationType.SUCCESS,
-                actionUrl: "/admin/pos/" + result.UUID
-            ));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
 
             return new ApiResponse<PosTerminalDTO>
             {
@@ -84,43 +118,38 @@ namespace FrcsPos.Repository
             };
         }
 
-        public async Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject, string companyName)
+        public async Task<ApiResponse<List<PosTerminalDTO>>> GetAllPosTerminalByCompanyAsync(RequestQueryObject queryObject)
         {
-            bool companyExists = await _context.Companies.AnyAsync(c => c.Name == companyName);
-            if (!companyExists)
-            {
-                return ApiResponse<List<PosTerminalDTO>>.NotFound();
-            }
+            // Query terminals directly, but scoped to the company
+            var terminalQuery = _context.PosTerminals
+                .Where(t => t.Company.Name == queryObject.CompanyName);
 
-            var query = _context.Companies
-            .Include(c => c.PosTerminals)
-            .AsQueryable();
-
-            // Filter by company name
-            query = query.Where(c => c.Name == companyName);
-
-            // Filtering by IsDeleted if needed
+            // Company deleted filter (through navigation)
             if (queryObject.IsDeleted.HasValue)
             {
-                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+                terminalQuery = terminalQuery.Where(t => t.IsDeleted == queryObject.IsDeleted.Value);
             }
 
-            // Sorting (based on created date of company or terminals — adjust as needed)
-            query = queryObject.SortBy switch
+            // Search (example: by terminal name or code — adjust as needed)
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
             {
-                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
-                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
-                _ => query.OrderByDescending(c => c.CreatedOn)
+                terminalQuery = terminalQuery.Where(t => t.Name.Contains(queryObject.Search));
+            }
+
+            // Sorting by terminal properties
+            terminalQuery = queryObject.SortBy switch
+            {
+                ESortBy.ASC => terminalQuery.OrderBy(t => t.CreatedOn),
+                ESortBy.DSC => terminalQuery.OrderByDescending(t => t.CreatedOn),
+                _ => terminalQuery.OrderByDescending(t => t.CreatedOn)
             };
 
-            var totalCount = await query
-                .SelectMany(c => c.PosTerminals)
-                .CountAsync();
+            // Count for pagination
+            var totalCount = await terminalQuery.CountAsync();
 
-            // Pagination
+            // Apply pagination
             var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var terminals = await query
-                .SelectMany(c => c.PosTerminals) // Flatten to terminals
+            var terminals = await terminalQuery
                 .Skip(skip)
                 .Take(queryObject.PageSize)
                 .ToListAsync();
@@ -143,10 +172,10 @@ namespace FrcsPos.Repository
         }
 
 
-        public async Task<ApiResponse<PosTerminalDTO>> GetOnePosTerminalByIdAsync(string uuid)
+        public async Task<ApiResponse<PosTerminalDTO>> GetOnePosTerminalByIdAsync(RequestQueryObject requestQuery)
         {
             var pos = await _context.PosTerminals
-            .Where(p => p.UUID == uuid)
+            .Where(p => p.UUID == requestQuery.UUID)
             .Include(p => p.Company)
             .Include(p => p.Session)
                 .ThenInclude(s => s.PosUser)
@@ -170,6 +199,211 @@ namespace FrcsPos.Repository
             return ApiResponse<PosTerminalDTO>.Ok(dto);
         }
 
+        public async Task<ApiResponse<List<PosSessionDTO>>> GetPosTerminalSessionAsync(RequestQueryObject queryObject)
+        {
+            var terminal = await _context.PosTerminals
+                .FirstOrDefaultAsync(t => t.UUID == queryObject.UUID);
 
+            if (terminal == null)
+            {
+                return ApiResponse<List<PosSessionDTO>>.Fail();
+            }
+
+            var query = _context.PosSessions
+                .Include(x => x.Sales)
+                .Include(x => x.PosUser)
+                .AsQueryable();
+
+            // filtering
+
+            query = query.Where(c => c.PosTerminal.UUID == queryObject.UUID);
+
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<PosSessionDTO>();
+            foreach (var product in products)
+            {
+                var dto = product.FromModelToDTO();
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<PosSessionDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
+
+        public async Task<ApiResponse<List<SaleDTO>>> GetPosTerminalSalesAsync(RequestQueryObject queryObject)
+        {
+            var terminal = await _context.PosTerminals
+                .FirstOrDefaultAsync(t => t.UUID == queryObject.UUID);
+
+            if (terminal == null)
+            {
+                return ApiResponse<List<SaleDTO>>.Fail();
+            }
+
+            var query = _context.Sales
+                .AsQueryable();
+
+            // filtering
+
+            query = query.Where(c => c.PosSession.PosTerminal.UUID == queryObject.UUID);
+
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<SaleDTO>();
+            foreach (var product in products)
+            {
+                var dto = product.FromModelToDto();
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<SaleDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
+
+        public async Task<ApiResponse<PosTerminalDTO>> SoftDelete(RequestQueryObject queryObject)
+        {
+            var wh = await _context.PosTerminals.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<PosTerminalDTO>.NotFound();
+            }
+
+            wh.IsDeleted = true;
+            wh.IsActive = false;
+            wh.UpdatedOn = DateTime.UtcNow;
+
+
+            await _context.SaveChangesAsync();
+
+            var posTerminalDTO = wh.FromModelToDto();
+
+            return ApiResponse<PosTerminalDTO>.Ok(posTerminalDTO);
+        }
+
+        public async Task<ApiResponse<PosTerminalDTO>> EditAsync(EditTerminal editTerminal, RequestQueryObject queryObject)
+        {
+            // verify and get pos terminal to be edited
+            var posTerminal = await _context.PosTerminals
+                .Include(x => x.Company)
+                .FirstOrDefaultAsync(w => w.UUID == queryObject.UUID);
+            if (posTerminal == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "warehouse not found");
+            }
+
+            // get and verify user
+            var user = await _userManager.FindByIdAsync(_userContext.UserId ?? "");
+            if (user == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "Invalid credentials");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var isAdmin = roles.Contains("admin");
+            if (!isAdmin)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "Invalid credentials");
+            }
+
+            // verify that user is part of current company
+            var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == posTerminal.Company.Id && x.UserId == user.Id);
+            if (companyUser == null)
+            {
+                return ApiResponse<PosTerminalDTO>.Fail(message: "not associated with current company");
+            }
+
+            posTerminal.LocationDescription = editTerminal.Location;
+            posTerminal.SerialNumber = editTerminal.SerialNumber;
+            posTerminal.Name = editTerminal.Name;
+            posTerminal.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var posTerminalDTO = posTerminal.FromModelToDto();
+            return ApiResponse<PosTerminalDTO>.Ok(posTerminalDTO);
+        }
+
+        public async Task<ApiResponse<PosTerminalDTO>> Activate(RequestQueryObject queryObject)
+        {
+            var wh = await _context.PosTerminals.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (wh == null)
+            {
+                return ApiResponse<PosTerminalDTO>.NotFound();
+            }
+
+            wh.IsDeleted = false;
+            wh.IsActive = true;
+            wh.UpdatedOn = DateTime.UtcNow;
+
+
+            await _context.SaveChangesAsync();
+
+            var dto = wh.FromModelToDto();
+
+            return ApiResponse<PosTerminalDTO>.Ok(dto);
+        }
     }
 }

@@ -117,8 +117,8 @@ namespace FrcsPos.Repository
                 .Select(u => new UserDTO
                 {
                     Id = u.Id,
-                    Email = u.Email,
-                    Username = u.UserName
+                    Email = u.Email ?? "",
+                    Username = u.UserName ?? ""
                 })
                 .ToListAsync();
 
@@ -126,35 +126,66 @@ namespace FrcsPos.Repository
         }
 
 
-        public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(string? role)
+        public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(RequestQueryObject requestQuery)
         {
             var userDtos = new List<UserDTO>();
+            IQueryable<User> query;
 
-            if (!string.IsNullOrWhiteSpace(role))
+            if (!string.IsNullOrWhiteSpace(requestQuery.Role))
             {
-                string normalizedRole = role.Trim().ToUpperInvariant();
-
+                // Filter users by role
+                string normalizedRole = requestQuery.Role.Trim().ToUpperInvariant();
                 var usersInRole = await _userManager.GetUsersInRoleAsync(normalizedRole);
-                foreach (var user in usersInRole.OrderByDescending(u => u.CreatedOn))
-                {
-                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
-                }
+                query = usersInRole.AsQueryable();
             }
             else
             {
-                // Get all users, sorted by CreatedOn descending
-                var allUsers = await _userManager.Users
-                    .OrderByDescending(u => u.CreatedOn)
-                    .ToListAsync();
-
-                foreach (var user in allUsers)
-                {
-                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
-                }
+                // All users
+                query = _userManager.Users;
             }
 
-            return ApiResponse<List<UserDTO>>.Ok(userDtos);
+            if (!string.IsNullOrWhiteSpace(requestQuery.Search))
+            {
+                var search = requestQuery.Search.Normalize();
+                query = query.Where(
+                    c =>
+                        (c.NormalizedUserName != null && c.NormalizedUserName.Contains(search)) ||
+                        (c.NormalizedEmail != null && c.NormalizedEmail.Contains(search))
+                );
+            }
+            // Sorting
+            query = requestQuery.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(u => u.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(u => u.CreatedOn),
+                _ => query.OrderByDescending(u => u.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (requestQuery.PageNumber - 1) * requestQuery.PageSize;
+            var users = await query.Skip(skip).Take(requestQuery.PageSize).ToListAsync();
+
+            foreach (var user in users)
+            {
+                userDtos.Add(await user.FromUserToDtoAsync(_userManager));
+            }
+
+            return new ApiResponse<List<UserDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = userDtos,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = requestQuery.PageNumber,
+                    PageSize = requestQuery.PageSize
+                }
+            };
         }
+
         public async Task<ApiResponse<List<UserDTO>>> GetUserByCompany(RequestQueryObject queryObject)
         {
             if (string.IsNullOrEmpty(queryObject.CompanyName))
@@ -183,6 +214,17 @@ namespace FrcsPos.Repository
             {
                 query = query.Where(u => u.IsDeleted == queryObject.IsDeleted.Value);
             }
+
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.Normalize();
+                query = query.Where(
+                    c =>
+                        (c.NormalizedUserName != null && c.NormalizedUserName.Contains(search)) ||
+                        (c.NormalizedEmail != null && c.NormalizedEmail.Contains(search))
+                );
+            }
+
 
             // Sorting
             query = queryObject.SortBy switch

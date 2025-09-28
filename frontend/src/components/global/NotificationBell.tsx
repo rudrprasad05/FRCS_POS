@@ -1,17 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Bell,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  Info,
-  AlertTriangle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import * as signalR from "@microsoft/signalr";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -19,10 +9,21 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import * as signalR from "@microsoft/signalr";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  CheckCircle,
+  Clock,
+  Info,
+} from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import { ESortBy, Notification, NotificationTypes } from "@/types/models";
 import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
+import { ESortBy, Notification, NotificationTypes } from "@/types/models";
+import { useParams } from "next/navigation";
 
 function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
@@ -54,13 +55,13 @@ function formatTimeAgo(str: string) {
   return `${diffInDays}d ago`;
 }
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+
+  const params = useParams();
+  const companyName = String(params.companyName);
 
   useEffect(() => {
     setNotifications([]);
@@ -69,16 +70,14 @@ export function NotificationBell() {
         pageNumber: 1,
         pageSize: 10,
         sortBy: ESortBy.DSC,
+        companyName,
       });
-
-      console.log("not", data);
 
       setNotifications(data.data as unknown as Notification[]);
       setUnreadCount(data.meta?.totalCount as number);
-      setLoading(false);
     };
     getData();
-  }, []);
+  }, [companyName]);
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()

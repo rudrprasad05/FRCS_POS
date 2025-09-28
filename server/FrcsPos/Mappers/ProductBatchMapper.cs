@@ -22,23 +22,26 @@ namespace FrcsPos.Mappers
                 Id = request.Id,
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
+                IsDeleted = request.IsDeleted,
                 CompanyId = request.CompanyId,
                 ProductId = request.ProductId,
+                Quantity = request.Quantity,
+                ExpiryDate = request.ExpiryDate
             };
 
             if (request.Company != null)
             {
-                dto.Company = request.Company;
+                dto.Company = request.Company.FromModelToOnlyDto();
 
             }
             if (request.Product != null)
             {
-                dto.Product = request.Product;
+                dto.Product = request.Product.FromModelToOnlyDto();
 
             }
             if (request.Warehouse != null && setWarehouse)
             {
-                dto.Warehouse = request.Warehouse;
+                dto.Warehouse = request.Warehouse.FromModelToOnlyDto();
 
             }
 

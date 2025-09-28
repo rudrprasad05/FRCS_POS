@@ -1,4 +1,4 @@
-import { Cable, HandCoins, Wrench } from "lucide-react";
+import { HandCoins, Wrench } from "lucide-react";
 import { Label } from "../ui/label";
 
 export function SidebarLogo() {

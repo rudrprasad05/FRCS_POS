@@ -10,67 +10,34 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@/types/models";
-import { Computer, HousePlus, Loader2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { GetAllAdmins } from "@/actions/User";
+import { Computer, Loader2 } from "lucide-react";
+import { useState } from "react";
 
-import { CreateCompany } from "@/actions/Company";
-import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
-import { usePosTerminal } from "./POSSection";
 import { CreatePosTerminals } from "@/actions/PosTerminal";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function NewPosDialoge({
   companyName,
 }: {
   companyName: string;
 }) {
-  const { refresh } = usePosTerminal();
-
-  const [adminUsers, setAdminUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const getData = async () => {
-      const data = await GetAllAdmins();
-      setAdminUsers(data.data as User[]);
-
-      setLoading(false);
-    };
-    getData();
-  }, []);
+  const queryClient = useQueryClient();
 
   const handleClick = async () => {
-    try {
-      setLoading(true);
-      const res = await CreatePosTerminals(companyName);
-      refresh();
+    setLoading(true);
+
+    const res = await CreatePosTerminals(companyName);
+
+    if (res.success) {
       setOpen(false);
       toast.success("Terminal created");
-    } catch (error) {
+      queryClient.invalidateQueries({
+        queryKey: ["posTerminals", companyName],
+      });
+    } else {
       toast.error("Terminal not created");
     }
 
