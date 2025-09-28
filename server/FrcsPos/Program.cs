@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using FrcsPos.Background;
 using FrcsPos.Socket;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();

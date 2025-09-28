@@ -19,6 +19,7 @@ export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: 0,
+      isDeleted: false,
     };
     addProduct(sI);
   };
