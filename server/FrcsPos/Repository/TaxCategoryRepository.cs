@@ -7,75 +7,67 @@ using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
 using FrcsPos.Request;
 using FrcsPos.Response;
-using FrcsPos.Response.DTO;
-using Microsoft.EntityFrameworkCore;
+using FrcsPos.Models;
+    using FrcsPos.Response.DTO;
+    using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
 {
     public class TaxCategoryRepository : ITaxCategoryRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly INotificationService _notificationService;
 
-        public TaxCategoryRepository(
-           ApplicationDbContext applicationDbContext,
-           INotificationService notificationService
-
-       )
+        public TaxCategoryRepository(ApplicationDbContext context)
         {
-            _context = applicationDbContext;
-            _notificationService = notificationService;
+            _context = context;
         }
 
         public async Task<ApiResponse<List<TaxCategoryDTO>>> GetAllTaxCategories(RequestQueryObject queryObject)
         {
-            var query = _context.TaxCategories
-                 .AsQueryable();
+            var query = _context.TaxCategories.AsQueryable();
 
-            // filtering
             if (queryObject.IsDeleted.HasValue)
-            {
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
-            }
-
-            // Sorting
-            query = queryObject.SortBy switch
-            {
-                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
-                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
-                _ => query.OrderByDescending(c => c.CreatedOn)
-            };
 
             var totalCount = await query.CountAsync();
-
-            // Pagination
             var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var taxCategories = await query
-                .Skip(skip)
-                .Take(queryObject.PageSize)
-                .ToListAsync();
 
-            // Mapping to DTOs
-            var result = new List<TaxCategoryDTO>();
-            foreach (var tax in taxCategories)
+            var taxCategories = await query.Skip(skip).Take(queryObject.PageSize).ToListAsync();
+            var result = taxCategories.Select(t => t.FromModelToDto()).ToList();
+
+            return new ApiResponse<List<TaxCategoryDTO>> { Success = true, StatusCode = 200, Data = result };
+        }
+
+        public async Task<ApiResponse<TaxCategoryDTO>> CreateTaxCategoryAsync(NewTaxRequest request)
+        {
+            var model = new TaxCategory
             {
-                var dto = tax.FromModelToDto();
-                result.Add(dto);
-            }
+                Name = request.Name,
+                RatePercent = request.Percentage,
+                CreatedOn = DateTime.UtcNow,
+                IsDeleted = false
+            };
 
-            return new ApiResponse<List<TaxCategoryDTO>>
+            await _context.TaxCategories.AddAsync(model);
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<TaxCategoryDTO> { Success = true, StatusCode = 200, Data = model.FromModelToDto() };
+        }
+
+        public async Task<ApiResponse<TaxCategoryDTO>> SoftDelete(string uuid)
+        {
+            var tax = await _context.TaxCategories.FirstOrDefaultAsync(t => t.UUID == uuid);
+            if (tax == null) return new ApiResponse<TaxCategoryDTO> { Success = false, StatusCode = 404, Message = "Not found" };
+
+            tax.IsDeleted = true;
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<TaxCategoryDTO>
             {
                 Success = true,
                 StatusCode = 200,
-                Data = result,
-                Meta = new MetaData
-                {
-                    TotalCount = totalCount,
-                    PageNumber = queryObject.PageNumber,
-                    PageSize = queryObject.PageSize
-                }
+                Data = tax.FromModelToDto()
             };
         }
-
     }
 }
