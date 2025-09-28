@@ -168,19 +168,33 @@ namespace FrcsPos.Context
 
             b.Entity<RefundRequest>(e =>
             {
-                e.HasOne(x => x.Sale).WithMany(x => x.Refunds)
-                    .HasForeignKey(x => x.SaleId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Sale)
+                    .WithMany(x => x.Refunds)
+                    .HasForeignKey(x => x.SaleId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(x => x.RequestedBy).WithMany().HasForeignKey(x => x.RequestedByUserId).OnDelete(DeleteBehavior.Restrict);
-                e.HasOne(x => x.ApprovedBy).WithMany().HasForeignKey(x => x.ApprovedByUserId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.RequestedBy)
+                    .WithMany()
+                    .HasForeignKey(x => x.RequestedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.ApprovedBy)
+                    .WithMany()
+                    .HasForeignKey(x => x.ApprovedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             b.Entity<RefundItem>(e =>
             {
-                e.HasOne(x => x.RefundRequest).WithMany(x => x.Items)
-                    .HasForeignKey(x => x.RefundRequestId).OnDelete(DeleteBehavior.Cascade);
+                e.HasOne(x => x.RefundRequest)
+                    .WithMany(x => x.Items)
+                    .HasForeignKey(x => x.RefundRequestId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                e.HasOne(x => x.SaleItem).WithMany().HasForeignKey(x => x.SaleItemId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.SaleItem)
+                    .WithMany()
+                    .HasForeignKey(x => x.SaleItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             b.Entity<StockTransfer>(e =>

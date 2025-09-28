@@ -14,7 +14,6 @@ using FrcsPos.Background;
 using FrcsPos.Socket;
 using StackExchange.Redis;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
