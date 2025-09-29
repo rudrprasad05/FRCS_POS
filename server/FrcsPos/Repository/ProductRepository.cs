@@ -259,25 +259,25 @@ namespace FrcsPos.Repository
             var productData = JsonSerializer.Deserialize<NewProdJson>(request.Product, options);
             if (productData == null)
             {
-                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product data. could not understand product");
             }
 
             var company = await _context.Companies.FirstOrDefaultAsync(x => x.Name == queryObject.CompanyName);
             if (company == null)
             {
-                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+                return ApiResponse<ProductDTO>.Fail(message: "invalid company");
             }
 
             var tax = await _context.TaxCategories.FirstOrDefaultAsync(x => x.UUID == productData.TaxCategoryId);
             if (tax == null)
             {
-                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+                return ApiResponse<ProductDTO>.Fail(message: "invalid tax");
             }
 
             var sup = await _context.Suppliers.FirstOrDefaultAsync(x => x.UUID == productData.SupplierId);
             if (sup == null)
             {
-                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+                return ApiResponse<ProductDTO>.Fail(message: "invalid supplier");
             }
 
             var dup = await _context.Products.FirstOrDefaultAsync(x => x.Sku == productData.Sku);
