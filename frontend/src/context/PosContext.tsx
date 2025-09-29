@@ -189,7 +189,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
     total += taxTotal + subtotal;
     setMoneyValues({ subtotal, taxTotal, total });
-    console.log("mv", subtotal, taxTotal, total);
   }, [cart]);
 
   function addProduct(product: SaleItemOmitted) {
@@ -240,7 +239,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
   }
 
   async function checkout() {
-    console.log("save point 1", products);
     setIsSaving(true);
     if (products.length === 0) {
       toast.error("No products to checkout");
@@ -255,21 +253,15 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       subtotal += unitTotal;
       taxTotal +=
         (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
-      console.log("save point 1.5", index, subtotal, taxTotal);
     }
 
     total += taxTotal + subtotal;
-    console.log("save point 2", total, products);
 
     if (
       moneyValues.taxTotal != taxTotal ||
       moneyValues.subtotal != subtotal ||
       moneyValues.total != total
     ) {
-      console.log(moneyValues.taxTotal, taxTotal);
-      console.log(moneyValues.subtotal, subtotal);
-      console.log(moneyValues.total, total);
-      console.log("values dont match");
       toast.error("Checkout failed!");
       return;
     }
@@ -285,19 +277,13 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       items: cart as SaleItem[],
     };
 
-    console.log("data to send", checkoutDataToSend);
-
     setIsSaving(true);
     const res = await Checkout(checkoutDataToSend);
-
-    console.log(res);
-    console.log("Checking out", { session: session, products });
 
     if (res.success && res.data) {
       toast.success("Checkout successful!");
       router.push(`${session.uuid}/checkout/${res.data.uuid}`);
     } else {
-      console.log(res.errors);
       toast.error("Checkout failed!", { description: res.message });
     }
 

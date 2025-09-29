@@ -15,5 +15,15 @@ namespace FrcsPos.Request
         public IFormFile? File { get; set; } = null!;
         public int TaxCategoryId { get; set; } = default!;
         public string CompanyName { get; set; } = string.Empty;
+        public int? FirstWarningInDays { get; set; } = null;
+        public int? CriticalWarningInHours { get; set; } = null;
     }
+
+    public class ProductRequest
+    {
+        public string Product { get; set; } = string.Empty; // JSON string
+        public List<string> Variants { get; set; } = new();
+        public List<IFormFile> VariantFiles { get; set; } = new();
+    }
+
 }

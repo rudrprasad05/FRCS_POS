@@ -1,4 +1,4 @@
-import { NewBatchFormData } from "@/components/company/warehouse/batch/new/NewBatchContainer";
+import { NewBatchData } from "@/types/forms/zod";
 import { ApiResponse, ProductBatch, QueryObject } from "@/types/models";
 import { ILoadPreCreationInfo } from "@/types/res";
 import { RequestWrapper } from "./RequestWrapper";
@@ -28,7 +28,7 @@ export async function LoadPreCreationInfo(
 }
 
 export async function CreateProductBatch(
-  data: NewBatchFormData
+  data: NewBatchData
 ): Promise<ApiResponse<ProductBatch>> {
   return RequestWrapper<ProductBatch>("POST", `product-batch/create`, {
     data,

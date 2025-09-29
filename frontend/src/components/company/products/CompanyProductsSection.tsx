@@ -1,18 +1,18 @@
 "use client";
-import { GetAllProducts } from "@/actions/Product";
+import { GetAllProductVar } from "@/actions/Product";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
-import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
+import { ProductsVariantsColumns } from "@/components/tables/ProductsColumns";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
   ESortBy,
-  Product,
+  ProductVariant,
   QueryObject,
   UserRoles,
 } from "@/types/models";
@@ -41,7 +41,7 @@ export default function CompanySection() {
 
   const query = useQuery({
     queryKey: ["products", companyName, pagination],
-    queryFn: () => GetAllProducts({ ...pagination, companyName }),
+    queryFn: () => GetAllProductVar({ ...pagination, companyName }),
     staleTime: FIVE_MINUTE_CACHE,
   });
 
@@ -56,7 +56,7 @@ export default function CompanySection() {
           { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
         ],
         queryFn: () =>
-          GetAllProducts(
+          GetAllProductVar(
             {
               ...pagination,
               pageNumber: (pagination.pageNumber as number) + 1,
@@ -112,7 +112,7 @@ function HandleDataSection({
   pagination,
   setPagination,
 }: {
-  query: UseQueryResult<ApiResponse<Product[]>, Error>;
+  query: UseQueryResult<ApiResponse<ProductVariant[]>, Error>;
   pagination: any;
   setPagination: React.Dispatch<React.SetStateAction<any>>;
 }) {
@@ -127,9 +127,11 @@ function HandleDataSection({
   const data = query.data?.data ?? [];
   const meta = query.data?.meta;
 
+  console.log("query pv", data);
+
   return (
     <>
-      <DataTable columns={ProductsOnlyColumns} data={data} />
+      <DataTable columns={ProductsVariantsColumns} data={data} />
       <div className="py-8">
         <PaginationSection
           pagination={{

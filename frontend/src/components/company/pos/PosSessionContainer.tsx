@@ -42,7 +42,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
   useEffect(() => {
     const getData = async () => {
       const cake = await GetPosSession(uuid);
-      console.log("sessin data", cake);
+
       if (!cake.data) return;
 
       setInitialState(cake.data);
@@ -64,7 +64,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       .start()
       .then(() => {
         // setIsTerminalConnectedToServer(true);
-        console.log("✅ Terminal connected to hub:", uuid);
+
         connection.invoke("JoinTerminal", uuid);
       })
       .catch((err) => {
@@ -74,22 +74,18 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
 
     // Listen for scans sent from phone
     connection.on("ReceiveScan", (scan) => {
-      console.log("📩 Barcode received:", scan);
       handleProductAdd(scan);
     });
     connection.on("ReceivedJoinTerminal", (scan) => {
       setIsTerminalConnectedToServer(true);
-      console.log("📩 Scan received:", scan);
     });
     connection.on("ScannerConnected", (scan) => {
       setIsScannerConnectedToServer(true);
       toast.success("Scanner connected");
-      console.log("📩 Scan received:", scan);
     });
     connection.on("ScannerDisconnected", (scan) => {
       setIsScannerConnectedToServer(false);
       toast.warning("Scanner disconnected");
-      console.log("📩 scanner left:", scan);
     });
 
     return () => {

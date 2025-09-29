@@ -58,7 +58,6 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
 
       // time difference in ms
       const diffMs = expiryDate.getTime() - now.getTime();
-      console.log(diffMs);
 
       if (diffMs <= 0) {
         return <P className="text-red-600 font-semibold">Expired</P>;
@@ -100,7 +99,6 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
                 className=""
                 onClick={() => {
                   // call your stop session logic here
-                  console.log("Stopping session:", row.original.id);
                 }}
               >
                 <Pause />

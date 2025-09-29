@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import TanstackProvider from "@/context/TanstackProvider";
 import { AuthProvider } from "@/context/UserContext";
+import { Loader2 } from "lucide-react";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -76,7 +77,13 @@ export default function RootLayout({
           enableSystem={false} // ❌ don't follow OS preference
         >
           <TanstackProvider>
-            <Suspense fallback={<div>Loading session...</div>}>
+            <Suspense
+              fallback={
+                <div className="w-screen h-screen grid place-items-center">
+                  <Loader2 className="animate-spin" />
+                </div>
+              }
+            >
               <AuthProvider>
                 <Toaster />
                 {children}

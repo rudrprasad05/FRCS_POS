@@ -47,7 +47,7 @@ export function CompanyDashboardStats() {
   useEffect(() => {
     const getData = async () => {
       const data = await GetCompanyAdminDashboard({ companyName });
-      console.log(data);
+
       setdata(data.data);
       setLoading(false);
     };

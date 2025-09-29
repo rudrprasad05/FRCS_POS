@@ -69,7 +69,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
       toast.success("Saved successfully");
     } catch (error) {
-      console.log(error);
       toast.error("Error ocured. Changes not saved");
     }
   }

@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { generateStrongPassword } from "@/lib/utils";
-import { User, UserRoles } from "@/types/models";
+import { ApiResponse, User, UserRoles } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Copy, CopyCheck, File, Loader2, RotateCw } from "lucide-react";
@@ -77,7 +77,9 @@ export default function NewUserDialoge({
   const router = useRouter();
   const queryClient = useQueryClient();
   const params = useParams();
-  const companyName = decodeURIComponent(params.companyName as string);
+  let companyName: string | undefined = decodeURIComponent(
+    params.companyName as string
+  );
 
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -148,13 +150,22 @@ export default function NewUserDialoge({
 
     let cName = undefined;
     let isComany = false;
+
+    if (companyName == "undefined") {
+      companyName = undefined;
+    }
     if (companyName && companyName.trim().length > 0) {
       cName = companyName;
       isComany = true;
     }
 
-    const res = await CreateUser(values, { companyName: cName });
-    console.log(res);
+    let res: ApiResponse<User>;
+
+    if (isComany) {
+      res = await CreateUser(values, { companyName: cName });
+    } else {
+      res = await CreateUser(values);
+    }
 
     if (!res.success) {
       toast.error("Error creating user", { description: res.message });

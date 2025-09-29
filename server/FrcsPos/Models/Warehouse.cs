@@ -7,7 +7,6 @@ namespace FrcsPos.Models
 
         public string Name { get; set; } = default!;
         public string Location { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
 
         public ICollection<ProductBatch> ProductBatches { get; set; } = new List<ProductBatch>();
     }

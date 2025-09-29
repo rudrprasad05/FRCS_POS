@@ -11,7 +11,7 @@ namespace FrcsPos.Models
         CASHIER
     }
 
-    public class CompanyUser : BaseModel
+    public class CompanyUser
     {
         public int CompanyId { get; set; }
         public Company Company { get; set; } = default!;

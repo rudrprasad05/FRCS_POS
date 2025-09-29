@@ -1,9 +1,9 @@
 "use client";
 
-import { CreateProduct } from "@/actions/Product";
-import { GetAllTaxCategories } from "@/actions/Tax";
+import { EditProduct } from "@/actions/Product";
 import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
+import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+
 import {
   Select,
   SelectContent,
@@ -23,11 +24,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TaxCategory } from "@/types/models";
+import { Product, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Asterisk, PackagePlus } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -58,45 +60,41 @@ export const productSchema = z.object({
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
-export default function EditProductContainer() {
-  const [taxCategories, setTaxCategories] = useState<TaxCategory[]>([]);
-  const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  const [file, setFile] = useState<File | undefined>(undefined);
+export function EditorTab({
+  product,
+  taxes,
+}: {
+  product: Product;
+  taxes: TaxCategory[];
+}) {
   const params = useParams();
-  const companyName = params.companyName;
+  const companyName = decodeURIComponent(params.companyName as string);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    product?.media?.url ?? null
+  );
+
+  const queryClient = useQueryClient();
+  const [file, setFile] = useState<File | undefined>(undefined);
   const router = useRouter();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: "",
-      sku: "",
-      barcode: "",
-      price: "0",
-      taxCategoryId: "0",
-      isPerishable: false,
+      name: product?.name,
+      sku: product?.sku,
+      barcode: product?.barcode as string,
+      price: String(product?.price),
+      taxCategoryId: String(product?.taxCategoryId),
+      isPerishable: product?.isPerishable,
     },
   });
 
-  // Load tax categories on component mount
   useEffect(() => {
-    const loadTaxCategories = async () => {
-      const response = await GetAllTaxCategories();
-
-      if (response.success && response.data) {
-        setTaxCategories(response.data as TaxCategory[]);
-      } else {
-        toast.error("Failed to get tax", { description: response.message });
-      }
-
-      setIsLoadingTaxCategories(false);
-    };
-
-    loadTaxCategories();
-  }, []);
+    if (product?.media?.url) {
+      setPreviewUrl(product.media.url);
+    }
+  }, [product?.media?.url]);
 
   useEffect(() => {
     if (file && file.type.startsWith("image/")) {
@@ -106,6 +104,10 @@ export default function EditProductContainer() {
       setPreviewUrl("");
     }
   }, [file]);
+
+  const formValues = form.watch();
+
+  useEffect(() => {}, [formValues]);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -118,39 +120,33 @@ export default function EditProductContainer() {
     formData.append("Barcode", data.barcode as string);
     formData.append("IsPerishable", data.isPerishable ? "true" : "false");
     formData.append("TaxCategoryId", data.taxCategoryId as string);
-    formData.append("CompanyName", companyName as string);
+    formData.append("MediaId", String(product.mediaId));
 
     if (data.image) {
       formData.append("File", data.image); // IFormFile
     }
 
-    console.log("Submitting FormData:", formData);
-
-    const res = await CreateProduct(formData);
+    const res = await EditProduct(formData, product.uuid);
 
     if (res.success) {
-      console.log(res);
+      queryClient.invalidateQueries({
+        queryKey: ["editProduct", product.uuid],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["products", companyName], // optionally include pagination
+        exact: false,
+      });
       toast.success("Uploaded");
       router.back();
     } else {
-      toast("Failed to upload");
+      toast.error("Failed to upload");
     }
 
     setIsSubmitting(false);
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <PackagePlus className="text-primary h-6 w-6" />
-          <h1 className="text-3xl font-bold">New Product</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Add a new product to your inventory system
-        </p>
-      </div>
-
+    <div className="min-h-screen bg-background pt-4">
       <div className="space-y-4">
         <div>
           <LargeText>Product Information</LargeText>
@@ -250,21 +246,14 @@ export default function EditProductContainer() {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value ? field.value.toString() : ""}
-                        disabled={isLoadingTaxCategories}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                isLoadingTaxCategories
-                                  ? "Loading tax categories..."
-                                  : "Select VAT"
-                              }
-                            />
+                            <SelectValue placeholder={"Select VAT"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {taxCategories.map((category) => (
+                          {taxes.map((category) => (
                             <SelectItem
                               key={category.id as number}
                               value={String(category.id)}
@@ -274,12 +263,6 @@ export default function EditProductContainer() {
                           ))}
                         </SelectContent>
                       </Select>
-                      {isLoadingTaxCategories && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <div className="h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
-                          Loading tax categories...
-                        </div>
-                      )}
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -323,14 +306,11 @@ export default function EditProductContainer() {
               />
 
               <div className="flex gap-4 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || isLoadingTaxCategories}
-                >
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
                     <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   )}
-                  {isSubmitting ? "Creating Product..." : "Create Product"}
+                  {isSubmitting ? "Editing..." : "Edit Product"}
                 </Button>
                 <Button
                   type="button"
@@ -347,8 +327,4 @@ export default function EditProductContainer() {
       </div>
     </div>
   );
-}
-
-function RedStar() {
-  return <Asterisk className="w-2 h-2 text-rose-500 mb-auto ml-0 mr-auto" />;
 }

@@ -54,7 +54,7 @@ builder.Services.AddScoped<ICheckoutRepository, CheckoutRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
-
+builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();

@@ -89,7 +89,7 @@ export default function NewCompanyDialoge() {
       const data = await GetUnAssignedUsers({
         role: UserRoles.ADMIN,
       } as QueryObject);
-      console.log("newcompany admins", data);
+
       setAdminUsers(data.data as User[]);
 
       setLoading(false);
@@ -100,7 +100,6 @@ export default function NewCompanyDialoge() {
   async function onSubmit(values: NewCompanyFormType) {
     setLoading(true);
     const res = await CreateCompany(values);
-    console.log(res);
 
     if (!res.success) {
       toast.error("Error creating user", { description: res.message });

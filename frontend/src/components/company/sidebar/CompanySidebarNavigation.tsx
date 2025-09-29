@@ -13,6 +13,7 @@ import {
   Box,
   Coins,
   Computer,
+  Container,
   File,
   Info,
   LayoutDashboard,
@@ -61,6 +62,11 @@ export function CompanySidebarNavigation() {
       icon: Box,
     },
     {
+      title: "Suppliers",
+      href: `${base}/suppliers`,
+      icon: Container,
+    },
+    {
       title: "Warehouse",
       href: `${base}/warehouse`,
       icon: Warehouse,
@@ -91,7 +97,7 @@ export function CompanySidebarNavigation() {
       icon: Info,
     },
   ];
-  console.log(user?.role);
+
   const navArr =
     user?.role?.toUpperCase() === UserRoles.ADMIN
       ? adminNavigationItems

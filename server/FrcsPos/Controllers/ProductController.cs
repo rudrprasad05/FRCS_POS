@@ -29,37 +29,62 @@ namespace FrcsPos.Controllers
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateProduct(
-            [FromForm] string ProductName,
-            [FromForm] string SKU,
-            [FromForm] decimal Price,
-            [FromForm] string Barcode,
-            [FromForm] bool IsPerishable,
-            IFormFile? File,
-            [FromForm] int TaxCategoryId,
-            [FromForm] string CompanyName
+            [FromForm] string Product,
+            [FromForm] List<string> Variants,
+            List<IFormFile> VariantFiles,
+            [FromQuery] RequestQueryObject queryObject
         )
         {
-            var data = new NewProductRequest
+            var request = new ProductRequest
             {
-                ProductName = ProductName,
-                SKU = SKU,
-                Price = Price,
-                Barcode = Barcode,
-                IsPerishable = IsPerishable,
-                File = File,
-                TaxCategoryId = TaxCategoryId,
-                CompanyName = CompanyName,
+                Product = Product,
+                Variants = Variants,
+                VariantFiles = VariantFiles
+
             };
-
-            var model = await _productRepository.CreateProductAsync(data);
-
-            if (model == null || !model.Success || model.Success != true)
+            var res = await _productRepository.TestCreate(request, queryObject);
+            if (!res.Success)
             {
-                return BadRequest(model);
+                return BadRequest(res);
             }
-
-            return Ok(model);
+            return Ok(res);
         }
+        // public async Task<IActionResult> CreateProduct(
+        //     [FromForm] string ProductName,
+        //     [FromForm] string SKU,
+        //     [FromForm] decimal Price,
+        //     [FromForm] string Barcode,
+        //     [FromForm] bool IsPerishable,
+        //     IFormFile? File,
+        //     [FromForm] int TaxCategoryId,
+        //     [FromForm] string CompanyName,
+        //     [FromForm] int FirstWarningInDays,
+        //     [FromForm] int CriticalWarningInHours
+        // )
+        // {
+        //     var data = new NewProductRequest
+        //     {
+        //         ProductName = ProductName,
+        //         SKU = SKU,
+        //         Price = Price,
+        //         Barcode = Barcode,
+        //         IsPerishable = IsPerishable,
+        //         File = File,
+        //         TaxCategoryId = TaxCategoryId,
+        //         CompanyName = CompanyName,
+        //         FirstWarningInDays = FirstWarningInDays,
+        //         CriticalWarningInHours = CriticalWarningInHours
+        //     };
+
+        //     var model = await _productRepository.CreateProductAsync(data);
+
+        //     if (model == null || !model.Success || model.Success != true)
+        //     {
+        //         return BadRequest(model);
+        //     }
+
+        //     return Ok(model);
+        // }
 
         [HttpPost("get-all")]
         public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
@@ -74,11 +99,37 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("get-all-var")]
+        public async Task<IActionResult> GetAllProductVariants([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
+        {
+            var model = await _productRepository.GetAllProductsVariants(queryObject, req.ForPos ?? false);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
 
         [HttpGet("get-edit-page-info")]
         public async Task<IActionResult> GetProductEditPage([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _productRepository.GetProductEditPageAsync(queryObject);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("get-new-page-info")]
+        public async Task<IActionResult> GetNewPageInfo([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productRepository.GetCreationInfoAsync(queryObject);
 
             if (model == null || !model.Success)
             {

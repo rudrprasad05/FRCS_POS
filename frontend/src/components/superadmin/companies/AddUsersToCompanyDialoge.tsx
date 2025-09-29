@@ -78,7 +78,7 @@ export default function AddUsersToCompanyDialoge() {
   useEffect(() => {
     const getData = async () => {
       const data = await GetUnAssignedUsers();
-      console.log("GetUnAssignedUsers", data);
+
       setAdminUsers(data.data as User[]);
 
       setLoading(false);
@@ -104,7 +104,6 @@ export default function AddUsersToCompanyDialoge() {
 
   async function onSubmit(values: AddUsersToCompanyFormType) {
     setLoading(true);
-    console.log(values);
 
     const res = await AddUserToCompany(
       values.adminUserId,

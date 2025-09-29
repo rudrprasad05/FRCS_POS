@@ -22,7 +22,6 @@ type PageProps = {
 export default function EditorPage({ params }: PageProps) {
   const [state, setState] = useState<"edit" | "config">("edit");
   const { posId } = use(params);
-  console.log("bug1", posId);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["editTerminal", posId],

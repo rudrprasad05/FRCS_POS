@@ -32,7 +32,7 @@ namespace FrcsPos.Services
                     var criticalHours = 24;
 
                     var soonToExpire = await db.ProductBatches
-                        .Include(b => b.Product) // ensure Product is loaded
+                        // .Include(b => b.Product) // ensure Product is loaded
                         .Where(b => b.ExpiryDate != null)
                         .Where(b =>
                             b.ExpiryDate <= now ||
@@ -64,7 +64,7 @@ namespace FrcsPos.Services
                             db.Notifications.Add(new Notification
                             {
                                 Title = "Batch expiry alert",
-                                Message = $"Batch {batch.Id} for {batch.Product?.Name ?? "Unknown product"} is {type.ToString().ToLower()} (expires {batch.ExpiryDate})",
+                                Message = $"Batch {batch.Id} for  is {type.ToString().ToLower()} (expires {batch.ExpiryDate})",
                                 Type = type,
                                 CompanyId = batch.CompanyId,
                                 ActionUrl = actionUrl,

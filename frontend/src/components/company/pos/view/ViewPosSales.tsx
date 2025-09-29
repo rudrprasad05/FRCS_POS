@@ -38,8 +38,6 @@ export default function SalesSection() {
     staleTime: FIVE_MINUTE_CACHE,
   });
 
-  console.log(query.data);
-
   if (query.isLoading) {
     return <Loader2 className="animate-spin" />;
   }

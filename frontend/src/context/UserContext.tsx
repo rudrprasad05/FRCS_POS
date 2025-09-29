@@ -42,6 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: "Redirecting shortly",
     });
 
+    let returnUrl = searchParams.get("returnUrl");
+
     router.push(searchParams.get("returnUrl") || "/redirect");
     // router.push("/redirect");
   };
@@ -152,9 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           token: data.token,
           role: data.role,
         } as User;
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
   }, [pathname]);
 
   useEffect(() => {

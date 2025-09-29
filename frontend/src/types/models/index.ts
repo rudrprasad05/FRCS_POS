@@ -1,13 +1,26 @@
 import { CompanyRole, RefundStatus, SaleStatus } from "@/types/enum";
 
-export * from "./inventory";
-
 export interface BaseModel {
   id: number;
   uuid: string;
   createdOn: string;
   updatedOn: string;
   isDeleted: boolean;
+}
+
+export interface Supplier extends BaseModel {
+  name: string;
+  code: string;
+
+  contactName: string;
+  phone: string;
+  email: string;
+  address: string;
+
+  taxNumber: string;
+
+  products: Product[];
+  batches: ProductBatch[];
 }
 
 export interface Product extends BaseModel {
@@ -29,6 +42,28 @@ export interface Product extends BaseModel {
   saleItems?: SaleItem[];
 
   maxStock?: number;
+}
+
+export interface ProductVariant extends BaseModel {
+  productId: number;
+  product: Product;
+  maxStock?: number;
+
+  name: string;
+  sku: string;
+  barcode: string;
+  price: number;
+
+  batches: ProductBatch[];
+  saleItems: SaleItem[];
+
+  media?: Media | null;
+  mediaId?: number | null;
+
+  firstWarningInDays?: number | null;
+  criticalWarningInHours?: number | null;
+
+  mediaFile?: File;
 }
 
 export interface Media extends BaseModel {

@@ -4,17 +4,28 @@ import {
   ApiResponseFail,
   Company,
   Product,
+  ProductVariant,
   QueryObject,
 } from "@/types/models";
-import { EditProductData } from "@/types/res";
+import { EditProductData, NewProductData } from "@/types/res";
 import { RequestWrapper } from "./RequestWrapper";
 
 export async function GetAllProducts(
   query?: QueryObject,
   forPos?: boolean
 ): Promise<ApiResponse<Product[]>> {
-  console.log("hit");
   return RequestWrapper<Product[]>("POST", `product/get-all`, {
+    query,
+    data: {
+      ForPos: forPos || false,
+    },
+  });
+}
+export async function GetAllProductVar(
+  query?: QueryObject,
+  forPos?: boolean
+): Promise<ApiResponse<ProductVariant[]>> {
+  return RequestWrapper<ProductVariant[]>("POST", `product/get-all-var`, {
     query,
     data: {
       ForPos: forPos || false,
@@ -72,6 +83,13 @@ export async function GetEditProductData(
     query: { uuid },
   });
 }
+export async function GetNewPageInfo(
+  cName?: string
+): Promise<ApiResponse<NewProductData>> {
+  return RequestWrapper<NewProductData>("GET", `product/get-new-page-info`, {
+    query: { companyName: cName },
+  });
+}
 
 export async function AddUserToCompany(
   userId: string,
@@ -93,21 +111,13 @@ export async function AddUserToCompany(
 }
 
 export async function CreateProduct(
-  data: FormData
+  data: FormData,
+  query: QueryObject
 ): Promise<ApiResponse<Product>> {
-  try {
-    const res = await axiosGlobal.post<ApiResponse<Product>>(
-      "product/create",
-      data
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<Product>;
-    }
-
-    return ApiResponseFail<Product>();
-  }
+  return RequestWrapper<Product>("POST", `product/create`, {
+    query,
+    data: data,
+  });
 }
 
 export async function EditProduct(

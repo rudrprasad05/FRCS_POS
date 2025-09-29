@@ -86,8 +86,7 @@ export function NotificationBell() {
       .build();
 
     connection.on("ReceiveNotification", (notification) => {
-      console.log("conn");
-      setNotifications((prev) => [notification, ...prev]);
+      setNotifications((prev) => [notification, ...(prev ?? [])]);
       setUnreadCount((prev) => prev + 1);
     });
 

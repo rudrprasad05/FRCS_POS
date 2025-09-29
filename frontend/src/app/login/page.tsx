@@ -49,14 +49,12 @@ export default function LoginPage() {
       await login(values.email, values.password, redirect as string);
     } catch (error) {
       toast.error("Failed login");
-      console.log(error);
     }
 
     setIsLoading(false);
   }
 
   useEffect(() => {
-    console.log("redirect prefecthed");
     router.prefetch("/redirect");
   }, [router]);
 

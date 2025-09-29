@@ -125,9 +125,8 @@ export function createGenericListDataContext<T>() {
     });
 
     const refresh = useCallback(async () => {
-      console.log("hit refesh");
       setLoading(true);
-      console.log(pagination);
+
       const res = await fetchFn({
         pageNumber: pagination.pageNumber,
         pageSize: pagination.pageSize,
@@ -135,7 +134,7 @@ export function createGenericListDataContext<T>() {
         isDeleted: pagination.isDeleted,
         sortBy: pagination.sortBy,
       });
-      console.log("fetch fn", res);
+
       setItems(res.data ?? []);
 
       setPagination((prev) => ({

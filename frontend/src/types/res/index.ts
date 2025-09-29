@@ -1,13 +1,15 @@
 import { SaleStatus } from "../enum";
 import {
   Company,
-  PosSession,
   Notification,
-  UserRoles,
-  SaleItem,
+  PosSession,
   Product,
-  Warehouse,
+  ProductVariant,
+  SaleItem,
+  Supplier,
   TaxCategory,
+  UserRoles,
+  Warehouse,
 } from "../models";
 
 export interface SuperAdminDashboardDTO {
@@ -31,8 +33,9 @@ export interface CompanyAdminDashboardDTO {
 
 export interface ILoadPreCreationInfo {
   company: Company;
-  products: Product[];
+  products: ProductVariant[];
   warehouses: Warehouse[];
+  suppliers: Supplier[];
 }
 
 export interface AdminDashboardDTO {
@@ -83,5 +86,9 @@ export interface NewCheckoutRequest {
 
 export interface EditProductData {
   product: Product;
+  taxCategories: TaxCategory[];
+}
+export interface NewProductData {
+  suppliers: Supplier[];
   taxCategories: TaxCategory[];
 }

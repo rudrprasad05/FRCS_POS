@@ -63,7 +63,6 @@ export async function ConfirmEmail(token: string): Promise<boolean> {
     await axiosGlobal.post("auth/confirm-email/" + token);
     return true;
   } catch (error) {
-    console.log(error);
     return false;
   }
 }

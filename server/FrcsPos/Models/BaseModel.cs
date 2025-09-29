@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Models
 {
-    
+
     [Index(nameof(UUID), IsUnique = true)]
     public class BaseModel
     {
@@ -16,5 +16,7 @@ namespace FrcsPos.Models
         [Required] public DateTime CreatedOn { get; set; } = DateTime.Now;
         [Required] public DateTime UpdatedOn { get; set; } = DateTime.Now;
         [Required] public bool IsDeleted { get; set; } = false;
+        public bool IsActive { get; set; } = true;
+
     }
 }

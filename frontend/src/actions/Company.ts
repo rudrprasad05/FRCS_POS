@@ -12,7 +12,6 @@ import { RequestWrapper } from "./RequestWrapper";
 export async function GetAllCompanies(
   query?: QueryObject
 ): Promise<ApiResponse<Company[]>> {
-  console.log("GetAllCompanies", query);
   return RequestWrapper<Company[]>("GET", `company/get-all`, {
     query,
   });

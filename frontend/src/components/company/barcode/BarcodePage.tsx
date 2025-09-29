@@ -69,18 +69,13 @@ export default function BarcodeScanner() {
         conn
           .start()
           .then(() => {
-            console.log("✅ Connected to SignalR hub for terminal:", id);
             conn.invoke("JoinScanner", id);
           })
           .catch((err) => console.error("SignalR connection failed", err));
 
-        conn.on("ReceiveMessage", (msg) => {
-          console.log("📩 From server:", msg);
-        });
+        conn.on("ReceiveMessage", (msg) => {});
 
-        conn.on("ReceivedJoinScanner", (msg) => {
-          console.log("📩 Scan received:", msg);
-        });
+        conn.on("ReceivedJoinScanner", (msg) => {});
 
         setConnection(conn);
       } else {

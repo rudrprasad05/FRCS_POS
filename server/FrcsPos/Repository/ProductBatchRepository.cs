@@ -53,7 +53,7 @@ namespace FrcsPos.Repository
             var newModel = new ProductBatch
             {
                 CompanyId = company.Id,
-                ProductId = product.Id,
+                ProductVariantId = product.Id,
                 WarehouseId = wh.Id,
                 Quantity = request.Quantity,
                 ExpiryDate = request.ExpiryDate,
@@ -88,7 +88,7 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<List<ProductBatchDTO>>> GetAllAsycn(RequestQueryObject queryObject)
         {
             var query = _context.ProductBatches
-                .Include(p => p.Product)
+                .Include(p => p.ProductVariant.Product)
                 .Where(p => p.Warehouse.UUID == queryObject.UUID)
                 .AsQueryable();
 
@@ -102,10 +102,8 @@ namespace FrcsPos.Repository
             {
                 var search = queryObject.Search.ToLower();
                 query = query.Where(c =>
-                    c.Product.Name.ToLower().Contains(search) ||
-                    c.Product.Sku.ToLower().Contains(search) ||
-                    c.Product.Barcode.ToLower().Contains(search) ||
-                    c.Product.Price.ToString().Contains(search)
+                    c.ProductVariant.Product.Name.ToLower().Contains(search) ||
+                    c.ProductVariant.Product.Sku.ToLower().Contains(search)
                 );
             }
 
@@ -161,7 +159,9 @@ namespace FrcsPos.Repository
             }
 
             var company = await _context.Companies
+                .Include(c => c.Suppliers)
                 .Include(c => c.Products)
+                    .ThenInclude(p => p.Variants)
                 .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
             if (company == null)
             {
@@ -176,8 +176,11 @@ namespace FrcsPos.Repository
             var dto = new LoadPreCreationInfo
             {
                 Company = company.FromModelToDto(),
+                Suppliers = company.Suppliers.FromModelToDto(),
                 Warehouses = warehouse.FromModelToDto(),
-                Products = company.Products.ToList().FromModelToDto(),
+                Products = company.Products
+                  .SelectMany(x => x.Variants)
+                  .FromModelToDto(),
             };
 
             return ApiResponse<LoadPreCreationInfo>.Ok(dto);

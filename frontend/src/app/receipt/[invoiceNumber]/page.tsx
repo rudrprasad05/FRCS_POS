@@ -58,7 +58,7 @@ export default function ReceiptPage() {
       setState(EReceiptPageState.ERROR);
     }
     const res = await GetSaleByReceipt(checkoutId);
-    console.log(res);
+
     setSale(res.data as Sale);
     setState(EReceiptPageState.OK);
   }, [checkoutId]);

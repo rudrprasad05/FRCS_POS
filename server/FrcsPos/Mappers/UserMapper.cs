@@ -91,10 +91,6 @@ namespace FrcsPos.Mappers
 
             var dto = new CompanyUserDTO
             {
-                UUID = request.UUID,
-                Id = request.Id,
-                CreatedOn = request.CreatedOn,
-                UpdatedOn = request.UpdatedOn,
                 CompanyId = request.CompanyId,
                 UserId = request.UserId,
                 User = request.User.FromUserToDto(),

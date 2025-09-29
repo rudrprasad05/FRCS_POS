@@ -20,12 +20,29 @@ namespace FrcsPos.Response.DTO
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
         public int? MaxStock { get; set; } = 0;
+        public int FirstWarningInDays { get; set; }
+        public int CriticalWarningInHours { get; set; }
+        public int SupplierId { get; set; }
+        public Supplier Supplier { get; set; } = default!;
+
+
+    }
+
+    public class NewProdJson
+    {
+        public string TaxCategoryId { get; set; } = default!;
+        public string SupplierId { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public string Sku { get; set; } = default!;
+        public bool IsPerishable { get; set; }
+        public int? FirstWarningInDays { get; set; } = default!;
+        public int? CriticalWarningInHours { get; set; } = default!;
     }
 
     public class InitialProductCreationData : BaseDTO
     {
-        public string Sku { get; set; } = default!;
         public List<TaxCategoryDTO> TaxCategories { get; set; } = default!;
+        public List<SupplierDTO> Suppliers { get; set; } = default!;
     }
 
     public class ProductEditInfo
