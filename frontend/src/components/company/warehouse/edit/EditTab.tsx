@@ -52,9 +52,7 @@ export function EditorTab({ product }: { product: Warehouse }) {
 
   const formValues = form.watch();
 
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
+  useEffect(() => {}, [formValues]);
 
   const onSubmit = async (data: WarehouseEditData) => {
     setIsSubmitting(true);

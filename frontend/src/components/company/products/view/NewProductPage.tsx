@@ -162,12 +162,9 @@ export default function NewProductPage() {
       formData.append("File", data.image); // IFormFile
     }
 
-    console.log("Submitting FormData:", formData);
-
-    const res = await CreateProduct(formData);
+    const res = await CreateProduct(formData, {});
 
     if (res.success) {
-      console.log(res);
       toast.success("Uploaded");
       router.back();
     } else {

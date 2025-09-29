@@ -67,7 +67,6 @@ export function EditorTab({
   product: Product;
   taxes: TaxCategory[];
 }) {
-  console.log(product);
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,9 +107,7 @@ export function EditorTab({
 
   const formValues = form.watch();
 
-  useEffect(() => {
-    console.log("Form values changed:", formValues);
-  }, [formValues]);
+  useEffect(() => {}, [formValues]);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -125,13 +122,9 @@ export function EditorTab({
     formData.append("TaxCategoryId", data.taxCategoryId as string);
     formData.append("MediaId", String(product.mediaId));
 
-    console.log("fd", formData);
-
     if (data.image) {
       formData.append("File", data.image); // IFormFile
     }
-
-    console.log("Submitting FormData:", formData);
 
     const res = await EditProduct(formData, product.uuid);
 

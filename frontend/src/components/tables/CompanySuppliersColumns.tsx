@@ -139,8 +139,6 @@ const CompanyCell = ({ company }: { company: any }) => {
   const [isImageValid, setIsImageValid] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  console.log("pcb", company);
-
   return (
     <div className="relative object-cover aspect-square h-16 w-full rounded-md overflow-hidden">
       {isImageValid ? (

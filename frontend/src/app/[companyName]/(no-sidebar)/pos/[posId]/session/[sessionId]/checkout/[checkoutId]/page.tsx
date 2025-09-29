@@ -106,7 +106,7 @@ export default function ReceiptPage() {
     }
 
     const res = await GetSaleByUUID(checkoutId);
-    console.log(res);
+
     setSale(res.data as Sale);
     setState(EReceiptPageState.OK);
     setRecieptUrl("https://localhost:3000/receipt/" + res.data?.invoiceNumber);

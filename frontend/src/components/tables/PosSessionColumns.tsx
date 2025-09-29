@@ -66,7 +66,6 @@ export const PosSessionColumns: ColumnDef<PosSession>[] = [
                 className=""
                 onClick={() => {
                   // call your stop session logic here
-                  console.log("Stopping session:", row.original.id);
                 }}
               >
                 <Pause />

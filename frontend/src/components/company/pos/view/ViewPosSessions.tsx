@@ -84,8 +84,6 @@ function HandleSessionDataSection({
   const data = query.data?.data ?? [];
   const meta = query.data?.meta;
 
-  console.log("pos session", data);
-
   return (
     <>
       <DataTable columns={PosSessionColumns} data={data} />

@@ -111,7 +111,7 @@ export default function NewProductBatchContainer() {
     setIsSubmitting(true);
 
     const res = await CreateProductBatch(data);
-    console.log(res);
+
     if (res.success) {
       toast.success("Batch Created");
       queryClient.invalidateQueries({

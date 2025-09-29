@@ -50,11 +50,11 @@ namespace FrcsPos.Repository
                 return ApiResponse<ProductDTO>.Fail(message: "Duplicate SKU");
             }
 
-            var existsBarcode = await _context.Products.AnyAsync(p => p.Barcode == request.Barcode);
-            if (existsBarcode != false)
-            {
-                return ApiResponse<ProductDTO>.Fail(message: "Duplicate Barcode");
-            }
+            // var existsBarcode = await _context.Products.AnyAsync(p => p.Barcode == request.Barcode);
+            // if (existsBarcode != false)
+            // {
+            //     return ApiResponse<ProductDTO>.Fail(message: "Duplicate Barcode");
+            // }
 
             var file = request.File;
             if (file == null)
@@ -88,11 +88,8 @@ namespace FrcsPos.Repository
                 CompanyId = company.Id,
                 Sku = request.SKU,
 
-                Barcode = request.Barcode,
-                Price = request.Price,
                 TaxCategoryId = request.TaxCategoryId,
                 IsPerishable = request.IsPerishable,
-                MediaId = newMedia.Data?.Id
             };
 
             var model = await _context.Products.AddAsync(modelToBeCreated);
@@ -133,7 +130,7 @@ namespace FrcsPos.Repository
             var now = DateTime.UtcNow;
             var query = _context.Products
                 .Include(p => p.TaxCategory)
-                .Include(p => p.Media)
+                .Include(p => p.Variants)
                 // .Include(p => p.Batches)
                 .Where(p => p.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
@@ -155,9 +152,7 @@ namespace FrcsPos.Repository
                 var search = queryObject.Search.ToLower();
                 query = query.Where(c =>
                     c.Name.ToLower().Contains(search) ||
-                    c.Sku.ToLower().Contains(search) ||
-                    c.Barcode.ToLower().Contains(search) ||
-                    c.Price.ToString().Contains(search)
+                    c.Sku.ToLower().Contains(search)
                 );
             }
 
@@ -242,11 +237,9 @@ namespace FrcsPos.Repository
             // Update fields
             product.Name = request.ProductName;
             product.Sku = request.SKU;
-            product.Barcode = request.Barcode;
-            product.Price = request.Price;
+
             product.IsPerishable = request.IsPerishable;
             product.TaxCategoryId = request.TaxCategoryId;
-            product.MediaId = mediaId;
 
             product.UpdatedOn = DateTime.UtcNow;
 
@@ -257,30 +250,69 @@ namespace FrcsPos.Repository
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
 
-        public async Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request)
+        public async Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request, RequestQueryObject queryObject)
         {
-            var productData = JsonSerializer.Deserialize<ProductDTO>(request.Product);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            var productData = JsonSerializer.Deserialize<NewProdJson>(request.Product, options);
+            if (productData == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+            }
+
+            var company = await _context.Companies.FirstOrDefaultAsync(x => x.Name == queryObject.CompanyName);
+            if (company == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+            }
+
+            var tax = await _context.TaxCategories.FirstOrDefaultAsync(x => x.UUID == productData.TaxCategoryId);
+            if (tax == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+            }
+
+            var sup = await _context.Suppliers.FirstOrDefaultAsync(x => x.UUID == productData.SupplierId);
+            if (sup == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product data");
+            }
+
+            var dup = await _context.Products.FirstOrDefaultAsync(x => x.Sku == productData.Sku);
+            if (dup != null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "duplicate SKU");
+            }
 
             // Create product
             var product = new Product
             {
                 Name = productData.Name,
                 Sku = productData.Sku,
-                Barcode = productData.Barcode,
-                Price = productData.Price,
-                TaxCategoryId = productData.TaxCategoryId,
+
+                TaxCategoryId = tax.Id,
+                CompanyId = company.Id,
+                SupplierId = sup.Id,
+
                 IsPerishable = productData.IsPerishable,
-                // FirstWarningInDays = productData.FirstWarningInDays,
-                // CriticalWarningInHours = productData.CriticalWarningInHours
+                FirstWarningInDays = productData.IsPerishable ? productData.FirstWarningInDays : null,
+                CriticalWarningInHours = productData.IsPerishable ? productData.CriticalWarningInHours : null
             };
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+
             // Process variants
             for (int i = 0; i < request.Variants.Count; i++)
             {
-                var variantData = JsonSerializer.Deserialize<ProductVariantDTO>(request.Variants[i]);
+                var variantData = JsonSerializer.Deserialize<NewVarData>(request.Variants[i], options);
+                if (variantData == null)
+                {
+                    return ApiResponse<ProductDTO>.Fail(message: "malformed variant data");
+                }
 
                 var variant = new ProductVariant
                 {
@@ -289,8 +321,8 @@ namespace FrcsPos.Repository
                     Sku = variantData.Sku,
                     Barcode = variantData.Barcode,
                     Price = variantData.Price,
-                    // FirstWarningInDays = variantData.FirstWarningInDays,
-                    // CriticalWarningInHours = variantData.CriticalWarningInHours
+                    FirstWarningInDays = product.FirstWarningInDays,
+                    CriticalWarningInHours = product.CriticalWarningInHours
                 };
 
                 if (request.VariantFiles != null && request.VariantFiles.Count > i)
@@ -335,7 +367,7 @@ namespace FrcsPos.Repository
 
 
             var product = await _context.Products
-                .Include(p => p.Media)
+                .Include(p => p.Variants)
                 .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
             if (product == null)
             {

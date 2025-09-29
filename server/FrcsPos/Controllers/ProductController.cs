@@ -31,7 +31,8 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> CreateProduct(
             [FromForm] string Product,
             [FromForm] List<string> Variants,
-            List<IFormFile> VariantFiles
+            List<IFormFile> VariantFiles,
+            [FromQuery] RequestQueryObject queryObject
         )
         {
             var request = new ProductRequest
@@ -41,7 +42,7 @@ namespace FrcsPos.Controllers
                 VariantFiles = VariantFiles
 
             };
-            var res = await _productRepository.TestCreate(request);
+            var res = await _productRepository.TestCreate(request, queryObject);
             if (!res.Success)
             {
                 return BadRequest(res);

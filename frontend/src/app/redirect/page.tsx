@@ -14,19 +14,17 @@ export default function Redirect() {
 
   const handleCompanyRedirect = useCallback(async () => {
     if (user == null) {
-      console.log("1");
       router.push("/login");
       return;
     }
 
     if (user.role?.toUpperCase() == UserRoles.SUPERADMIN) {
-      console.log("su", user.role);
       router.push("/admin/dashboard");
       return;
     }
 
     const res = await GetCompanyByAdminUserId(user.id);
-    console.log(res);
+
     if (res.success) {
       const name = res.data?.name;
 
@@ -44,8 +42,6 @@ export default function Redirect() {
   }, [handleCompanyRedirect]);
 
   useEffect(() => {
-    console.log("prefecthed");
-
     router.prefetch("/admin/dashboard");
     router.prefetch("/companyname");
   }, [router]);

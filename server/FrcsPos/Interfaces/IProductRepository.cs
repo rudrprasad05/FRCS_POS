@@ -18,7 +18,7 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync(RequestQueryObject queryObject);
         public Task<ApiResponse<ProductEditInfo>> GetProductEditPageAsync(RequestQueryObject queryObject);
         public Task<ApiResponse<ProductDTO>> EditProductAsync(RequestQueryObject queryObject, EditProductRequest request);
-        public Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request);
+        public Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request, RequestQueryObject queryObject);
 
 
 

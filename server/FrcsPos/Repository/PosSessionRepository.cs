@@ -124,7 +124,8 @@ namespace FrcsPos.Repository
                 .Include(s => s.PosTerminal)
                     .ThenInclude(t => t.Company)
                         .ThenInclude(c => c.Products)
-                            .ThenInclude(p => p.Media)
+                            .ThenInclude(p => p.Variants)
+                                .ThenInclude(x => x.Media)
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
 
 

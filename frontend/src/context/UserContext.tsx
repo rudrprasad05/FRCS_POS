@@ -154,9 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           token: data.token,
           role: data.role,
         } as User;
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
   }, [pathname]);
 
   useEffect(() => {

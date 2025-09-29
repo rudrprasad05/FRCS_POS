@@ -23,7 +23,6 @@ export const columns: ColumnDef<User>[] = [
     header: "Role",
     cell: ({ row }) => {
       const role = row.original.role;
-      console.log(role);
 
       if (!role || role.trim().length == 0) {
         return <>-</>;

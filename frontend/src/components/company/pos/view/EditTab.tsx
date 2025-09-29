@@ -68,7 +68,6 @@ export function EditorTab() {
     setIsSubmitting(true);
 
     const res = await EditTerminal(data, terminal?.uuid as string);
-    console.log("onSubmit", res);
 
     if (res.success) {
       queryClient.invalidateQueries({
@@ -76,7 +75,6 @@ export function EditorTab() {
       });
       toast.success("Edited successfully");
     } else {
-      console.log(res.message);
       toast.error("Failed to upload");
     }
 

@@ -12,18 +12,13 @@ namespace FrcsPos.Models
 
         public string Name { get; set; } = default!;
         public string Sku { get; set; } = default!;
-        public string Barcode { get; set; } = default!;
-        public decimal Price { get; set; }
 
-        public int FirstWarningInDays { get; set; } = 7;
-        public int CriticalWarningInHours { get; set; } = 24;
+        public bool IsPerishable { get; set; } = false;
+        public int? FirstWarningInDays { get; set; } = 7;
+        public int? CriticalWarningInHours { get; set; } = 24;
 
         public int TaxCategoryId { get; set; }
         public TaxCategory TaxCategory { get; set; } = default!;
-
-        public bool IsPerishable { get; set; } = false;
-        public Media? Media { get; set; } = null!;
-        public int? MediaId { get; set; } = null!;
 
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     }

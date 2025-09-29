@@ -97,7 +97,7 @@ export function CompanySidebarNavigation() {
       icon: Info,
     },
   ];
-  console.log(user?.role);
+
   const navArr =
     user?.role?.toUpperCase() === UserRoles.ADMIN
       ? adminNavigationItems

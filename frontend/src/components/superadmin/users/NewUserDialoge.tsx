@@ -161,15 +161,11 @@ export default function NewUserDialoge({
 
     let res: ApiResponse<User>;
 
-    console.log(cName, isComany, values, companyName);
-
     if (isComany) {
       res = await CreateUser(values, { companyName: cName });
     } else {
       res = await CreateUser(values);
     }
-
-    console.log(res);
 
     if (!res.success) {
       toast.error("Error creating user", { description: res.message });

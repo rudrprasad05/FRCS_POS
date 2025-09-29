@@ -140,13 +140,7 @@ namespace FrcsPos.Context
 
             b.Entity<Product>(e =>
             {
-                e.Property(x => x.Price).HasPrecision(18, 2);
-
-                e.HasIndex(x => new { x.CompanyId, x.Sku })
-                    .IsUnique();
-                e.HasIndex(x => new { x.CompanyId, x.Barcode })
-                    .IsUnique()
-                    .HasFilter("[Barcode] IS NOT NULL");
+                e.HasIndex(x => new { x.CompanyId, x.Sku }).IsUnique();
 
                 e.HasOne(x => x.Company)
                     .WithMany(x => x.Products)

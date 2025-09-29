@@ -103,9 +103,7 @@ namespace FrcsPos.Repository
                 var search = queryObject.Search.ToLower();
                 query = query.Where(c =>
                     c.ProductVariant.Product.Name.ToLower().Contains(search) ||
-                    c.ProductVariant.Product.Sku.ToLower().Contains(search) ||
-                    c.ProductVariant.Product.Barcode.ToLower().Contains(search) ||
-                    c.ProductVariant.Product.Price.ToString().Contains(search)
+                    c.ProductVariant.Product.Sku.ToLower().Contains(search)
                 );
             }
 

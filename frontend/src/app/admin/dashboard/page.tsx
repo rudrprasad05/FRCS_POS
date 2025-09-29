@@ -9,7 +9,6 @@ export default function SuperAdminDashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("prefecthed");
     router.prefetch("/admin/companies");
     router.prefetch("/admin/reports");
     router.prefetch("/admin/tax");

@@ -1,8 +1,9 @@
 "use client";
-
-import { CreateProduct, GetNewPageInfo } from "@/actions/Product";
+import { GetNewPageInfo } from "@/actions/Product";
+import { RequestWrapper } from "@/actions/RequestWrapper";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -32,7 +33,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { ProductVariant, Supplier, TaxCategory } from "@/types/models";
+import {
+  ApiResponse,
+  Product,
+  ProductVariant,
+  QueryObject,
+  Supplier,
+  TaxCategory,
+} from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -48,10 +56,16 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  UseFormReturn,
+} from "react-hook-form";
 import { toast } from "sonner";
-import z, { uuid } from "zod";
+import { v4 as uuid } from "uuid";
+import z from "zod";
 
 const steps = [
   "Supplier",
@@ -63,6 +77,25 @@ const steps = [
 ];
 const customExpiryDays = [1, 2, 3, 5, 7, 10];
 const customExpiryHours = [6, 12, 24, 48, 72];
+
+export async function CreateProduct(
+  data: FormData,
+  query: QueryObject
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("POST", `product/create`, {
+    query,
+    data: data,
+  });
+}
+
+const productVariantSchema = z.object({
+  uuid: z.uuid(),
+  name: z.string().min(1, "Variant name is required"),
+  sku: z.string().min(1, "Variant SKU is required"),
+  barcode: z.string(),
+  price: z.number().min(0, "Price must be >= 0"),
+  mediaFile: z.any().optional(),
+});
 
 export const productSchema = z
   .object({
@@ -76,19 +109,10 @@ export const productSchema = z
       .string()
       .min(1, "SKU is required")
       .max(50, "SKU must be less than 50 characters"),
-    barcode: z.string().optional(),
-    price: z.string().min(0, "Price must be greater than or equal to 0"),
-    taxCategoryId: z.string().optional(),
-    supplierId: z.string().optional(),
+    taxCategoryId: z.uuid("select a tax"),
+    supplierId: z.uuid("select a supplier"),
     isPerishable: z.boolean(),
-    image: z
-      .any()
-      .optional()
-      .refine(
-        (files: FileList | undefined) =>
-          !files || files.length === 0 || files[0]?.type.startsWith("image/"),
-        "Please select a valid image file"
-      ),
+    variants: z.array(productVariantSchema),
   })
   .refine(
     (data) => {
@@ -98,7 +122,10 @@ export const productSchema = z
         data.criticalWarningInHours == null
       )
         return false;
-      return data.criticalWarningInHours < data.firstWarningInDays * 24;
+      return (
+        Number(data.criticalWarningInHours) <
+        Number(data.firstWarningInDays) * 24
+      );
     },
     {
       message:
@@ -113,136 +140,103 @@ export default function StepperForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const params = useParams();
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const searchParams = useSearchParams();
 
   const companyName = params.companyName;
-  const step = Number(searchParams.get("step") || undefined);
-
   const router = useRouter();
-
-  const [currentStep, setCurrentStep] = useState(step || 0);
+  const [currentStep, setCurrentStep] = useState(0);
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
       sku: "",
-      barcode: "",
-      price: "0",
       taxCategoryId: "",
-      supplierId: "",
+      supplierId: searchParams.get("selectedSupplier") || "",
       isPerishable: false,
       criticalWarningInHours: 24,
       firstWarningInDays: 3,
+      variants: [],
     },
   });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const validateStep = () => {
-    return true;
-    let newErrors: { [key: string]: string } = {};
-    if (currentStep === 0 && form.getValues("supplierId") == "") {
-      newErrors.option = "Please select an option.";
-    }
-    if (currentStep === 1) {
-      if (!form.getValues("name")) newErrors.name = "Name is required.";
-      if (!form.getValues("name")) newErrors.email = "Email is required.";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const nextStep = () => {
-    if (validateStep()) {
-      setCurrentStep((prev) => {
-        let x = Math.min(prev + 1, steps.length - 1);
-        router.push("?step=" + x);
-        return x;
-      });
-    } else toast.info("Complete current step first");
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => {
-      let x = Math.max(prev - 1, 0);
-
-      router.push("?step=" + x);
-      return x;
-    });
-  };
-
-  const goToStep = (index: number) => {
-    if (index < currentStep || validateStep()) {
-      setCurrentStep((prev) => {
-        let x = index;
-
-        router.push("?step=" + x);
-        return x;
-      });
-    }
-  };
-
-  const onSubmit = async (data: ProductFormData) => {
-    console.log(data, variants);
-    // return;
-    setIsSubmitting(true);
-
-    const formData = new FormData();
-
-    // Main product info
-    formData.append("product", JSON.stringify(data));
-
-    // Append variants individually
-    variants.forEach((variant, index) => {
-      formData.append(
-        `variants[${index}]`,
-        JSON.stringify({
-          name: variant.name,
-          sku: variant.sku,
-          barcode: variant.barcode,
-          price: variant.price,
-          firstWarningInDays: variant.firstWarningInDays,
-          criticalWarningInHours: variant.criticalWarningInHours,
-        })
-      );
-
-      if (variant.mediaFile) {
-        formData.append(`variantFiles`, variant.mediaFile || "undefined");
-      }
-    });
-
-    console.log("Submitting FormData:", formData);
-
-    const res = await CreateProduct(formData);
-
-    if (res.success) {
-      console.log(res);
-      toast.success("Uploaded");
-      router.back();
-    } else {
-      toast("Failed to upload");
-    }
-
-    setIsSubmitting(false);
-  };
-
-  const { data } = useQuery({
+  const { data, error } = useQuery({
     queryKey: ["NewProductData", companyName],
     queryFn: () => GetNewPageInfo(companyName?.toString()),
     staleTime: FIVE_MINUTE_CACHE,
   });
 
+  const nextStep = async () => {
+    let fieldsToValidate: (keyof ProductFormData)[] = [];
+
+    if (currentStep === 0) {
+      fieldsToValidate = ["supplierId"];
+    } else if (currentStep === 1) {
+      fieldsToValidate = ["name", "sku"];
+    }
+
+    const isValid = await form.trigger(fieldsToValidate);
+
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }
+  };
+  const prevStep = () => {
+    setCurrentStep((prev) => {
+      let x = Math.max(prev - 1, 0);
+      return x;
+    });
+  };
+
+  const onSubmit = async (data: ProductFormData) => {
+    // return;
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+
+    formData.append("Product", JSON.stringify(data));
+
+    data.variants.forEach((variant, index) => {
+      formData.append(
+        `Variants`,
+        JSON.stringify({
+          name: variant.name,
+          sku: variant.sku,
+          barcode: variant.barcode,
+          price: variant.price,
+        })
+      );
+
+      if (variant.mediaFile) {
+        formData.append(`VariantFiles`, variant.mediaFile);
+      }
+    });
+
+    console.log(formData);
+
+    const res = await CreateProduct(formData, {
+      companyName: String(companyName),
+    });
+
+    if (res.success) {
+      toast.success("Uploaded");
+      router.back();
+    } else {
+      toast.info("Failed to upload", { description: res.message });
+    }
+
+    setIsSubmitting(false);
+  };
+
+  useEffect(() => {
+    console.log("Form errors:", form.formState.errors);
+    console.dir(form.getValues());
+  }, [form.formState.errors]);
+
   useEffect(() => {
     form.setValue("taxCategoryId", String(data?.data?.taxCategories[0].uuid));
+    console.log(error);
   }, [data]);
-
-  //   useEffect(() => {
-  //     if (file && file.type.startsWith("image/")) {
-  //       const url = URL.createObjectURL(file);
-  //       setPreviewUrl(url);
-  //     } else {
-  //       setPreviewUrl("");
-  //     }
-  //   }, [file]);
 
   return (
     <div className="mx-auto p-6 h-full flex flex-col">
@@ -260,8 +254,8 @@ export default function StepperForm() {
         {steps.map((label, index) => (
           <div
             key={index}
-            className="flex-1 flex flex-col cursor-pointer"
-            onClick={() => goToStep(index)}
+            className="flex-1 flex flex-col"
+            // onClick={() => goToStep(index)}
           >
             <div className="flex items-center flex-1">
               {/* Step Circle */}
@@ -279,7 +273,6 @@ export default function StepperForm() {
                       key="check"
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
                       <Check className="text-primary" />
@@ -287,7 +280,7 @@ export default function StepperForm() {
                   ) : (
                     <motion.span
                       key={`num-${index}`}
-                      initial={{ opacity: 0 }}
+                      initial={false}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -306,7 +299,7 @@ export default function StepperForm() {
                     backgroundColor:
                       index < currentStep ? "var(--primary)" : "var(--border)", // primary vs muted
                   }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                 />
               )}
             </div>
@@ -324,18 +317,25 @@ export default function StepperForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 grow flex flex-col"
         >
+          {/* set supplier */}
           {currentStep === 0 && (
             <Step1 form={form} suppliers={data?.data?.suppliers} />
           )}
+
+          {/* set det */}
           {currentStep === 1 && (
             <Step2 form={form} taxes={data?.data?.taxCategories} />
           )}
+
+          {/* set expiry */}
           {currentStep === 2 && <Step3 form={form} />}
-          {currentStep === 3 && (
-            <Step4 form={form} variants={variants} setVariants={setVariants} />
-          )}
+
+          {/* set var 4 */}
+          {currentStep === 3 && <Step4 form={form} />}
           {currentStep === 4 && <Step5 form={form} />}
           {currentStep === 5 && <Step6 form={form} />}
+
+          {/* {form.formState.errors && <div>{form.formState.errors.barcode}</div>} */}
 
           <Separator className="my-4 mt-auto" />
 
@@ -371,6 +371,8 @@ function Step1({
   form: UseFormReturn<ProductFormData>;
   suppliers?: Supplier[];
 }) {
+  const params = useParams();
+  const companyName = params.companyName;
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -382,7 +384,7 @@ function Step1({
         name="supplierId"
         render={({ field }) => (
           <FormItem className="w-full">
-            <FormLabel>Select suppleir</FormLabel>
+            <FormLabel>Select supplier</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl className="w-full">
                 <SelectTrigger>
@@ -398,10 +400,10 @@ function Step1({
 
                 <Link
                   href={{
-                    pathname: "/admin/users",
+                    pathname: `/${companyName}/suppliers/new`,
                     query: {
                       open_create: "true",
-                      returnUrl: "/admin/companies",
+                      returnUrl: `/${companyName}/products/new-test`,
                     },
                   }}
                 >
@@ -550,7 +552,7 @@ function Step3({ form }: { form: UseFormReturn<ProductFormData> }) {
                         min={1}
                         placeholder="Enter days"
                         value={value}
-                        onChange={(e) => field.onChange(e.target.value)}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         onBlur={(e) => {
                           if (!e.target.value) field.onChange(""); // reset if cleared
                         }}
@@ -611,7 +613,7 @@ function Step3({ form }: { form: UseFormReturn<ProductFormData> }) {
                         min={1}
                         placeholder="Enter hours"
                         value={value}
-                        onChange={(e) => field.onChange(e.target.value)}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         onBlur={(e) => {
                           if (!e.target.value) field.onChange(""); // reset if cleared
                         }}
@@ -655,41 +657,27 @@ function Step3({ form }: { form: UseFormReturn<ProductFormData> }) {
   );
 }
 
-function Step4({
-  form,
-  variants,
-  setVariants,
-}: {
-  form: UseFormReturn<ProductFormData>;
-  variants: ProductVariant[];
-  setVariants: Dispatch<SetStateAction<ProductVariant[]>>;
-}) {
-  const defaultProd: Partial<ProductVariant> = {
-    uuid: String(uuid()),
-    name: form.getValues("name"),
-    sku: form.getValues("sku") + "-1",
-    firstWarningInDays: form.getValues("firstWarningInDays"),
-    criticalWarningInHours: form.getValues("criticalWarningInHours"),
-  };
+function Step4({ form }: { form: UseFormReturn<ProductFormData> }) {
+  const { control, getValues } = form;
 
-  const rmVar = (i: string) => {
-    setVariants((prev) => prev.filter((x) => x.uuid !== i));
-  };
-  const addVar = () => {
-    setVariants((prev) => [
-      ...prev,
-      {
-        uuid: String(uuid()),
-        sku: form.getValues("sku") + "-" + prev.length + 1,
-        firstWarningInDays: form.getValues("firstWarningInDays"),
-        criticalWarningInHours: form.getValues("criticalWarningInHours"),
-      } as ProductVariant,
-    ]);
-  };
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "variants",
+  });
 
+  // Default variant
   useEffect(() => {
-    setVariants([defaultProd as ProductVariant]);
-  }, [setVariants]);
+    if (fields.length === 0) {
+      append({
+        uuid: uuid(),
+        name: getValues("name"),
+        sku: getValues("sku") + "-default",
+        price: 0,
+        barcode: "",
+      });
+    }
+  }, [append, fields.length, getValues]);
+
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="flex justify-between">
@@ -698,70 +686,112 @@ function Step4({
           <MutedText>Create and manage variants</MutedText>
         </div>
 
-        <Button type="button" variant={"outline"} onClick={() => addVar()}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() =>
+            append({
+              uuid: String(uuid()),
+              name: getValues("name"),
+              sku: getValues("sku") + "-" + (fields.length + 1),
+              price: 0,
+              barcode: "",
+            })
+          }
+        >
           <PlusCircle />
           Add Variant
         </Button>
       </div>
-      {variants.map((v, i) => (
-        <div className="relative border border-solid rounded-lg p-6 flex gap-4 items-start">
-          <AddMediaDialoge variant={v} setVariants={setVariants} />
 
-          <div className="grid grid-cols-2 grow gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Variant Name</Label>
-              <Input id="name" placeholder="variant name" value={v.name} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="sku">Variant SKU</Label>
-              <Input id="sku" placeholder="variant sku" value={v.sku} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="barcode">Barcode</Label>
-              <Input id="barcode" placeholder="Barcode" value={v.barcode} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="Price">Price</Label>
-              <Input id="Price" placeholder="Price" value={v.barcode} />
-            </div>
-          </div>
-          <div
-            onClick={() => {
-              if (i == 0) return;
-              rmVar(v.uuid);
-            }}
-            className={cn(
-              "bg-muted p-1 rounded-full absolute top-0 right-0 translate-x-[50%] -translate-y-[50%]",
-              i == 0 && "hidden"
-            )}
-          >
-            <X className="w-4 h-4" />
-          </div>
-        </div>
+      {fields.map((field, index) => (
+        <VariantCard key={field.id} form={form} index={index} remove={remove} />
       ))}
     </div>
   );
 }
 
 function Step5({ form }: { form: UseFormReturn<ProductFormData> }) {
+  const values = form.getValues();
+
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-6">
       <div>
         <LargeText>Review Product</LargeText>
-        <MutedText>Final check before creating product</MutedText>
+        <MutedText>
+          Please review the information below before creating the product.
+        </MutedText>
       </div>
-      <div>
-        <LargeText>Product Info </LargeText>
-        <div>SKU: {form.getValues("sku")}</div>
-      </div>
-      <div>
-        <LargeText>Expiry Info </LargeText>
-        <div>SKU: {form.getValues("sku")}</div>
-      </div>
-      <div>
-        <LargeText>Variants</LargeText>
-        <div>SKU: {form.getValues("sku")}</div>
-      </div>
+
+      {/* Product Info */}
+      <Card>
+        <CardHeader>
+          <LargeText>Product Info</LargeText>
+        </CardHeader>
+        <CardContent className="space-y-1 text-sm">
+          <div>
+            <strong>Name:</strong> {values.name}
+          </div>
+          <div>
+            <strong>SKU:</strong> {values.sku}
+          </div>
+          <div>
+            <strong>Tax Category:</strong> {values.taxCategoryId || "—"}
+          </div>
+          <div>
+            <strong>Supplier:</strong> {values.supplierId || "—"}
+          </div>
+          <div>
+            <strong>Perishable:</strong> {values.isPerishable ? "Yes" : "No"}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Expiry Info */}
+      <Card>
+        <CardHeader>
+          <LargeText>Expiry Info</LargeText>
+        </CardHeader>
+        <CardContent className="space-y-1 text-sm">
+          <div>
+            <strong>First Warning (days):</strong>{" "}
+            {values.firstWarningInDays ?? "—"}
+          </div>
+          <div>
+            <strong>Critical Warning (hours):</strong>{" "}
+            {values.criticalWarningInHours ?? "—"}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Variants */}
+      <Card>
+        <CardHeader>
+          <LargeText>Variants</LargeText>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {values.variants && values.variants.length > 0 ? (
+            values.variants.map((variant, i) => (
+              <div key={i} className="border rounded-lg p-3 space-y-1">
+                <div>
+                  <strong>Name:</strong> {variant.name}
+                </div>
+                <div>
+                  <strong>SKU:</strong> {variant.sku}
+                </div>
+                <div>
+                  <strong>Barcode:</strong> {variant.barcode || "—"}
+                </div>
+                <div>
+                  <strong>Price:</strong> ${variant.price ?? "—"}
+                </div>
+              </div>
+            ))
+          ) : (
+            <MutedText>No variants added</MutedText>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -778,11 +808,11 @@ function Step6({ form }: { form: UseFormReturn<ProductFormData> }) {
 }
 
 function AddMediaDialoge({
-  variant,
-  setVariants,
+  index,
+  form,
 }: {
-  variant: ProductVariant;
-  setVariants: Dispatch<SetStateAction<ProductVariant[]>>;
+  index: number;
+  form: UseFormReturn<ProductFormData>;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -793,9 +823,9 @@ function AddMediaDialoge({
   const handleFileSelect = (f: File) => {
     if (f && f.type.startsWith("image/")) {
       setFile(f);
-      setVariants((prev) =>
-        prev.map((v) => (v.uuid === variant.uuid ? { ...v, mediaFile: f } : v))
-      );
+
+      form.setValue(`variants.${index}.mediaFile`, f, { shouldDirty: true });
+
       const url = URL.createObjectURL(f);
       setPreviewUrl(url);
     }
@@ -804,49 +834,19 @@ function AddMediaDialoge({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileSelect(files[0]);
+    if (e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files[0]);
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const handleClick = () => {
-    fileInputRef.current?.click();
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFileSelect(files[0]);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (file) {
-      setIsOpen(false);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      setIsDragOver(false);
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0]);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger type="button" asChild>
         <div className="w-14 h-14 aspect-square grid grid-cols-1 place-items-center outline outline-border rounded-lg">
           {!file && <Upload className="h-4 w-4" />}
@@ -861,7 +861,8 @@ function AddMediaDialoge({
           )}
         </div>
       </DialogTrigger>
-      <DialogContent className="">
+
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Upload Product Image</DialogTitle>
         </DialogHeader>
@@ -876,21 +877,22 @@ function AddMediaDialoge({
                     ? "border-primary bg-primary/5"
                     : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
                 }
-            `}
+              `}
               onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onClick={handleClick}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onClick={() => fileInputRef.current?.click()}
             >
               <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <div className="space-y-2">
-                <p className="text-sm font-medium">
-                  Drop your image here, or click to browse
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Supports: JPG, PNG, GIF, WebP, Avif
-                </p>
-              </div>
+              <p className="text-sm font-medium">
+                Drop your image here, or click to browse
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Supports: JPG, PNG, GIF, WebP, Avif
+              </p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -905,7 +907,7 @@ function AddMediaDialoge({
                 <Image
                   width={200}
                   height={200}
-                  src={previewUrl! || "/placeholder.svg"}
+                  src={previewUrl!}
                   alt="Preview"
                   className="w-full h-48 object-cover"
                 />
@@ -924,6 +926,9 @@ function AddMediaDialoge({
                   onClick={() => {
                     setFile(undefined);
                     setPreviewUrl(null);
+                    form.setValue(`variants.${index}.mediaFile`, null, {
+                      shouldDirty: true,
+                    });
                   }}
                 >
                   Remove
@@ -931,7 +936,7 @@ function AddMediaDialoge({
               </div>
               <Button
                 type="button"
-                onClick={() => handleSubmit()}
+                onClick={() => setIsOpen(false)}
                 className="w-full"
               >
                 Submit Image
@@ -941,5 +946,103 @@ function AddMediaDialoge({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+type VariantCardProps = {
+  form: UseFormReturn<ProductFormData>;
+  index: number;
+  remove: (index: number) => void;
+};
+
+function VariantCard({ form, index, remove }: VariantCardProps) {
+  const { control } = form;
+
+  return (
+    <div className="relative border border-solid rounded-lg p-6 flex gap-4 items-start">
+      {/* Example: media dialog still external */}
+      <AddMediaDialoge index={index} form={form} />
+
+      <div className="grid grid-cols-2 grow gap-4">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`variants.${index}.name`}>Variant Name</Label>
+          <Controller
+            control={control}
+            name={`variants.${index}.name`}
+            render={({ field }) => (
+              <Input
+                id={`variants.${index}.name`}
+                placeholder="variant name"
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`variants.${index}.sku`}>Variant SKU</Label>
+          <Controller
+            control={control}
+            name={`variants.${index}.sku`}
+            render={({ field }) => (
+              <Input
+                id={`variants.${index}.sku`}
+                placeholder="variant sku"
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`variants.${index}.barcode`}>Barcode</Label>
+          <Controller
+            control={control}
+            name={`variants.${index}.barcode`}
+            render={({ field }) => (
+              <Input
+                id={`variants.${index}.barcode`}
+                placeholder="Barcode"
+                {...field}
+              />
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`variants.${index}.price`}>Price</Label>
+          <Controller
+            control={control}
+            name={`variants.${index}.price`}
+            render={({ field }) => (
+              <Input
+                id={`variants.${index}.price`}
+                type="number"
+                step="0.01"
+                placeholder="Price"
+                {...field}
+                value={field.value ?? ""}
+                onChange={(e) =>
+                  field.onChange(parseFloat(e.target.value) || 0)
+                }
+              />
+            )}
+          />
+        </div>
+      </div>
+
+      <div
+        onClick={() => {
+          if (index === 0) return;
+          remove(index);
+        }}
+        className={cn(
+          "bg-muted p-1 rounded-full absolute top-0 right-0 translate-x-[50%] -translate-y-[50%]",
+          index === 0 && "hidden"
+        )}
+      >
+        <X className="w-4 h-4" />
+      </div>
+    </div>
   );
 }

@@ -13,7 +13,6 @@ export async function GetAllProducts(
   query?: QueryObject,
   forPos?: boolean
 ): Promise<ApiResponse<Product[]>> {
-  console.log("hit");
   return RequestWrapper<Product[]>("POST", `product/get-all`, {
     query,
     data: {
@@ -100,21 +99,13 @@ export async function AddUserToCompany(
 }
 
 export async function CreateProduct(
-  data: FormData
+  data: FormData,
+  query: QueryObject
 ): Promise<ApiResponse<Product>> {
-  try {
-    const res = await axiosGlobal.post<ApiResponse<Product>>(
-      "product/create",
-      data
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<Product>;
-    }
-
-    return ApiResponseFail<Product>();
-  }
+  return RequestWrapper<Product>("POST", `product/create`, {
+    query,
+    data: data,
+  });
 }
 
 export async function EditProduct(

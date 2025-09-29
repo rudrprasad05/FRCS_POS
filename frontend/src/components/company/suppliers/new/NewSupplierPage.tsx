@@ -11,10 +11,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Supplier } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Asterisk, PackagePlus } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -75,6 +76,7 @@ export default function NewSupplierPage() {
   const companyName = params.companyName;
   const router = useRouter();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   const form = useForm<SupplierInput>({
     resolver: zodResolver(supplierSchema),
@@ -97,7 +99,6 @@ export default function NewSupplierPage() {
     const res = await CreateSupplier(data);
 
     if (res.success) {
-      console.log(res);
       toast.success("Suppier created");
 
       queryClient.invalidateQueries({
@@ -105,7 +106,21 @@ export default function NewSupplierPage() {
         exact: false,
       });
 
-      router.back();
+      const newUser = res.data as Supplier;
+
+      if (searchParams.get("returnUrl")) {
+        queryClient.invalidateQueries({
+          queryKey: ["NewProductData", companyName],
+          exact: false,
+        });
+        router.replace(
+          `${searchParams.get("returnUrl")}?selectedSupplier=${
+            newUser.uuid
+          }&open_create=true`
+        );
+      } else {
+        router.back();
+      }
     } else {
       toast.error("Failed to upload", { description: res.message });
     }
