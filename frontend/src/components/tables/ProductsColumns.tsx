@@ -2,28 +2,100 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  Edit,
-  Eye,
-  ImageIcon,
-  SquareArrowUpRight,
-  TriangleAlert,
-} from "lucide-react";
+import { Edit, Eye, ImageIcon, SquareArrowUpRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Product } from "@/types/models";
+import { Product, ProductVariant } from "@/types/models";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Barcode from "react-barcode";
 
 export const ProductsOnlyColumns: ColumnDef<Product>[] = [
+  {
+    accessorKey: "isDeleted",
+    header: "Active",
+    cell: ({ row }) => {
+      const isDeleted = row.getValue("isDeleted") as boolean;
+      return (
+        <div
+          className={cn(
+            "rounded-full w-2 h-2 mx-auto",
+            isDeleted ? "bg-rose-500" : "bg-green-500"
+          )}
+        />
+      );
+    },
+  },
+
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => {
+      const company = row.original;
+
+      return <div className="flex gap-2">{company.name}</div>;
+    },
+  },
+  {
+    accessorKey: "sku",
+    header: "SKU",
+    cell: ({ row }) => {
+      const company = row.original;
+
+      return <div className="flex gap-2">{company.sku}</div>;
+    },
+  },
+
+  {
+    accessorKey: "createdOn",
+    header: "Created On",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("createdOn"));
+      return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+  },
+
+  {
+    id: "actions",
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const company = row.original;
+
+      return (
+        <div className="flex gap-2">
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`products/${company.uuid}/edit`}
+              className="w-24 flex items-center justify-between"
+            >
+              Edit
+              <Edit className="" />
+            </Link>
+          </Button>
+
+          <Button variant={"outline"} asChild className="w-24">
+            <Link
+              href={`products/${company.uuid}/view`}
+              className="w-24 flex items-center justify-between"
+            >
+              View
+              <Eye className="" />
+            </Link>
+          </Button>
+        </div>
+      );
+    },
+  },
+];
+
+export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
   {
     accessorKey: "isDeleted",
     header: "Active",
@@ -84,42 +156,42 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     },
   },
 
-  {
-    accessorKey: "maxStock",
-    header: "Stock",
-    cell: ({ row }) => {
-      const company = row.original;
+  //   {
+  //     accessorKey: "maxStock",
+  //     header: "Stock",
+  //     cell: ({ row }) => {
+  //       const company = row.original;
 
-      return (
-        <div className="flex gap-2 items-center">
-          <div>
-            {company.isDeleted && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TriangleAlert className="w-3 h-3 text-red-600" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span className="">Product no longer available</span>
-                </TooltipContent>
-              </Tooltip>
-            )}
+  //       return (
+  //         <div className="flex gap-2 items-center">
+  //           <div>
+  //             {company.isDeleted && (
+  //               <Tooltip>
+  //                 <TooltipTrigger asChild>
+  //                   <TriangleAlert className="w-3 h-3 text-red-600" />
+  //                 </TooltipTrigger>
+  //                 <TooltipContent>
+  //                   <span className="">Product no longer available</span>
+  //                 </TooltipContent>
+  //               </Tooltip>
+  //             )}
 
-            {company.maxStock === 0 && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TriangleAlert className="w-3 h-3 text-yellow-600" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span className="">Low stock</span>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-          <div>{company.maxStock}</div>
-        </div>
-      );
-    },
-  },
+  //             {company.maxStock === 0 && (
+  //               <Tooltip>
+  //                 <TooltipTrigger asChild>
+  //                   <TriangleAlert className="w-3 h-3 text-yellow-600" />
+  //                 </TooltipTrigger>
+  //                 <TooltipContent>
+  //                   <span className="">Low stock</span>
+  //                 </TooltipContent>
+  //               </Tooltip>
+  //             )}
+  //           </div>
+  //           <div>{company.maxStock}</div>
+  //         </div>
+  //       );
+  //     },
+  //   },
 
   {
     accessorKey: "createdOn",

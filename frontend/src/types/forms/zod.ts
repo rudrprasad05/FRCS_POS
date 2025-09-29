@@ -39,6 +39,19 @@ export const NewSocialLinkForm = z.object({
   isActive: z.boolean().default(true).optional(),
 });
 
+export const NewBatchDataSchema = z.object({
+  companyId: z.uuid({ error: "no company selected" }),
+  supplierId: z.uuid({ error: "no supplier selected" }),
+  productId: z.uuid({ error: "no product selected" }),
+  warehouseId: z.string({ error: "Warehouse is required" }),
+  quantity: z.number({ error: "Quantity is required" }).int().nonnegative(),
+  expiryDate: z
+    .date({ error: "Expiry date is required" })
+    .optional()
+    .nullable(),
+});
+
+export type NewBatchData = z.infer<typeof NewBatchDataSchema>;
 export type NewMediaFormType = z.infer<typeof NewMediaFormSchema>;
 export type SignInFormType = z.infer<typeof SignInForm>;
 export type RegisterFormType = z.infer<typeof RegisterForm>;

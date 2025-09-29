@@ -22,8 +22,10 @@ namespace FrcsPos.Response.DTO
     public class LoadPreCreationInfo
     {
         public CompanyDTO Company { get; set; } = default!;
-        public List<ProductDTO> Products { get; set; } = [];
+        public List<ProductVariantDTO> Products { get; set; } = [];
         public List<WarehouseDTO> Warehouses { get; set; } = [];
+        public List<SupplierDTO> Suppliers { get; set; } = [];
+
     }
 
 

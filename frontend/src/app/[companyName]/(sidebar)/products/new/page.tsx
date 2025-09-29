@@ -2,6 +2,7 @@
 import { GetNewPageInfo } from "@/actions/Product";
 import { RequestWrapper } from "@/actions/RequestWrapper";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
+import StepperCircles from "@/components/global/StepperCircles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,16 +37,13 @@ import { cn } from "@/lib/utils";
 import {
   ApiResponse,
   Product,
-  ProductVariant,
   QueryObject,
   Supplier,
   TaxCategory,
 } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  Check,
   Image as ImageIcon,
   PackagePlus,
   Plus,
@@ -138,9 +136,7 @@ export type ProductFormData = z.infer<typeof productSchema>;
 
 export default function StepperForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const params = useParams();
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const searchParams = useSearchParams();
 
   const companyName = params.companyName;
@@ -250,65 +246,7 @@ export default function StepperForm() {
         </p>
       </div>
 
-      <div className="flex mb-6 justify-between">
-        {steps.map((label, index) => (
-          <div
-            key={index}
-            className="flex-1 flex flex-col"
-            // onClick={() => goToStep(index)}
-          >
-            <div className="flex items-center flex-1">
-              {/* Step Circle */}
-              <div
-                className={cn(
-                  "w-10 h-10 flex items-center justify-center rounded-full border-2 relative overflow-hidden shrink-0",
-                  index <= currentStep && "border-primary",
-                  index === currentStep && "bg-primary text-black",
-                  index > currentStep && "bg-transparent border-border"
-                )}
-              >
-                <AnimatePresence mode="wait">
-                  {index < currentStep ? (
-                    <motion.div
-                      key="check"
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.2, ease: "easeOut" }}
-                    >
-                      <Check className="text-primary" />
-                    </motion.div>
-                  ) : (
-                    <motion.span
-                      key={`num-${index}`}
-                      initial={false}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {index + 1}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Progress Line */}
-              {index !== steps.length - 1 && (
-                <motion.div
-                  className="h-0.5 flex-1 rounded-full"
-                  initial={{ backgroundColor: "var(--border)" }} // muted color
-                  animate={{
-                    backgroundColor:
-                      index < currentStep ? "var(--primary)" : "var(--border)", // primary vs muted
-                  }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                />
-              )}
-            </div>
-
-            {/* Step Label */}
-            <span className="text-xs mt-2">{label}</span>
-          </div>
-        ))}
-      </div>
+      <StepperCircles currentStep={currentStep} steps={steps} />
 
       <Separator className="my-4" />
 
@@ -334,8 +272,6 @@ export default function StepperForm() {
           {currentStep === 3 && <Step4 form={form} />}
           {currentStep === 4 && <Step5 form={form} />}
           {currentStep === 5 && <Step6 form={form} />}
-
-          {/* {form.formState.errors && <div>{form.formState.errors.barcode}</div>} */}
 
           <Separator className="my-4 mt-auto" />
 

@@ -47,6 +47,7 @@ export interface Product extends BaseModel {
 export interface ProductVariant extends BaseModel {
   productId: number;
   product: Product;
+  maxStock?: number;
 
   name: string;
   sku: string;

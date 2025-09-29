@@ -159,7 +159,9 @@ namespace FrcsPos.Repository
             }
 
             var company = await _context.Companies
+                .Include(c => c.Suppliers)
                 .Include(c => c.Products)
+                    .ThenInclude(p => p.Variants)
                 .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
             if (company == null)
             {
@@ -174,8 +176,11 @@ namespace FrcsPos.Repository
             var dto = new LoadPreCreationInfo
             {
                 Company = company.FromModelToDto(),
+                Suppliers = company.Suppliers.FromModelToDto(),
                 Warehouses = warehouse.FromModelToDto(),
-                Products = company.Products.ToList().FromModelToDto(),
+                Products = company.Products
+                  .SelectMany(x => x.Variants)
+                  .FromModelToDto(),
             };
 
             return ApiResponse<LoadPreCreationInfo>.Ok(dto);

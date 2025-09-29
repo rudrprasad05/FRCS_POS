@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  CreateProductBatch,
-  LoadPreCreationInfo,
-} from "@/actions/ProductBatch";
+import { LoadPreCreationInfo } from "@/actions/ProductBatch";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -41,6 +38,7 @@ import * as z from "zod";
 
 export const schema = z.object({
   companyId: z.number({ error: "Company is required" }).int(),
+  supplierId: z.number({ error: "Supplier is required" }).int(),
   productId: z.number({ error: "Product is required" }).int(),
   warehouseId: z.string({ error: "Warehouse is required" }),
   quantity: z.number({ error: "Quantity is required" }).int().nonnegative(),
@@ -85,6 +83,7 @@ export default function NewProductBatchContainer() {
 
       if (response.success && response.data) {
         setInitalFormState(response.data as ILoadPreCreationInfo);
+        console.log(response.data);
       } else {
         toast.error("Failed to upload", { description: response.message });
       }
@@ -100,7 +99,6 @@ export default function NewProductBatchContainer() {
       form.reset({
         companyId: initalFormState.company.id, // or UUID if that’s what your backend uses
         warehouseId: warehouseId,
-        productId: initalFormState.products[0]?.id ?? 0,
         quantity: 0,
         expiryDate: null,
       });
@@ -110,18 +108,18 @@ export default function NewProductBatchContainer() {
   const onSubmit = async (data: NewBatchFormData) => {
     setIsSubmitting(true);
 
-    const res = await CreateProductBatch(data);
+    // const res = await CreateProductBatch(data);
 
-    if (res.success) {
-      toast.success("Batch Created");
-      queryClient.invalidateQueries({
-        queryKey: ["warehouseBatches", warehouseId],
-        exact: false,
-      });
-      router.back();
-    } else {
-      toast.error("Error creating batch", { description: res.message });
-    }
+    // if (res.success) {
+    //   toast.success("Batch Created");
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["warehouseBatches", warehouseId],
+    //     exact: false,
+    //   });
+    //   router.back();
+    // } else {
+    //   toast.error("Error creating batch", { description: res.message });
+    // }
 
     setIsSubmitting(false);
   };
@@ -156,6 +154,38 @@ export default function NewProductBatchContainer() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid lg:grid-cols-2 grid-cols-1 gap-x-12 gap-y-6">
+                <FormField
+                  control={form.control}
+                  name="supplierId"
+                  render={({ field }) => (
+                    <FormItem className="grow">
+                      <FormLabel>
+                        Select Supplier <RedStar />
+                      </FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value?.toString()}
+                          onValueChange={(val) => field.onChange(Number(val))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a product" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {initalFormState?.suppliers.map((product) => (
+                              <SelectItem
+                                key={product.id}
+                                value={String(product.id)}
+                              >
+                                {product.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="productId"
@@ -313,11 +343,11 @@ function ExpiryConfig({
 }) {
   if (!formState) return;
 
-  if (
-    !formState?.products.find((x) => x.id == form.watch("productId"))
-      ?.isPerishable
-  )
-    return;
+  //   if (
+  //     !formState?.products.find((x) => x.id == form.watch("productId"))
+  //       ?.isPerishable
+  //   )
+  //     return;
 
   return (
     <div className="space-y-4">

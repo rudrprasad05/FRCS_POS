@@ -4,6 +4,7 @@ import {
   ApiResponseFail,
   Company,
   Product,
+  ProductVariant,
   QueryObject,
 } from "@/types/models";
 import { EditProductData, NewProductData } from "@/types/res";
@@ -14,6 +15,17 @@ export async function GetAllProducts(
   forPos?: boolean
 ): Promise<ApiResponse<Product[]>> {
   return RequestWrapper<Product[]>("POST", `product/get-all`, {
+    query,
+    data: {
+      ForPos: forPos || false,
+    },
+  });
+}
+export async function GetAllProductVar(
+  query?: QueryObject,
+  forPos?: boolean
+): Promise<ApiResponse<ProductVariant[]>> {
+  return RequestWrapper<ProductVariant[]>("POST", `product/get-all-var`, {
     query,
     data: {
       ForPos: forPos || false,

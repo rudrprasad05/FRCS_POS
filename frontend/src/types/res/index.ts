@@ -4,6 +4,7 @@ import {
   Notification,
   PosSession,
   Product,
+  ProductVariant,
   SaleItem,
   Supplier,
   TaxCategory,
@@ -32,8 +33,9 @@ export interface CompanyAdminDashboardDTO {
 
 export interface ILoadPreCreationInfo {
   company: Company;
-  products: Product[];
+  products: ProductVariant[];
   warehouses: Warehouse[];
+  suppliers: Supplier[];
 }
 
 export interface AdminDashboardDTO {

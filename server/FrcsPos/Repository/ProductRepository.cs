@@ -131,7 +131,7 @@ namespace FrcsPos.Repository
             var query = _context.Products
                 .Include(p => p.TaxCategory)
                 .Include(p => p.Variants)
-                // .Include(p => p.Batches)
+                    .ThenInclude(p => p.Media)
                 .Where(p => p.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
 
@@ -189,6 +189,80 @@ namespace FrcsPos.Repository
             }
 
             return new ApiResponse<List<ProductDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
+
+        public async Task<ApiResponse<List<ProductVariantDTO>>> GetAllProductsVariants(RequestQueryObject queryObject, bool isForPos = false)
+        {
+            var now = DateTime.UtcNow;
+            var query = _context.ProductVariants
+                .Include(p => p.Product.TaxCategory)
+                .Include(p => p.Media)
+                .Where(p => p.Product.Company.Name == queryObject.CompanyName)
+                .AsQueryable();
+
+            if (isForPos)
+            {
+                // query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
+                query = query.Where(p => p.IsDeleted != true);
+
+            }
+            // filtering
+            if (queryObject.IsDeleted.HasValue && !isForPos)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(queryObject.Search))
+            {
+                var search = queryObject.Search.ToLower();
+                query = query.Where(c =>
+                    c.Name.ToLower().Contains(search) ||
+                    c.Sku.ToLower().Contains(search)
+                );
+            }
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<ProductVariantDTO>();
+            foreach (var product in products)
+            {
+                var dto = product.FromModelToDto();
+                result.Add(dto);
+
+                dto.MaxStock = product.Batches
+                    .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
+                    .Sum(b => b.Quantity);
+
+
+            }
+
+            return new ApiResponse<List<ProductVariantDTO>>
             {
                 Success = true,
                 StatusCode = 200,

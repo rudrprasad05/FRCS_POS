@@ -99,6 +99,19 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("get-all-var")]
+        public async Task<IActionResult> GetAllProductVariants([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
+        {
+            var model = await _productRepository.GetAllProductsVariants(queryObject, req.ForPos ?? false);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
 
         [HttpGet("get-edit-page-info")]
         public async Task<IActionResult> GetProductEditPage([FromQuery] RequestQueryObject queryObject)
