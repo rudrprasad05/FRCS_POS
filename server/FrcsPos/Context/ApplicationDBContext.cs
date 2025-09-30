@@ -135,7 +135,7 @@ namespace FrcsPos.Context
 
             b.Entity<TaxCategory>(e =>
             {
-                e.Property(x => x.RatePercent).HasPrecision(6, 5);
+                e.Property(x => x.RatePercent).HasPrecision(5, 2);
             });
 
             b.Entity<Product>(e =>

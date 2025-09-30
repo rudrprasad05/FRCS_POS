@@ -28,7 +28,7 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetAllTax([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _taxRepository.GetAllTaxCategories(queryObject);
-            if (model == null || !model.Success) return BadRequest("Failed to fetch tax categories");
+            if (!model.Success) return BadRequest(model);
 
             return Ok(model);
         }
@@ -38,7 +38,7 @@ namespace FrcsPos.Controllers
         {
             if (request == null) return BadRequest("Invalid request data");
             var model = await _taxRepository.CreateTaxCategoryAsync(request);
-            if (model == null || !model.Success) return BadRequest("Failed to create tax category");
+            if (!model.Success) return BadRequest(model);
             return Ok(model);
         }
 
@@ -47,7 +47,7 @@ namespace FrcsPos.Controllers
         {
             if (string.IsNullOrWhiteSpace(uuid)) return BadRequest("UUID is required");
             var model = await _taxRepository.SoftDelete(uuid);
-            if (model == null || !model.Success) return BadRequest("Failed to delete tax category");
+            if (!model.Success) return BadRequest(model);
             return Ok(model);
         }
     }

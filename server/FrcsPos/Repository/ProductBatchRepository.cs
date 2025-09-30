@@ -150,12 +150,11 @@ namespace FrcsPos.Repository
         {
             throw new NotImplementedException();
         }
-
         public async Task<ApiResponse<LoadPreCreationInfo>> GetCreationInfoAsync(RequestQueryObject queryObject)
         {
             if (queryObject == null || string.IsNullOrEmpty(queryObject.CompanyName))
             {
-                return ApiResponse<LoadPreCreationInfo>.Fail(message: "malformed url");
+                return ApiResponse<LoadPreCreationInfo>.Fail(message: "Malformed url");
             }
 
             var company = await _context.Companies
@@ -163,24 +162,34 @@ namespace FrcsPos.Repository
                 .Include(c => c.Products)
                     .ThenInclude(p => p.Variants)
                 .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
+
             if (company == null)
             {
-                return ApiResponse<LoadPreCreationInfo>.Fail(message: "company not NotFound");
+                return ApiResponse<LoadPreCreationInfo>.Fail(message: "Company not found");
             }
 
-            var warehouse = await _context.Warehouses
+            var warehouses = await _context.Warehouses
                 .Where(c => c.CompanyId == company.Id)
                 .ToListAsync();
 
+            var productsQuery = company.Products.AsQueryable();
+
+            if (!string.IsNullOrEmpty(queryObject.UUID))
+            {
+                if (!string.IsNullOrEmpty(queryObject.UUID))
+                {
+                    productsQuery = productsQuery.Where(p => p.Supplier.UUID == queryObject.UUID);
+                }
+            }
 
             var dto = new LoadPreCreationInfo
             {
                 Company = company.FromModelToDto(),
                 Suppliers = company.Suppliers.FromModelToDto(),
-                Warehouses = warehouse.FromModelToDto(),
-                Products = company.Products
-                  .SelectMany(x => x.Variants)
-                  .FromModelToDto(),
+                Warehouses = warehouses.FromModelToDto(),
+                Products = productsQuery
+                    .SelectMany(x => x.Variants)
+                    .FromModelToDto(),
             };
 
             return ApiResponse<LoadPreCreationInfo>.Ok(dto);

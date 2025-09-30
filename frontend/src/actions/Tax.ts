@@ -6,6 +6,7 @@ import {
   QueryObject,
   TaxCategory,
 } from "@/types/models";
+import { RequestWrapper } from "./RequestWrapper";
 import { GetToken } from "./User";
 
 export async function GetAllTaxCategories(
@@ -25,27 +26,9 @@ export async function GetAllTaxCategories(
 export async function CreateTaxCategory(
   data: NewTaxFormType
 ): Promise<ApiResponse<TaxCategory>> {
-  try {
-    const token = await GetToken();
-    const res = await axiosGlobal.post<ApiResponse<TaxCategory>>(
-      "tax/create",
-      data,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data)
-      return error.response.data as ApiResponse<TaxCategory>;
-    return {
-      success: false,
-      statusCode: 500,
-      message: "Failed",
-      data: undefined,
-      timestamp: new Date().toISOString(),
-    };
-  }
+  return RequestWrapper<TaxCategory>("POST", "tax/create", {
+    data,
+  });
 }
 
 export async function SoftDeleteTax(

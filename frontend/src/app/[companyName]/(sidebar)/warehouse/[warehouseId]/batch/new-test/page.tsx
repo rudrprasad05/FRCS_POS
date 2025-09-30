@@ -43,8 +43,9 @@ export default function StepperForm() {
   });
 
   const { data, error } = useQuery({
-    queryKey: ["NewProductData", companyName],
-    queryFn: () => LoadPreCreationInfo({ companyName }),
+    queryKey: ["newBatchData", companyName],
+    queryFn: () =>
+      LoadPreCreationInfo({ companyName, uuid: form.watch("supplierId") }),
     staleTime: FIVE_MINUTE_CACHE,
   });
 

@@ -36,6 +36,11 @@ namespace FrcsPos.Mappers
                 dto.Media = request.Media.FromModelToDTO();
             }
 
+            if (request.Product != null)
+            {
+                dto.IsPerishable = request.Product.IsPerishable;
+            }
+
             return dto;
         }
 

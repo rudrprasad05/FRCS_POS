@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
     const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
 
     if (returnUrl == "/") {
-      return NextResponse.redirect(new URL(`/login}`, req.url));
+      return NextResponse.redirect(new URL(`/login`, req.url));
     }
     return NextResponse.redirect(
       new URL(`/login?returnUrl=${encodeURIComponent(returnUrl)}`, req.url)

@@ -18,7 +18,7 @@ namespace FrcsPos.Response.DTO
         public int? MaxStock { get; set; } = 0;
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
-
+        public bool? IsPerishable { get; set; } = null;
     }
 
     public class NewVarData

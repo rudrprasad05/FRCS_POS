@@ -1,22 +1,23 @@
 "use client";
 
 import { GetAllTaxCategories } from "@/actions/Tax";
-import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Header } from "@/components/global/TestHeader";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
-import { TaxCategory } from "@/types/models";
-import { Search } from "lucide-react";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
+import {
+  ApiResponse,
+  ESortBy,
+  QueryObject,
+  TaxCategory,
+  UserRoles,
+} from "@/types/models";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useState } from "react";
 import { TaxOnlyColumn } from "../../tables/TaxColumns";
 import NewTaxCategoryDialoge from "./NewTaxCategoryDialoge";
 
@@ -24,77 +25,74 @@ export const { Provider: TaxDataProvider, useGenericData: useTaxData } =
   createGenericListDataContext<TaxCategory>();
 
 export default function TaxSection() {
-  return (
-    <TaxDataProvider
-      fetchFn={() => GetAllTaxCategories({ pageNumber: 1, pageSize: 10 })}
-    >
-      <Header />
-      <HandleDataSection />
-    </TaxDataProvider>
-  );
-}
+  const [pagination, setPagination] = useState<QueryObject>({
+    pageNumber: 1,
+    pageSize: 10,
+    search: "",
+    sortBy: ESortBy.DSC,
+    isDeleted: undefined as boolean | undefined,
+  });
 
-function Header() {
+  const query = useQuery({
+    queryKey: ["adminTax", pagination],
+    queryFn: () => GetAllTaxCategories({ ...pagination }),
+    staleTime: FIVE_MINUTE_CACHE,
+  });
   return (
-    <div>
-      <div className="space-b-2">
-        <H1>Tax</H1>
+    <>
+      <Header
+        pagination={pagination}
+        setPagination={setPagination}
+        newButton={
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <NewTaxCategoryDialoge />
+          </RoleWrapper>
+        }
+      >
+        <H1>Tax Categories</H1>
         <P className="text-muted-foreground">
-          Create and manage tax categories
+          Create and manage tax rates for all companies
         </P>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
-            <Input placeholder="Search posts..." className="pl-10 " />
-          </div>
+      </Header>
 
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue defaultValue={"all"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="cake">Cakes</SelectItem>
-              <SelectItem value="feature">Features</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select>
-            <SelectTrigger className="w-32 ">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <NewTaxCategoryDialoge />
-      </div>
-    </div>
+      <HandleDataSection
+        query={query}
+        pagination={pagination}
+        setPagination={setPagination}
+      />
+    </>
   );
 }
 
-function HandleDataSection() {
-  const { items, loading, pagination, setPagination } = useTaxData();
-  const data = items as TaxCategory[];
+function HandleDataSection({
+  query,
+  pagination,
+  setPagination,
+}: {
+  query: UseQueryResult<ApiResponse<TaxCategory[]>, Error>;
+  pagination: any;
+  setPagination: React.Dispatch<React.SetStateAction<any>>;
+}) {
+  if (query.isLoading) {
+    return <TableSkeleton columns={3} rows={8} showHeader />;
+  }
 
-  if (loading) return <TableSkeleton columns={3} rows={8} showHeader />;
+  if (query.isError) {
+    return <div className="text-red-500">Error loading tax categories.</div>;
+  }
 
-  if (!data) return <>Invalid URL</>;
-
-  if (data.length === 0) return <NoDataContainer />;
-
+  const data = query.data?.data ?? [];
+  const meta = query.data?.meta;
   return (
     <>
       <DataTable columns={TaxOnlyColumn} data={data} />
       <div className="py-8">
         <PaginationSection
-          pagination={pagination}
+          pagination={{
+            ...pagination,
+            totalCount: meta?.totalCount ?? 0,
+            totalPages: meta?.totalPages ?? 0,
+          }}
           setPagination={setPagination}
         />
       </div>

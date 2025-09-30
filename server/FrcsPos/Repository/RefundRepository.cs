@@ -36,7 +36,7 @@ namespace FrcsPos.Repository
         {
             var sale = await _context.Sales
                 .Include(s => s.Items)
-                    .ThenInclude(si => si.Product)
+                    .ThenInclude(si => si.ProductVariant)
                         .ThenInclude(p => p.Batches)
                 .FirstOrDefaultAsync(s => s.Id == request.SaleId);
 
@@ -49,7 +49,7 @@ namespace FrcsPos.Repository
                 if (saleItem == null)
                     return ApiResponse<RefundDTO>.Fail(message: "Product not in sale");
                 if (ri.Quantity > saleItem.Quantity)
-                    return ApiResponse<RefundDTO>.Fail(message: $"Cannot refund more than purchased quantity for {saleItem.Product.Name}");
+                    return ApiResponse<RefundDTO>.Fail(message: $"Cannot refund more than purchased quantity for {saleItem.ProductVariant.Name}");
             }
 
             var refund = new RefundRequest
@@ -95,7 +95,7 @@ namespace FrcsPos.Repository
             var refund = await _context.RefundRequests
                 .Include(r => r.Items)
                     .ThenInclude(i => i.SaleItem)
-                        .ThenInclude(si => si.Product)
+                        .ThenInclude(si => si.ProductVariant)
                             .ThenInclude(p => p.Batches)
                 .FirstOrDefaultAsync(r => r.Id == refundId);
 
@@ -110,7 +110,7 @@ namespace FrcsPos.Repository
             var q = _context.RefundRequests
                 .Include(r => r.Items)
                     .ThenInclude(i => i.SaleItem)
-                        .ThenInclude(si => si.Product)
+                        .ThenInclude(si => si.ProductVariant)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.Search))
@@ -139,7 +139,7 @@ namespace FrcsPos.Repository
             var refund = await _context.RefundRequests
                 .Include(r => r.Items)
                     .ThenInclude(i => i.SaleItem)
-                        .ThenInclude(si => si.Product)
+                        .ThenInclude(si => si.ProductVariant)
                             .ThenInclude(p => p.Batches)
                 .FirstOrDefaultAsync(r => r.Id == refundId);
 
@@ -162,14 +162,14 @@ namespace FrcsPos.Repository
             foreach (var item in refund.Items)
             {
                 var saleItem = await _context.SaleItems
-                    .Include(si => si.Product)
+                    .Include(si => si.ProductVariant)
                         .ThenInclude(p => p.Batches)
                     .FirstOrDefaultAsync(si => si.Id == item.SaleItemId);
 
                 if (saleItem == null) return ApiResponse<RefundDTO>.Fail(message: "Sale item not found");
 
                 var remainingQty = item.Quantity;
-                var batches = saleItem.Product.Batches
+                var batches = saleItem.ProductVariant.Batches
                     .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
                     .ToList();
 
@@ -209,8 +209,8 @@ namespace FrcsPos.Repository
                 {
                     Id = i.Id,
                     SaleItemId = i.SaleItemId,
-                    ProductId = i.SaleItem?.ProductId ?? 0,
-                    ProductName = i.SaleItem?.Product?.Name,
+                    ProductId = i.SaleItem?.ProductVariantId ?? 0,
+                    ProductName = i.SaleItem?.ProductVariant?.Name,
                     Quantity = i.Quantity,
                     ApprovedQuantity = i.ApprovedQuantity,
                     Note = i.Note

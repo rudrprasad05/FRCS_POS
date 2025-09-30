@@ -47,8 +47,8 @@ export function BatchCreationStep1({
             </FormLabel>
             <FormControl>
               <Select
-                value={field.value}
                 onValueChange={(val) => field.onChange(val)}
+                value={field.value}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a product" />

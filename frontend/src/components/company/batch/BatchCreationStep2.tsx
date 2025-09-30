@@ -25,6 +25,7 @@ export function BatchCreationStep2({
   form: UseFormReturn<NewBatchData>;
   products?: ProductVariant[];
 }) {
+  console.log(products);
   return (
     <div className="grid grid-cols-1 gap-6">
       <div>
@@ -41,13 +42,16 @@ export function BatchCreationStep2({
               Select Product <RedStar />
             </FormLabel>
             <FormControl>
-              <Select value={field.value?.toString()}>
+              <Select
+                onValueChange={(val) => field.onChange(val)}
+                value={field.value}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a product" />
                 </SelectTrigger>
                 <SelectContent>
                   {products?.map((product) => (
-                    <SelectItem key={product.id} value={String(product.id)}>
+                    <SelectItem key={product.uuid} value={product.uuid}>
                       {product.name}
                     </SelectItem>
                   ))}

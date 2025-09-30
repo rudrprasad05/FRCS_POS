@@ -56,6 +56,7 @@ export interface ProductVariant extends BaseModel {
 
   batches: ProductBatch[];
   saleItems: SaleItem[];
+  isPerishable?: boolean;
 
   media?: Media | null;
   mediaId?: number | null;
@@ -261,7 +262,6 @@ export type NewTaxFormType = {
   name: string;
   percentage: number;
 };
-
 
 export interface RefundRequest extends BaseModel {
   companyId: number;
