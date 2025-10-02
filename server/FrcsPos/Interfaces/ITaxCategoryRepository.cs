@@ -7,11 +7,12 @@ using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Interfaces
 {
-public interface ITaxCategoryRepository
-{
-    Task<ApiResponse<List<TaxCategoryDTO>>> GetAllTaxCategories(RequestQueryObject queryObject);
-    Task<ApiResponse<TaxCategoryDTO>> CreateTaxCategoryAsync(NewTaxRequest request);
-    Task<ApiResponse<TaxCategoryDTO>> SoftDelete(string uuid);
-}
+    public interface ITaxCategoryRepository
+    {
+        Task<ApiResponse<List<TaxCategoryDTO>>> GetAllTaxCategories(RequestQueryObject queryObject);
+        Task<ApiResponse<TaxCategoryDTO>> GetOneAsync(RequestQueryObject queryObject);
+        Task<ApiResponse<TaxCategoryDTO>> CreateTaxCategoryAsync(NewTaxRequest request);
+        Task<ApiResponse<TaxCategoryDTO>> SoftDelete(string uuid);
+    }
 }
 

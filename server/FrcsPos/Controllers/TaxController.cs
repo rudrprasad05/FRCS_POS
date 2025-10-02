@@ -33,6 +33,15 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpGet("get-by-uuid")]
+        public async Task<IActionResult> GetOne([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _taxRepository.GetOneAsync(queryObject);
+            if (!model.Success) return BadRequest(model);
+
+            return Ok(model);
+        }
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateTax([FromBody] NewTaxRequest request)
         {

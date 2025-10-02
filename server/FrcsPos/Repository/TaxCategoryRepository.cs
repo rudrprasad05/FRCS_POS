@@ -8,8 +8,8 @@ using FrcsPos.Mappers;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Models;
-    using FrcsPos.Response.DTO;
-    using Microsoft.EntityFrameworkCore;
+using FrcsPos.Response.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
 {
@@ -68,6 +68,21 @@ namespace FrcsPos.Repository
                 StatusCode = 200,
                 Data = tax.FromModelToDto()
             };
+        }
+
+        public async Task<ApiResponse<TaxCategoryDTO>> GetOneAsync(RequestQueryObject queryObject)
+        {
+            var query = await _context.TaxCategories.FirstOrDefaultAsync(x => x.UUID == queryObject.UUID);
+            if (query == null)
+            {
+                return ApiResponse<TaxCategoryDTO>.Fail(message: "no tax found");
+            }
+
+            var dto = query.FromModelToDto();
+
+            return ApiResponse<TaxCategoryDTO>.Ok(dto);
+
+
         }
     }
 }

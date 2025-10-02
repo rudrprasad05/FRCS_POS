@@ -30,6 +30,13 @@ export async function CreateTaxCategory(
     data,
   });
 }
+export async function GetTaxByUUID(
+  query: QueryObject
+): Promise<ApiResponse<TaxCategory>> {
+  return RequestWrapper<TaxCategory>("GET", "tax/get-by-uuid", {
+    query,
+  });
+}
 
 export async function SoftDeleteTax(
   uuid: string

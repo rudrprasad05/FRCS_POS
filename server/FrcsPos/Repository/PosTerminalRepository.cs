@@ -64,7 +64,7 @@ namespace FrcsPos.Repository
             }
 
             var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == company.Id && x.UserId == user.Id);
-            if (companyUser == null)
+            if (companyUser == null && company.AdminUserId != user.Id)
             {
                 return ApiResponse<PosTerminalDTO>.Fail(message: "not associated with current company");
             }
