@@ -42,7 +42,30 @@ namespace FrcsPos.Controllers
                 VariantFiles = VariantFiles
 
             };
-            var res = await _productRepository.TestCreate(request, queryObject);
+            var res = await _productRepository.CreateProductAsync(request, queryObject);
+            if (!res.Success)
+            {
+                return BadRequest(res);
+            }
+            return Ok(res);
+        }
+
+        [HttpPost("update")]
+        public async Task<IActionResult> UpdateProdut(
+            [FromForm] string Product,
+            [FromForm] List<string> Variants,
+            List<IFormFile> VariantFiles,
+            [FromQuery] RequestQueryObject queryObject
+        )
+        {
+            var request = new ProductRequest
+            {
+                Product = Product,
+                Variants = Variants,
+                VariantFiles = VariantFiles
+
+            };
+            var res = await _productRepository.UpdateProductAsync(request, queryObject);
             if (!res.Success)
             {
                 return BadRequest(res);
@@ -94,41 +117,6 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetNewPageInfo([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _productRepository.GetCreationInfoAsync(queryObject);
-
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
-        }
-
-        [HttpPatch("edit")]
-        public async Task<IActionResult> EditProduct(
-            [FromQuery] RequestQueryObject queryObject,
-            [FromForm] string ProductName,
-            [FromForm] string SKU,
-            [FromForm] decimal Price,
-            [FromForm] string Barcode,
-            [FromForm] bool IsPerishable,
-            IFormFile? File,
-            [FromForm] int TaxCategoryId,
-            [FromForm] int MediaId
-
-        )
-        {
-            var data = new EditProductRequest
-            {
-                ProductName = ProductName,
-                SKU = SKU,
-                Price = Price,
-                Barcode = Barcode,
-                IsPerishable = IsPerishable,
-                File = File,
-                MediaId = MediaId,
-                TaxCategoryId = TaxCategoryId,
-            };
-            var model = await _productRepository.EditProductAsync(queryObject, data);
 
             if (model == null || !model.Success)
             {

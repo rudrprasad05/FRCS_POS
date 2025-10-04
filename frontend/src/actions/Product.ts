@@ -122,10 +122,10 @@ export async function CreateProduct(
 
 export async function EditProduct(
   data: FormData,
-  uuid: string
+  query: QueryObject
 ): Promise<ApiResponse<Product>> {
-  return RequestWrapper<Product>("PATCH", `product/edit`, {
-    query: { uuid },
+  return RequestWrapper<Product>("POST", `product/update`, {
+    query,
     data: data,
   });
 }

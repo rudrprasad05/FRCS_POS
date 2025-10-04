@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Models
 {

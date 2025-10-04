@@ -10,7 +10,7 @@ namespace FrcsPos.Interfaces
 {
     public interface IProductRepository
     {
-        public Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request);
+        public Task<ApiResponse<ProductDTO>> UpdateProductAsync(ProductRequest request, RequestQueryObject queryObject);
         public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid);
         public Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject, bool isForPos = false);
         public Task<ApiResponse<List<ProductVariantDTO>>> GetAllProductsVariants(RequestQueryObject queryObject, bool isForPos = false);
@@ -18,8 +18,7 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<ProductDTO>> Activate(RequestQueryObject queryObject);
         public Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync(RequestQueryObject queryObject);
         public Task<ApiResponse<ProductEditInfo>> GetProductEditPageAsync(RequestQueryObject queryObject);
-        public Task<ApiResponse<ProductDTO>> EditProductAsync(RequestQueryObject queryObject, EditProductRequest request);
-        public Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request, RequestQueryObject queryObject);
+        public Task<ApiResponse<ProductDTO>> CreateProductAsync(ProductRequest request, RequestQueryObject queryObject);
 
 
 

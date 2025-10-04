@@ -26,7 +26,7 @@ namespace FrcsPos.Mappers
                 IsDeleted = request.IsDeleted,
                 CompanyId = request.CompanyId,
                 Sku = request.Sku,
-                TaxCategory = request.TaxCategory.FromModelToDto(),
+
                 TaxCategoryId = request.TaxCategoryId,
                 IsPerishable = request.IsPerishable,
             };
@@ -35,6 +35,17 @@ namespace FrcsPos.Mappers
             {
                 dto.Variants = request.Variants.FromModelToDto();
             }
+
+            if (request.TaxCategory != null)
+            {
+                dto.TaxCategory = request.TaxCategory.FromModelToDto();
+            }
+
+            if (request.Supplier != null)
+            {
+                dto.Supplier = request.Supplier.FromModelToDto();
+            }
+
 
             return dto;
         }

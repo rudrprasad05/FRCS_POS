@@ -1,5 +1,5 @@
 "use client";
-import { CreateProduct, GetNewPageInfo } from "@/actions/Product";
+import { EditProduct, GetNewPageInfo } from "@/actions/Product";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,17 +31,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { Product, Supplier, TaxCategory } from "@/types/models";
+import { Product, QueryObject, Supplier, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Image as ImageIcon,
-  PackagePlus,
-  Plus,
-  PlusCircle,
-  Upload,
-  X,
-} from "lucide-react";
+import { Image as ImageIcon, Plus, PlusCircle, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -171,6 +164,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
   }, [product]);
 
   const onSubmit = async (data: ProductFormData) => {
+    console.log(data);
     // return;
     setIsSubmitting(true);
 
@@ -196,13 +190,16 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
 
     console.log(formData);
 
-    const res = await CreateProduct(formData, {
+    let query: QueryObject = {
+      uuid: product.uuid,
       companyName: String(companyName),
-    });
+    };
+
+    const res = await EditProduct(formData, query);
 
     if (res.success) {
       toast.success("Uploaded");
-      router.back();
+      router.push(`/${companyName}/products`);
     } else {
       toast.info("Failed to upload", { description: res.message });
     }
@@ -211,17 +208,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
   };
 
   return (
-    <div className="mx-auto p-6 h-full flex flex-col">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <PackagePlus className="text-primary h-6 w-6" />
-          <h1 className="text-3xl font-bold">Edit Product</h1>
-        </div>
-        <p className="text-muted-foreground">You are editing the product "X"</p>
-      </div>
-
-      <Separator className="my-4" />
-
+    <div className="grow py-2">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
