@@ -20,12 +20,15 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IAzureBlobService _azureBlobService;
+
         private readonly IMediaRepository _mediaRepository;
         private readonly IUserContext _userContext;
         private readonly IRedisCacheService _redisCacheService;
 
 
         public ProductRepository(
+            IAzureBlobService azureBlobService,
            ApplicationDbContext applicationDbContext,
            INotificationService notificationService,
            IMediaRepository mediaRepository,
@@ -39,6 +42,8 @@ namespace FrcsPos.Repository
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
             _redisCacheService = redisCacheService;
+            _azureBlobService = azureBlobService;
+
         }
 
         public async Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request)
@@ -184,8 +189,6 @@ namespace FrcsPos.Repository
                 // dto.MaxStock = product.Batches
                 //     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
                 //     .Sum(b => b.Quantity);
-
-
             }
 
             return new ApiResponse<List<ProductDTO>>
@@ -253,13 +256,18 @@ namespace FrcsPos.Repository
             foreach (var product in products)
             {
                 var dto = product.FromModelToDto();
-                result.Add(dto);
 
                 dto.MaxStock = product.Batches
                     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
                     .Sum(b => b.Quantity);
 
+                if (dto.Media != null)
+                {
+                    var signedUrl = await _azureBlobService.GetImageSignedUrl(dto.Media.ObjectKey ?? "");
+                    dto.Media.Url = signedUrl;
+                }
 
+                result.Add(dto);
             }
 
             return new ApiResponse<List<ProductVariantDTO>>
@@ -417,8 +425,6 @@ namespace FrcsPos.Repository
 
                     var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
                     variant.MediaId = newMedia.Data?.Id;
-                    // Save file to disk or cloud and attach path
-                    // variant.MediaPath = await SaveFileAsync(file);
                 }
 
                 _context.ProductVariants.Add(variant);

@@ -24,7 +24,7 @@ namespace FrcsPos.Response.DTO
         public int CriticalWarningInHours { get; set; }
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; } = default!;
-
+        public List<ProductVariantDTO> Variants { get; set; } = [];
 
     }
 

@@ -58,7 +58,7 @@ builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
-// builder.Services.AddSingleton<IAzureBlobService, AzureBlobService>();
+builder.Services.AddSingleton<IAzureBlobService, AzureBlobService>();
 builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();

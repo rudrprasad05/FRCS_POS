@@ -39,6 +39,8 @@ namespace FrcsPos.Mappers
             if (request.Product != null)
             {
                 dto.IsPerishable = request.Product.IsPerishable;
+                request.Product.Variants = [];
+                dto.Product = request.Product.FromModelToOnlyDto();
             }
 
             return dto;

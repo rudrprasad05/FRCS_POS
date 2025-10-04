@@ -31,6 +31,11 @@ namespace FrcsPos.Mappers
                 IsPerishable = request.IsPerishable,
             };
 
+            if (request.Variants != null)
+            {
+                dto.Variants = request.Variants.FromModelToDto();
+            }
+
             return dto;
         }
 

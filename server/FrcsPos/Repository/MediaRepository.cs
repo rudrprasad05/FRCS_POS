@@ -55,11 +55,12 @@ namespace FrcsPos.Repository
                 var fileUrl = await _azureBlobService.UploadFileAsync(file, guid);
                 if (fileUrl == null) return ApiResponse<MediaDto>.NotFound();
 
+                var fileExtension = Path.GetExtension(file.FileName);
                 var newMedia = new Media
                 {
                     AltText = media.AltText,
                     Url = fileUrl,
-                    ObjectKey = "frcs/" + guid + "." + fileUrl.Split(".").Last(),
+                    ObjectKey = $"frcs/{guid}{fileExtension}",
                     UUID = guid,
                     ContentType = media.ContentType,
                     FileName = media.FileName,
@@ -194,7 +195,7 @@ namespace FrcsPos.Repository
                 };
             }
 
-            var signedUrl = await _amazonS3Service.GetImageSignedUrl(media.ObjectKey);
+            var signedUrl = await _azureBlobService.GetImageSignedUrl(media.ObjectKey);
             media.Url = signedUrl;
 
             return new ApiResponse<MediaDto>

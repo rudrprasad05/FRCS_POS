@@ -5,7 +5,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import ConfigTab from "@/components/company/products/view/ConfigTab";
-import { EditorTab } from "@/components/company/products/view/EditTab";
+
+import EditorTab from "@/components/company/products/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
@@ -50,10 +51,7 @@ export default function EditorPage() {
           You are editing the product &quot;{product?.name}&quot;
         </p>
       </div>
-      <Tabs
-        defaultValue="edit"
-        className="w-full overflow-hidden relative h-screen p-4 flex flex-col"
-      >
+      <Tabs defaultValue="edit" className="w-full relative  p-4 flex flex-col">
         <TabsPrimitive.List className="w-full border-solid border-b flex flex-row">
           <TabsPrimitive.Trigger
             onClick={() => setState("edit")}

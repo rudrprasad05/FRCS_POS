@@ -26,6 +26,7 @@ export interface Supplier extends BaseModel {
 export interface Product extends BaseModel {
   companyId: number;
   company?: Company;
+  supplier?: Supplier;
 
   name: string;
   sku: string;
@@ -39,6 +40,7 @@ export interface Product extends BaseModel {
   mediaId?: number | null;
 
   batches?: ProductBatch[];
+  variants: ProductVariant[];
   saleItems?: SaleItem[];
 
   maxStock?: number;

@@ -49,42 +49,6 @@ namespace FrcsPos.Controllers
             }
             return Ok(res);
         }
-        // public async Task<IActionResult> CreateProduct(
-        //     [FromForm] string ProductName,
-        //     [FromForm] string SKU,
-        //     [FromForm] decimal Price,
-        //     [FromForm] string Barcode,
-        //     [FromForm] bool IsPerishable,
-        //     IFormFile? File,
-        //     [FromForm] int TaxCategoryId,
-        //     [FromForm] string CompanyName,
-        //     [FromForm] int FirstWarningInDays,
-        //     [FromForm] int CriticalWarningInHours
-        // )
-        // {
-        //     var data = new NewProductRequest
-        //     {
-        //         ProductName = ProductName,
-        //         SKU = SKU,
-        //         Price = Price,
-        //         Barcode = Barcode,
-        //         IsPerishable = IsPerishable,
-        //         File = File,
-        //         TaxCategoryId = TaxCategoryId,
-        //         CompanyName = CompanyName,
-        //         FirstWarningInDays = FirstWarningInDays,
-        //         CriticalWarningInHours = CriticalWarningInHours
-        //     };
-
-        //     var model = await _productRepository.CreateProductAsync(data);
-
-        //     if (model == null || !model.Success || model.Success != true)
-        //     {
-        //         return BadRequest(model);
-        //     }
-
-        //     return Ok(model);
-        // }
 
         [HttpPost("get-all")]
         public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)

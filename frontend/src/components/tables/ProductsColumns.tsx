@@ -3,7 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, ImageIcon, SquareArrowUpRight } from "lucide-react";
+import {
+  Edit,
+  Eye,
+  ImageIcon,
+  SquareArrowUpRight,
+  TriangleAlert,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Product, ProductVariant } from "@/types/models";
@@ -11,6 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Barcode from "react-barcode";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export const ProductsOnlyColumns: ColumnDef<Product>[] = [
   {
@@ -142,6 +149,7 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     header: "Barcode",
     cell: ({ row }) => {
       const company = row.original;
+      console.log(company);
 
       return <HandleBarcode barcode={company.barcode as string} />;
     },
@@ -156,42 +164,42 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     },
   },
 
-  //   {
-  //     accessorKey: "maxStock",
-  //     header: "Stock",
-  //     cell: ({ row }) => {
-  //       const company = row.original;
+  {
+    accessorKey: "maxStock",
+    header: "Stock",
+    cell: ({ row }) => {
+      const company = row.original as ProductVariant;
 
-  //       return (
-  //         <div className="flex gap-2 items-center">
-  //           <div>
-  //             {company.isDeleted && (
-  //               <Tooltip>
-  //                 <TooltipTrigger asChild>
-  //                   <TriangleAlert className="w-3 h-3 text-red-600" />
-  //                 </TooltipTrigger>
-  //                 <TooltipContent>
-  //                   <span className="">Product no longer available</span>
-  //                 </TooltipContent>
-  //               </Tooltip>
-  //             )}
+      return (
+        <div className="flex gap-2 items-center">
+          <div>
+            {company.isDeleted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TriangleAlert className="w-3 h-3 text-red-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="">Product no longer available</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-  //             {company.maxStock === 0 && (
-  //               <Tooltip>
-  //                 <TooltipTrigger asChild>
-  //                   <TriangleAlert className="w-3 h-3 text-yellow-600" />
-  //                 </TooltipTrigger>
-  //                 <TooltipContent>
-  //                   <span className="">Low stock</span>
-  //                 </TooltipContent>
-  //               </Tooltip>
-  //             )}
-  //           </div>
-  //           <div>{company.maxStock}</div>
-  //         </div>
-  //       );
-  //     },
-  //   },
+            {company.maxStock === 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TriangleAlert className="w-3 h-3 text-yellow-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="">Low stock</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <div>{company.maxStock}</div>
+        </div>
+      );
+    },
+  },
 
   {
     accessorKey: "createdOn",
@@ -211,13 +219,13 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const company = row.original;
+      const prodv = row.original;
 
       return (
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`products/${company.uuid}/edit`}
+              href={`products/${prodv.product.uuid}/edit`}
               className="w-24 flex items-center justify-between"
             >
               Edit
@@ -227,7 +235,7 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
 
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`products/${company.uuid}/view`}
+              href={`products/${prodv.product.uuid}/view`}
               className="w-24 flex items-center justify-between"
             >
               View

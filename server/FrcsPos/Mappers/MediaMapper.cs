@@ -27,6 +27,7 @@ namespace FrcsPos.Mappers
                 SizeInBytes = request.SizeInBytes,
                 UUID = request.UUID,
                 Url = url ?? request.Url,
+                ObjectKey = request.ObjectKey,
                 ShowInGallery = request.ShowInGallery
             };
 
