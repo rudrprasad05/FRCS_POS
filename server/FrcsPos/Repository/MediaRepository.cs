@@ -19,13 +19,15 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly IAmazonS3Service _amazonS3Service;
+        private readonly IAzureBlobService _azureBlobService;
         private readonly INotificationService _notificationService;
 
-        public MediaRepository(INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
+        public MediaRepository(IAzureBlobService azureBlobService, INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
         {
             _context = context;
             _amazonS3Service = amazonS3Service;
             _notificationService = notificationService;
+            _azureBlobService = azureBlobService;
 
         }
         public async Task<ApiResponse<double>> SumStorage()
@@ -44,13 +46,13 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<MediaDto>> CreateAsync(Media media, IFormFile? file)
         {
-            if (file == null || media == null) return ApiResponse<MediaDto>.Fail();
+            if (file == null || media == null) return ApiResponse<MediaDto>.Fail(message: "media null");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             var guid = Guid.NewGuid().ToString();
             try
             {
-                var fileUrl = await _amazonS3Service.UploadFileAsync(file, guid);
+                var fileUrl = await _azureBlobService.UploadFileAsync(file, guid);
                 if (fileUrl == null) return ApiResponse<MediaDto>.NotFound();
 
                 var newMedia = new Media
