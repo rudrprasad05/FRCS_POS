@@ -23,18 +23,23 @@ namespace FrcsPos.Repository
         private readonly IAzureBlobService _azureBlobService;
 
         private readonly IMediaRepository _mediaRepository;
+        private readonly IProductVariantMapper _productVariantMapper;
+        private readonly IProductMapper _productMapper;
+
+
         private readonly IUserContext _userContext;
         private readonly IRedisCacheService _redisCacheService;
 
 
         public ProductRepository(
             IAzureBlobService azureBlobService,
-           ApplicationDbContext applicationDbContext,
-           INotificationService notificationService,
-           IMediaRepository mediaRepository,
-           IRedisCacheService redisCacheService,
-            IUserContext userContext
-
+            IProductVariantMapper productVariantMapper,
+            ApplicationDbContext applicationDbContext,
+            INotificationService notificationService,
+            IMediaRepository mediaRepository,
+            IRedisCacheService redisCacheService,
+            IUserContext userContext,
+            IProductMapper productMapper
         )
         {
             _userContext = userContext;
@@ -43,84 +48,8 @@ namespace FrcsPos.Repository
             _mediaRepository = mediaRepository;
             _redisCacheService = redisCacheService;
             _azureBlobService = azureBlobService;
-
-        }
-
-
-
-        public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject, bool isForPos = false)
-        {
-            var now = DateTime.UtcNow;
-            var query = _context.Products
-                .Include(p => p.TaxCategory)
-                .Include(p => p.Variants)
-                    .ThenInclude(p => p.Media)
-                .Where(p => p.Company.Name == queryObject.CompanyName)
-                .AsQueryable();
-
-            if (isForPos)
-            {
-                // query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
-                query = query.Where(p => p.IsDeleted != true);
-
-            }
-            // filtering
-            if (queryObject.IsDeleted.HasValue && !isForPos)
-            {
-                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(queryObject.Search))
-            {
-                var search = queryObject.Search.ToLower();
-                query = query.Where(c =>
-                    c.Name.ToLower().Contains(search) ||
-                    c.Sku.ToLower().Contains(search)
-                );
-            }
-
-
-            // Sorting
-            query = queryObject.SortBy switch
-            {
-                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
-                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
-                _ => query.OrderByDescending(c => c.CreatedOn)
-            };
-
-            var totalCount = await query.CountAsync();
-
-            // Pagination
-            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var products = await query
-                .Skip(skip)
-                .Take(queryObject.PageSize)
-                .ToListAsync();
-
-            // Mapping to DTOs
-            var result = new List<ProductDTO>();
-            foreach (var product in products)
-            {
-                var dto = product.FromModelToDto();
-                result.Add(dto);
-
-                // dto.MaxStock = product.Batches
-                //     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
-                //     .Sum(b => b.Quantity);
-            }
-
-            return new ApiResponse<List<ProductDTO>>
-            {
-                Success = true,
-                StatusCode = 200,
-                Data = result,
-                Meta = new MetaData
-                {
-                    TotalCount = totalCount,
-                    PageNumber = queryObject.PageNumber,
-                    PageSize = queryObject.PageSize
-                }
-            };
+            _productVariantMapper = productVariantMapper;
+            _productMapper = productMapper;
         }
 
         public async Task<ApiResponse<List<ProductVariantDTO>>> GetAllProductsVariants(RequestQueryObject queryObject, bool isForPos = false)
@@ -174,7 +103,7 @@ namespace FrcsPos.Repository
             var result = new List<ProductVariantDTO>();
             foreach (var product in products)
             {
-                var dto = product.FromModelToDto();
+                var dto = await _productVariantMapper.FromModelToDtoAsync(product);
 
                 dto.MaxStock = product.Batches
                     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
@@ -204,54 +133,6 @@ namespace FrcsPos.Repository
                     PageSize = queryObject.PageSize
                 }
             };
-        }
-        public async Task<ApiResponse<ProductDTO>> EditProductAsync(RequestQueryObject queryObject, EditProductRequest request)
-        {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
-            if (product == null)
-            {
-                return ApiResponse<ProductDTO>.NotFound();
-            }
-
-            var mediaId = 0;
-
-            if (request.File != null)
-            {
-                var mediaToBeCreated = new Media
-                {
-                    AltText = request.File.FileName,
-                    FileName = request.File.FileName,
-                    ShowInGallery = true,
-                };
-
-                mediaToBeCreated.SizeInBytes = request.File.Length;
-                mediaToBeCreated.ContentType = request.File.ContentType;
-
-
-                var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: request.File);
-                if (newMedia.Data != null)
-                {
-                    mediaId = newMedia.Data.Id;
-                }
-            }
-            else
-            {
-                mediaId = request.MediaId;
-            }
-            // Update fields
-            product.Name = request.ProductName;
-            product.Sku = request.SKU;
-
-            product.IsPerishable = request.IsPerishable;
-            product.TaxCategoryId = request.TaxCategoryId;
-
-            product.UpdatedOn = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            var productDto = product.FromModelToDto();
-
-            return ApiResponse<ProductDTO>.Ok(productDto);
         }
 
         public async Task<ApiResponse<ProductDTO>> CreateProductAsync(ProductRequest request, RequestQueryObject queryObject)
@@ -353,8 +234,9 @@ namespace FrcsPos.Repository
             }
 
             await _context.SaveChangesAsync();
+            var dto = await _productMapper.FromModelToDtoAsync(product);
 
-            return ApiResponse<ProductDTO>.Ok(product.FromModelToDto());
+            return ApiResponse<ProductDTO>.Ok(dto);
         }
 
 
@@ -370,6 +252,7 @@ namespace FrcsPos.Repository
 
             var product = await _context.Products
                 .Include(p => p.Variants)
+                    .ThenInclude(x => x.Media)
                 .Include(p => p.Supplier)
                 .Include(p => p.TaxCategory)
                 .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
@@ -384,7 +267,7 @@ namespace FrcsPos.Repository
 
             var dto = new ProductEditInfo
             {
-                Product = product.FromModelToDto(),
+                Product = await _productMapper.FromModelToDtoAsync(product),
                 TaxCategories = allTaxes.FromModelToDto()
             };
 
@@ -429,7 +312,7 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            var productDto = product.FromModelToDto();
+            var productDto = await _productMapper.FromModelToDtoAsync(product);
 
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
@@ -447,7 +330,7 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            var productDto = product.FromModelToDto();
+            var productDto = await _productMapper.FromModelToDtoAsync(product);
 
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
@@ -490,7 +373,7 @@ namespace FrcsPos.Repository
                 return ApiResponse<ProductDTO>.Fail(message: "invalid supplier");
             }
 
-            // Create product
+            // update product
             product.SupplierId = sup.Id;
             product.TaxCategoryId = tax.Id;
             product.Name = productData.Name;
@@ -509,55 +392,58 @@ namespace FrcsPos.Repository
                 product.CriticalWarningInHours = null;
             }
 
+            for (int i = 0; i < request.Variants.Count; i++)
+            {
+                var variantData = JsonSerializer.Deserialize<EditVarData>(request.Variants[i], options);
+                if (variantData == null)
+                {
+                    return ApiResponse<ProductDTO>.Fail(message: "malformed variant data");
+                }
+
+                var variant = await _context.ProductVariants.FirstOrDefaultAsync(x => x.UUID == variantData.UUID);
+                if (variant == null)
+                {
+                    variant = _productVariantMapper.FromEditVarToModel(variantData);
+                }
+
+                else
+                {
+                    variant.Name = variantData.Name;
+                    variant.Sku = variantData.Sku;
+                    variant.Barcode = variantData.Barcode;
+                    variant.Price = variantData.Price;
+                }
+
+
+                if (request.VariantFiles != null && request.VariantFiles.Count > i)
+                {
+                    var file = request.VariantFiles[i];
+                    var mediaToBeCreated = new Media
+                    {
+                        AltText = file.FileName,
+                        FileName = file.FileName,
+                        ShowInGallery = true,
+                    };
+
+                    if (file != null)
+                    {
+                        mediaToBeCreated.SizeInBytes = file.Length;
+                        mediaToBeCreated.ContentType = file.ContentType;
+                    }
+
+                    var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
+                    variant.MediaId = newMedia.Data?.Id;
+                }
+
+                if (variant.UUID == null)
+                {
+                    _context.ProductVariants.Add(variant);
+                }
+            }
+
             await _context.SaveChangesAsync();
 
-
-            // // Process variants
-            // for (int i = 0; i < request.Variants.Count; i++)
-            // {
-            //     var variantData = JsonSerializer.Deserialize<NewVarData>(request.Variants[i], options);
-            //     if (variantData == null)
-            //     {
-            //         return ApiResponse<ProductDTO>.Fail(message: "malformed variant data");
-            //     }
-
-            //     var variant = new ProductVariant
-            //     {
-            //         ProductId = productModel.Id,
-            //         Name = variantData.Name,
-            //         Sku = variantData.Sku,
-            //         Barcode = variantData.Barcode,
-            //         Price = variantData.Price,
-            //         FirstWarningInDays = productModel.FirstWarningInDays,
-            //         CriticalWarningInHours = productModel.CriticalWarningInHours
-            //     };
-
-            //     if (request.VariantFiles != null && request.VariantFiles.Count > i)
-            //     {
-            //         var file = request.VariantFiles[i];
-            //         var mediaToBeCreated = new Media
-            //         {
-            //             AltText = file.FileName,
-            //             FileName = file.FileName,
-            //             ShowInGallery = true,
-            //         };
-
-            //         if (file != null)
-            //         {
-            //             mediaToBeCreated.SizeInBytes = file.Length;
-            //             mediaToBeCreated.ContentType = file.ContentType;
-            //         }
-
-            //         var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
-            //         variant.MediaId = newMedia.Data?.Id;
-            //     }
-
-            //     _context.ProductVariants.Add(variant);
-            // }
-
-            // await _context.SaveChangesAsync();
-
-            return ApiResponse<ProductDTO>.Ok(product.FromModelToDto());
+            return ApiResponse<ProductDTO>.Ok(await _productMapper.FromModelToDtoAsync(product));
         }
 
         public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid)

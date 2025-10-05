@@ -14,6 +14,7 @@ using FrcsPos.Background;
 using FrcsPos.Socket;
 using StackExchange.Redis;
 using Azure.Storage.Blobs;
+using FrcsPos.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,12 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+
+// DI mappers
+builder.Services.AddScoped<IMediaMapper, MediaMapper>();
+builder.Services.AddScoped<IProductVariantMapper, ProductVariantMapper>();
+builder.Services.AddScoped<IProductMapper, ProductMapper>();
+
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IAzureBlobService, AzureBlobService>();

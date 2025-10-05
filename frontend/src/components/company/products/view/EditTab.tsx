@@ -34,7 +34,14 @@ import { cn } from "@/lib/utils";
 import { Product, QueryObject, Supplier, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Image as ImageIcon, Plus, PlusCircle, Upload, X } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Loader2,
+  Plus,
+  PlusCircle,
+  Upload,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -158,7 +165,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
         sku: v.sku ?? "",
         barcode: v.barcode ?? "",
         price: Number(v.price ?? 0),
-        mediaFile: undefined, // file inputs must stay undefined
+        mediaFile: v.media,
       })),
     });
 
@@ -187,6 +194,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
           sku: variant.sku,
           barcode: variant.barcode,
           price: variant.price,
+          uuid: variant.uuid,
         })
       );
 
@@ -241,8 +249,8 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
             <Button onClick={backBtn} type="button" variant={"secondary"}>
               Cancel
             </Button>
-            <Button type="submit" variant={"default"}>
-              Save
+            <Button disabled={isSubmitting} type="submit" variant={"default"}>
+              {isSubmitting && <Loader2 className="animate-spin" />}Save
             </Button>
           </div>
         </form>
@@ -609,11 +617,14 @@ function AddMediaDialoge({
   index: number;
   form: UseFormReturn<ProductFormData>;
 }) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const existingMedia = form.getValues(`variants.${index}.mediaFile`);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    existingMedia?.url ?? null
+  );
+  const [file, setFile] = useState<File>();
   const [isDragOver, setIsDragOver] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File>();
 
   const handleFileSelect = (f: File) => {
     if (f && f.type.startsWith("image/")) {
@@ -644,8 +655,8 @@ function AddMediaDialoge({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger type="button" asChild>
         <div className="w-14 h-14 aspect-square grid grid-cols-1 place-items-center outline outline-border rounded-lg">
-          {!file && <Upload className="h-4 w-4" />}
-          {file && previewUrl && (
+          {!previewUrl && <Upload className="h-4 w-4" />}
+          {previewUrl && (
             <Image
               className="w-full h-full object-cover rounded-lg"
               alt="image"

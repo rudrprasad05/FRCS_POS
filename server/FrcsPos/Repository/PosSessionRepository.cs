@@ -18,14 +18,17 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IProductMapper _productMapper;
 
         public PosSessionRepository(
             ApplicationDbContext applicationDbContext,
-            INotificationService notificationService
+            INotificationService notificationService,
+            IProductMapper productMapper
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
+            _productMapper = productMapper;
 
         }
         public async Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request)
@@ -145,7 +148,7 @@ namespace FrcsPos.Repository
             {
                 PosSession = posSession.FromModelToDTO(),
             };
-            result.Products = posSession.PosTerminal.Company.Products.FromModelToDto();
+            result.Products = await _productMapper.FromModelToDtoAsync(posSession.PosTerminal.Company.Products);
 
             return new ApiResponse<PosSessionWithProducts>
             {

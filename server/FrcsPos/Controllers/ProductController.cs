@@ -73,19 +73,6 @@ namespace FrcsPos.Controllers
             return Ok(res);
         }
 
-        [HttpPost("get-all")]
-        public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
-        {
-            var model = await _productRepository.GetAllProducts(queryObject, req.ForPos ?? false);
-
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
-        }
-
         [HttpPost("get-all-var")]
         public async Task<IActionResult> GetAllProductVariants([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
         {

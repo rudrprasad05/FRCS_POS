@@ -33,34 +33,6 @@ export async function GetAllProductVar(
   });
 }
 
-export async function GetPosProducts(
-  query?: QueryObject
-): Promise<{ data: Product[]; nextPage?: number }> {
-  // call backend
-  const res: ApiResponse<Product[]> = await RequestWrapper<Product[]>(
-    "GET",
-    "product/get-all",
-    { query }
-  );
-
-  if (!res.success) {
-    // handle failure gracefully
-    return { data: [], nextPage: undefined };
-  }
-
-  const nextPage =
-    query && res.meta && query.pageNumber && res.meta.totalPages
-      ? query.pageNumber < res.meta.totalPages
-        ? query.pageNumber + 1
-        : undefined
-      : undefined;
-
-  return {
-    data: res.data ?? [],
-    nextPage,
-  };
-}
-
 export async function GetCompanyByAdminUserId(
   uuid: string
 ): Promise<ApiResponse<Company>> {

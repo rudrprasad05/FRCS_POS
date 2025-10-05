@@ -33,4 +33,13 @@ namespace FrcsPos.Response.DTO
         public string Barcode { get; set; } = default!;
         public decimal Price { get; set; }
     }
+
+    public class EditVarData
+    {
+        public string Name { get; set; } = default!;
+        public string? UUID { get; set; } = null;
+        public string Sku { get; set; } = default!;
+        public string Barcode { get; set; } = default!;
+        public decimal Price { get; set; }
+    }
 }

@@ -20,15 +20,17 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly IAmazonS3Service _amazonS3Service;
         private readonly IAzureBlobService _azureBlobService;
+        private readonly IMediaMapper _mediaMapper;
+
         private readonly INotificationService _notificationService;
 
-        public MediaRepository(IAzureBlobService azureBlobService, INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
+        public MediaRepository(IMediaMapper mediaMapper, IAzureBlobService azureBlobService, INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
         {
             _context = context;
             _amazonS3Service = amazonS3Service;
             _notificationService = notificationService;
             _azureBlobService = azureBlobService;
-
+            _mediaMapper = mediaMapper;
         }
         public async Task<ApiResponse<double>> SumStorage()
         {
@@ -77,7 +79,7 @@ namespace FrcsPos.Repository
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                var dto = newMedia.FromModelToDTO();
+                var dto = await _mediaMapper.ToDtoAsync(newMedia);
 
                 return new ApiResponse<MediaDto>
                 {
@@ -172,12 +174,14 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
+            var dto = await _mediaMapper.ToDtoAsync(existingMedia);
+
             return new ApiResponse<MediaDto>
             {
                 Success = true,
                 StatusCode = 200,
                 Message = "ok",
-                Data = existingMedia.FromModelToDTO()
+                Data = dto
             };
         }
         public async Task<ApiResponse<MediaDto>> GetOne(string uuid)
@@ -195,15 +199,16 @@ namespace FrcsPos.Repository
                 };
             }
 
-            var signedUrl = await _azureBlobService.GetImageSignedUrl(media.ObjectKey);
-            media.Url = signedUrl;
+
+            var dto = await _mediaMapper.ToDtoAsync(media);
+
 
             return new ApiResponse<MediaDto>
             {
                 Success = true,
                 StatusCode = 200,
                 Message = "ok",
-                Data = media.FromModelToDTO()
+                Data = dto
             };
         }
         public async Task<ApiResponse<MediaDto>> SafeDelete(string uuid)
@@ -221,12 +226,14 @@ namespace FrcsPos.Repository
             media.IsDeleted = true;
 
             await _context.SaveChangesAsync();
+            var dto = await _mediaMapper.ToDtoAsync(media);
+
 
             return new ApiResponse<MediaDto>
             {
                 Success = true,
                 StatusCode = 200,
-                Data = media.FromModelToDTO()
+                Data = dto
             };
         }
 

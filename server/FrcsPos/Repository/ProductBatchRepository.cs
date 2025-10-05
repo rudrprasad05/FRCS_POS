@@ -20,18 +20,27 @@ namespace FrcsPos.Repository
         private readonly INotificationService _notificationService;
         private readonly IMediaRepository _mediaRepository;
         private readonly IUserContext _userContext;
+        private readonly IProductMapper _productMapper;
+        private readonly IProductVariantMapper _productVariantMapper;
+
+
 
         public ProductBatchRepository(
-           ApplicationDbContext applicationDbContext,
-           INotificationService notificationService,
-           IMediaRepository mediaRepository,
-            IUserContext userContext
+            ApplicationDbContext applicationDbContext,
+            INotificationService notificationService,
+            IMediaRepository mediaRepository,
+            IUserContext userContext,
+            IProductMapper productMapper,
+            IProductVariantMapper productVariantMapper
+
         )
         {
             _context = applicationDbContext;
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
             _userContext = userContext;
+            _productMapper = productMapper;
+            _productVariantMapper = productVariantMapper;
         }
 
         public async Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductBatchRequest request)
@@ -182,14 +191,17 @@ namespace FrcsPos.Repository
                 }
             }
 
+            var variants = await _productVariantMapper.FromModelToDtoAsync(
+                productsQuery.SelectMany(x => x.Variants).ToList()
+            );
+
+
             var dto = new LoadPreCreationInfo
             {
                 Company = company.FromModelToDto(),
                 Suppliers = company.Suppliers.FromModelToDto(),
                 Warehouses = warehouses.FromModelToDto(),
-                Products = productsQuery
-                    .SelectMany(x => x.Variants)
-                    .FromModelToDto(),
+                Products = variants
             };
 
             return ApiResponse<LoadPreCreationInfo>.Ok(dto);
