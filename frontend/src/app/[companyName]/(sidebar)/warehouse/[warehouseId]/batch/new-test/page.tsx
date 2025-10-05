@@ -5,6 +5,7 @@ import {
 } from "@/actions/ProductBatch";
 import { BatchCreationStep1 } from "@/components/company/batch/BatchCreationStep1";
 import { BatchCreationStep2 } from "@/components/company/batch/BatchCreationStep2";
+import { BatchCreationStep3 } from "@/components/company/batch/BatchCreationStep3";
 
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import StepperCircles from "@/components/global/StepperCircles";
@@ -22,7 +23,7 @@ import { useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
-const steps = ["Supplier", "Details", "Expiry"];
+const steps = ["Supplier", "Product", "Expiry", "Review"];
 
 export default function StepperForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,16 +37,21 @@ export default function StepperForm() {
   const form = useForm<NewBatchData>({
     resolver: zodResolver(NewBatchDataSchema),
     defaultValues: {
+      companyName,
       warehouseId,
-      quantity: 0,
+      quantity: 1,
       expiryDate: null,
-    },
+      receiveDate: null,
+      supplierId: "",
+      productId: "",
+    } as Partial<NewBatchData>,
   });
 
+  const supplierId = form.watch("supplierId");
+
   const { data, error } = useQuery({
-    queryKey: ["newBatchData", companyName],
-    queryFn: () =>
-      LoadPreCreationInfo({ companyName, uuid: form.watch("supplierId") }),
+    queryKey: ["newBatchData", companyName, supplierId],
+    queryFn: () => LoadPreCreationInfo({ companyName, uuid: supplierId }),
     staleTime: FIVE_MINUTE_CACHE,
   });
 
@@ -56,6 +62,9 @@ export default function StepperForm() {
       fieldsToValidate = ["supplierId"];
     } else if (currentStep === 1) {
       fieldsToValidate = ["productId"];
+    } else if (currentStep === 2) {
+      fieldsToValidate = ["quantity"];
+      fieldsToValidate = ["receiveDate"];
     }
 
     const isValid = await form.trigger(fieldsToValidate);
@@ -82,7 +91,7 @@ export default function StepperForm() {
         queryKey: ["warehouseBatches", warehouseId],
         exact: false,
       });
-      router.back();
+      router.push(`/${companyName}/warehouse/${warehouseId}`);
     } else {
       toast.error("Error creating batch", { description: res.message });
     }
@@ -123,7 +132,11 @@ export default function StepperForm() {
             <BatchCreationStep2 form={form} products={data?.data?.products} />
           )}
 
-          {currentStep === 2 && <Step3 form={form} />}
+          {currentStep === 2 && (
+            <BatchCreationStep3 form={form} products={data?.data?.products} />
+          )}
+
+          {currentStep === 3 && <Step4 form={form} />}
 
           <Separator className="my-4 mt-auto" />
 
@@ -152,7 +165,7 @@ export default function StepperForm() {
   );
 }
 
-function Step3({ form }: { form: UseFormReturn<NewBatchData> }) {
+function Step4({ form }: { form: UseFormReturn<NewBatchData> }) {
   const values = form.getValues();
 
   return (
