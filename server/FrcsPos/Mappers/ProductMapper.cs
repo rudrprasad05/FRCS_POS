@@ -1,20 +1,28 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FrcsPos.Models;
 using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Mappers
 {
-    public static class ProductMapper
+    public interface IProductMapper
     {
-        public static ProductDTO FromModelToDto(this Product request)
+        Task<ProductDTO> FromModelToDtoAsync(Product request);
+        ProductDTO FromModelToOnlyDto(Product request);
+        Task<List<ProductDTO>> FromModelToDtoAsync(ICollection<Product> request);
+    }
+    public class ProductMapper : IProductMapper
+    {
+        private readonly IProductVariantMapper _variantMapper;
+
+
+        public ProductMapper(IProductVariantMapper variantMapper)
+        {
+            _variantMapper = variantMapper;
+        }
+
+        public async Task<ProductDTO> FromModelToDtoAsync(Product request)
         {
             if (request == null)
-            {
                 return new ProductDTO();
-            }
 
             var dto = new ProductDTO
             {
@@ -26,22 +34,37 @@ namespace FrcsPos.Mappers
                 IsDeleted = request.IsDeleted,
                 CompanyId = request.CompanyId,
                 Sku = request.Sku,
-                TaxCategory = request.TaxCategory.FromModelToDto(),
                 TaxCategoryId = request.TaxCategoryId,
-                IsPerishable = request.IsPerishable,
+                IsPerishable = request.IsPerishable
             };
+
+            // Map Variants (with signed media URLs)
+            if (request.Variants != null && request.Variants.Count > 0)
+            {
+                dto.Variants = await _variantMapper.FromModelToDtoAsync(request.Variants);
+            }
+
+            // Map Tax Category
+            if (request.TaxCategory != null)
+            {
+                dto.TaxCategory = request.TaxCategory.FromModelToDto();
+            }
+
+            // Map Supplier
+            if (request.Supplier != null)
+            {
+                dto.Supplier = request.Supplier.FromModelToDto();
+            }
 
             return dto;
         }
 
-        public static ProductDTO FromModelToOnlyDto(this Product request)
+        public ProductDTO FromModelToOnlyDto(Product request)
         {
             if (request == null)
-            {
                 return new ProductDTO();
-            }
 
-            var dto = new ProductDTO
+            return new ProductDTO
             {
                 UUID = request.UUID,
                 Id = request.Id,
@@ -52,24 +75,20 @@ namespace FrcsPos.Mappers
                 CompanyId = request.CompanyId,
                 Sku = request.Sku,
                 TaxCategoryId = request.TaxCategoryId,
-                IsPerishable = request.IsPerishable,
+                IsPerishable = request.IsPerishable
             };
-
-            return dto;
         }
 
-        public static List<ProductDTO> FromModelToDto(this ICollection<Product> request)
+
+        public async Task<List<ProductDTO>> FromModelToDtoAsync(ICollection<Product> request)
         {
             if (request == null || request.Count == 0)
-            {
                 return [];
-            }
 
             var dtoList = new List<ProductDTO>();
-            foreach (Product w in request)
+            foreach (var product in request)
             {
-                var dto = w.FromModelToDto();
-                dtoList.Add(dto);
+                dtoList.Add(await FromModelToDtoAsync(product));
             }
 
             return dtoList;

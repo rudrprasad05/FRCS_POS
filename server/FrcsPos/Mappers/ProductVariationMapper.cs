@@ -1,20 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FrcsPos.Models;
 using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Mappers
 {
-    public static class ProductVariatMapper
+
+    public interface IProductVariantMapper
     {
-        public static ProductVariantDTO FromModelToDto(this ProductVariant request)
+        Task<ProductVariantDTO> FromModelToDtoAsync(ProductVariant request);
+        Task<List<ProductVariantDTO>> FromModelToDtoAsync(ICollection<ProductVariant> request);
+        ProductVariant FromEditVarToModel(EditVarData request);
+    }
+
+
+    public class ProductVariantMapper : IProductVariantMapper
+    {
+        private readonly IMediaMapper _mediaMapper;
+        // private readonly IProductMapper _productMapper;
+
+
+        public ProductVariantMapper(IMediaMapper mediaMapper)
+        {
+            _mediaMapper = mediaMapper;
+            // _productMapper = productMapper;
+        }
+
+        public async Task<ProductVariantDTO> FromModelToDtoAsync(ProductVariant request)
         {
             if (request == null)
-            {
                 return new ProductVariantDTO();
-            }
 
             var dto = new ProductVariantDTO
             {
@@ -28,42 +41,56 @@ namespace FrcsPos.Mappers
                 CriticalWarningInHours = request.CriticalWarningInHours,
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
-                IsDeleted = request.IsDeleted,
+                IsDeleted = request.IsDeleted
             };
 
+            // Media Mapping (with signed URL)
             if (request.Media != null)
             {
-                dto.Media = request.Media.FromModelToDTO();
+                dto.Media = await _mediaMapper.ToDtoAsync(request.Media);
             }
 
+            // Product Mapping (if present)
             if (request.Product != null)
             {
                 dto.IsPerishable = request.Product.IsPerishable;
+                request.Product.Variants = [];
+                dto.Product = request.Product.FromModelToDtoStatic();
             }
 
             return dto;
         }
 
-        public static List<ProductVariantDTO> FromModelToDto(this ICollection<ProductVariant> request)
+        public async Task<List<ProductVariantDTO>> FromModelToDtoAsync(ICollection<ProductVariant> request)
         {
             if (request == null || request.Count == 0)
-            {
                 return [];
-            }
 
             var dtoList = new List<ProductVariantDTO>();
-            foreach (ProductVariant w in request)
+            foreach (var variant in request)
             {
-                var dto = w.FromModelToDto();
+                var dto = await FromModelToDtoAsync(variant);
                 dtoList.Add(dto);
             }
 
             return dtoList;
         }
 
-        public static List<ProductVariantDTO> FromModelToDto(this IEnumerable<ProductVariant> request)
+        public ProductVariant FromEditVarToModel(EditVarData request)
         {
-            return request.Select(v => v.FromModelToDto()).ToList();
+            if (request == null)
+                return new ProductVariant();
+
+            return new ProductVariant
+            {
+                Name = request.Name,
+                Sku = request.Sku,
+                Barcode = request.Barcode,
+                Price = request.Price,
+                CreatedOn = DateTime.UtcNow,
+                UpdatedOn = DateTime.UtcNow,
+                IsDeleted = false
+            };
         }
     }
 }

@@ -1,35 +1,40 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FrcsPos.DTO;
+using FrcsPos.Interfaces;
 using FrcsPos.Models;
 
 namespace FrcsPos.Mappers
 {
-    public static class MediaMapper
+    public interface IMediaMapper
     {
+        Task<MediaDto> ToDtoAsync(Media media);
+    }
 
+    public class MediaMapper : IMediaMapper
+    {
+        private readonly IAzureBlobService _azureBlobService;
 
-        public static MediaDto FromModelToDTO(this Media? request, string? url = null)
+        public MediaMapper(IAzureBlobService azureBlobService)
         {
-            if (request == null)
-            {
-                return new MediaDto();
-            }
+            _azureBlobService = azureBlobService;
+        }
 
+        public async Task<MediaDto> ToDtoAsync(Media media)
+        {
+            var signedUrl = await _azureBlobService.GetImageSignedUrl(media.ObjectKey ?? "");
             return new MediaDto
             {
-                Id = request.Id,
-                AltText = request.AltText,
-                FileName = request.FileName,
-                ContentType = request.ContentType,
-                SizeInBytes = request.SizeInBytes,
-                UUID = request.UUID,
-                Url = url ?? request.Url,
-                ShowInGallery = request.ShowInGallery
+                Id = media.Id,
+                AltText = media.AltText,
+                FileName = media.FileName,
+                ContentType = media.ContentType,
+                SizeInBytes = media.SizeInBytes,
+                UUID = media.UUID,
+                Url = signedUrl ?? media.Url,
+                ObjectKey = media.ObjectKey ?? "",
+                ShowInGallery = media.ShowInGallery
             };
-
         }
     }
+
 }
+

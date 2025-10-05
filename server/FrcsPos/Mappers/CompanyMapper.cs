@@ -38,7 +38,7 @@ namespace FrcsPos.Mappers
                 PosTerminals = request.PosTerminals.FromModelToDtoWithoutCompany(),
                 Warehouses = request.Warehouses.FromModelToDto(),
                 Users = request.Users.FromCompanyUserToDTO(),
-                Products = request.Products.FromModelToDto(),
+                Products = request.Products.FromModelToDtoStatic(),
             };
 
             return dto;

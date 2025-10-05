@@ -66,6 +66,11 @@ namespace FrcsPos.Controllers
                 model = await _mediaRepository.CreateAsync(req, file: File);
             }
 
+            if (!model.Success)
+            {
+                return BadRequest(model);
+            }
+
             return Ok(model);
         }
 

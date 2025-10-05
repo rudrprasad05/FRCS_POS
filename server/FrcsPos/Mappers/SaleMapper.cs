@@ -50,7 +50,7 @@ namespace FrcsPos.Mappers
 
             if (request.Items != null)
             {
-                dto.Items = request.Items.FromModelToDto(includeSale: false);
+                // dto.Items = request.Items.FromModelToDto(includeSale: false);
             }
 
             return dto;

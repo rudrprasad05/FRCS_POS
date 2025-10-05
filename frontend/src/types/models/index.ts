@@ -26,6 +26,7 @@ export interface Supplier extends BaseModel {
 export interface Product extends BaseModel {
   companyId: number;
   company?: Company;
+  supplier?: Supplier;
 
   name: string;
   sku: string;
@@ -39,6 +40,7 @@ export interface Product extends BaseModel {
   mediaId?: number | null;
 
   batches?: ProductBatch[];
+  variants: ProductVariant[];
   saleItems?: SaleItem[];
 
   maxStock?: number;
@@ -47,7 +49,6 @@ export interface Product extends BaseModel {
 export interface ProductVariant extends BaseModel {
   productId: number;
   product: Product;
-  maxStock?: number;
 
   name: string;
   sku: string;
@@ -65,6 +66,10 @@ export interface ProductVariant extends BaseModel {
   criticalWarningInHours?: number | null;
 
   mediaFile?: File;
+
+  maxStock?: number;
+  taxCategory?: TaxCategory;
+  supplier?: Supplier;
 }
 
 export interface Media extends BaseModel {

@@ -42,61 +42,35 @@ namespace FrcsPos.Controllers
                 VariantFiles = VariantFiles
 
             };
-            var res = await _productRepository.TestCreate(request, queryObject);
+            var res = await _productRepository.CreateProductAsync(request, queryObject);
             if (!res.Success)
             {
                 return BadRequest(res);
             }
             return Ok(res);
         }
-        // public async Task<IActionResult> CreateProduct(
-        //     [FromForm] string ProductName,
-        //     [FromForm] string SKU,
-        //     [FromForm] decimal Price,
-        //     [FromForm] string Barcode,
-        //     [FromForm] bool IsPerishable,
-        //     IFormFile? File,
-        //     [FromForm] int TaxCategoryId,
-        //     [FromForm] string CompanyName,
-        //     [FromForm] int FirstWarningInDays,
-        //     [FromForm] int CriticalWarningInHours
-        // )
-        // {
-        //     var data = new NewProductRequest
-        //     {
-        //         ProductName = ProductName,
-        //         SKU = SKU,
-        //         Price = Price,
-        //         Barcode = Barcode,
-        //         IsPerishable = IsPerishable,
-        //         File = File,
-        //         TaxCategoryId = TaxCategoryId,
-        //         CompanyName = CompanyName,
-        //         FirstWarningInDays = FirstWarningInDays,
-        //         CriticalWarningInHours = CriticalWarningInHours
-        //     };
 
-        //     var model = await _productRepository.CreateProductAsync(data);
-
-        //     if (model == null || !model.Success || model.Success != true)
-        //     {
-        //         return BadRequest(model);
-        //     }
-
-        //     return Ok(model);
-        // }
-
-        [HttpPost("get-all")]
-        public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject, [FromBody] GetProductDTO req)
+        [HttpPost("update")]
+        public async Task<IActionResult> UpdateProdut(
+            [FromForm] string Product,
+            [FromForm] List<string> Variants,
+            List<IFormFile> VariantFiles,
+            [FromQuery] RequestQueryObject queryObject
+        )
         {
-            var model = await _productRepository.GetAllProducts(queryObject, req.ForPos ?? false);
-
-            if (model == null || !model.Success)
+            var request = new ProductRequest
             {
-                return BadRequest(model);
-            }
+                Product = Product,
+                Variants = Variants,
+                VariantFiles = VariantFiles
 
-            return Ok(model);
+            };
+            var res = await _productRepository.UpdateProductAsync(request, queryObject);
+            if (!res.Success)
+            {
+                return BadRequest(res);
+            }
+            return Ok(res);
         }
 
         [HttpPost("get-all-var")]
@@ -130,41 +104,6 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetNewPageInfo([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _productRepository.GetCreationInfoAsync(queryObject);
-
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
-        }
-
-        [HttpPatch("edit")]
-        public async Task<IActionResult> EditProduct(
-            [FromQuery] RequestQueryObject queryObject,
-            [FromForm] string ProductName,
-            [FromForm] string SKU,
-            [FromForm] decimal Price,
-            [FromForm] string Barcode,
-            [FromForm] bool IsPerishable,
-            IFormFile? File,
-            [FromForm] int TaxCategoryId,
-            [FromForm] int MediaId
-
-        )
-        {
-            var data = new EditProductRequest
-            {
-                ProductName = ProductName,
-                SKU = SKU,
-                Price = Price,
-                Barcode = Barcode,
-                IsPerishable = IsPerishable,
-                File = File,
-                MediaId = MediaId,
-                TaxCategoryId = TaxCategoryId,
-            };
-            var model = await _productRepository.EditProductAsync(queryObject, data);
 
             if (model == null || !model.Success)
             {

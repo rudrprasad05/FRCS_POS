@@ -19,14 +19,18 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly IAmazonS3Service _amazonS3Service;
+        private readonly IAzureBlobService _azureBlobService;
+        private readonly IMediaMapper _mediaMapper;
+
         private readonly INotificationService _notificationService;
 
-        public MediaRepository(INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
+        public MediaRepository(IMediaMapper mediaMapper, IAzureBlobService azureBlobService, INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
         {
             _context = context;
             _amazonS3Service = amazonS3Service;
             _notificationService = notificationService;
-
+            _azureBlobService = azureBlobService;
+            _mediaMapper = mediaMapper;
         }
         public async Task<ApiResponse<double>> SumStorage()
         {
@@ -44,20 +48,21 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<MediaDto>> CreateAsync(Media media, IFormFile? file)
         {
-            if (file == null || media == null) return ApiResponse<MediaDto>.Fail();
+            if (file == null || media == null) return ApiResponse<MediaDto>.Fail(message: "media null");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             var guid = Guid.NewGuid().ToString();
             try
             {
-                var fileUrl = await _amazonS3Service.UploadFileAsync(file, guid);
+                var fileUrl = await _azureBlobService.UploadFileAsync(file, guid);
                 if (fileUrl == null) return ApiResponse<MediaDto>.NotFound();
 
+                var fileExtension = Path.GetExtension(file.FileName);
                 var newMedia = new Media
                 {
                     AltText = media.AltText,
                     Url = fileUrl,
-                    ObjectKey = "frcs/" + guid + "." + fileUrl.Split(".").Last(),
+                    ObjectKey = $"frcs/{guid}{fileExtension}",
                     UUID = guid,
                     ContentType = media.ContentType,
                     FileName = media.FileName,
@@ -74,7 +79,7 @@ namespace FrcsPos.Repository
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                var dto = newMedia.FromModelToDTO();
+                var dto = await _mediaMapper.ToDtoAsync(newMedia);
 
                 return new ApiResponse<MediaDto>
                 {
@@ -169,12 +174,14 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
+            var dto = await _mediaMapper.ToDtoAsync(existingMedia);
+
             return new ApiResponse<MediaDto>
             {
                 Success = true,
                 StatusCode = 200,
                 Message = "ok",
-                Data = existingMedia.FromModelToDTO()
+                Data = dto
             };
         }
         public async Task<ApiResponse<MediaDto>> GetOne(string uuid)
@@ -192,15 +199,16 @@ namespace FrcsPos.Repository
                 };
             }
 
-            var signedUrl = await _amazonS3Service.GetImageSignedUrl(media.ObjectKey);
-            media.Url = signedUrl;
+
+            var dto = await _mediaMapper.ToDtoAsync(media);
+
 
             return new ApiResponse<MediaDto>
             {
                 Success = true,
                 StatusCode = 200,
                 Message = "ok",
-                Data = media.FromModelToDTO()
+                Data = dto
             };
         }
         public async Task<ApiResponse<MediaDto>> SafeDelete(string uuid)
@@ -218,12 +226,14 @@ namespace FrcsPos.Repository
             media.IsDeleted = true;
 
             await _context.SaveChangesAsync();
+            var dto = await _mediaMapper.ToDtoAsync(media);
+
 
             return new ApiResponse<MediaDto>
             {
                 Success = true,
                 StatusCode = 200,
-                Data = media.FromModelToDTO()
+                Data = dto
             };
         }
 

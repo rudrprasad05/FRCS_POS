@@ -3,7 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, ImageIcon, SquareArrowUpRight } from "lucide-react";
+import {
+  Edit,
+  Eye,
+  ImageIcon,
+  SquareArrowUpRight,
+  TriangleAlert,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Product, ProductVariant } from "@/types/models";
@@ -11,6 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Barcode from "react-barcode";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export const ProductsOnlyColumns: ColumnDef<Product>[] = [
   {
@@ -70,7 +77,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild className="">
             <Link
               href={`products/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
@@ -147,6 +154,22 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     },
   },
   {
+    accessorKey: "product.supplier.code",
+    header: "Supplier",
+    cell: ({ row }) => {
+      const company = row.original;
+      return <div>{company.supplier?.code}</div>;
+    },
+  },
+  {
+    accessorKey: "product.tax.ratePercent",
+    header: "Tax",
+    cell: ({ row }) => {
+      const company = row.original;
+      return <div>{company.taxCategory?.ratePercent}%</div>;
+    },
+  },
+  {
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => {
@@ -156,42 +179,42 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     },
   },
 
-  //   {
-  //     accessorKey: "maxStock",
-  //     header: "Stock",
-  //     cell: ({ row }) => {
-  //       const company = row.original;
+  {
+    accessorKey: "maxStock",
+    header: "Stock",
+    cell: ({ row }) => {
+      const company = row.original as ProductVariant;
 
-  //       return (
-  //         <div className="flex gap-2 items-center">
-  //           <div>
-  //             {company.isDeleted && (
-  //               <Tooltip>
-  //                 <TooltipTrigger asChild>
-  //                   <TriangleAlert className="w-3 h-3 text-red-600" />
-  //                 </TooltipTrigger>
-  //                 <TooltipContent>
-  //                   <span className="">Product no longer available</span>
-  //                 </TooltipContent>
-  //               </Tooltip>
-  //             )}
+      return (
+        <div className="flex gap-2 items-center">
+          <div>
+            {company.isDeleted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TriangleAlert className="w-3 h-3 text-red-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="">Product no longer available</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-  //             {company.maxStock === 0 && (
-  //               <Tooltip>
-  //                 <TooltipTrigger asChild>
-  //                   <TriangleAlert className="w-3 h-3 text-yellow-600" />
-  //                 </TooltipTrigger>
-  //                 <TooltipContent>
-  //                   <span className="">Low stock</span>
-  //                 </TooltipContent>
-  //               </Tooltip>
-  //             )}
-  //           </div>
-  //           <div>{company.maxStock}</div>
-  //         </div>
-  //       );
-  //     },
-  //   },
+            {company.maxStock === 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TriangleAlert className="w-3 h-3 text-yellow-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span className="">Low stock</span>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <div>{company.maxStock}</div>
+        </div>
+      );
+    },
+  },
 
   {
     accessorKey: "createdOn",
@@ -211,26 +234,24 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const company = row.original;
+      const prodv = row.original;
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild className="">
             <Link
-              href={`products/${company.uuid}/edit`}
-              className="w-24 flex items-center justify-between"
+              href={`products/${prodv.product.uuid}/edit`}
+              className=" flex items-center justify-between"
             >
-              Edit
               <Edit className="" />
             </Link>
           </Button>
 
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild className="">
             <Link
-              href={`products/${company.uuid}/view`}
-              className="w-24 flex items-center justify-between"
+              href={`products/${prodv.product.uuid}/view`}
+              className=" flex items-center justify-between"
             >
-              View
               <Eye className="" />
             </Link>
           </Button>
@@ -243,7 +264,7 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
 export function HandleBarcode({ barcode }: { barcode: string }) {
   if (!barcode || barcode.length === 0) {
     return (
-      <div className="border-2 border-dashed rounded-lg p-2 text-center text-muted-foreground">
+      <div className="border-2 border-dashed rounded-sm p-1 text-xs text-center text-muted-foreground">
         Invalid
       </div>
     );
@@ -252,7 +273,7 @@ export function HandleBarcode({ barcode }: { barcode: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="underline flex items-center gap-1">
+        <button className="underline mx-auto flex items-center gap-1">
           {barcode} <SquareArrowUpRight className="w-4 h-4" />
         </button>
       </DialogTrigger>

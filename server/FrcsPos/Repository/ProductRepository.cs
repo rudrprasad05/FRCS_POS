@@ -20,18 +20,26 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IAzureBlobService _azureBlobService;
+
         private readonly IMediaRepository _mediaRepository;
+        private readonly IProductVariantMapper _productVariantMapper;
+        private readonly IProductMapper _productMapper;
+
+
         private readonly IUserContext _userContext;
         private readonly IRedisCacheService _redisCacheService;
 
 
         public ProductRepository(
-           ApplicationDbContext applicationDbContext,
-           INotificationService notificationService,
-           IMediaRepository mediaRepository,
-           IRedisCacheService redisCacheService,
-            IUserContext userContext
-
+            IAzureBlobService azureBlobService,
+            IProductVariantMapper productVariantMapper,
+            ApplicationDbContext applicationDbContext,
+            INotificationService notificationService,
+            IMediaRepository mediaRepository,
+            IRedisCacheService redisCacheService,
+            IUserContext userContext,
+            IProductMapper productMapper
         )
         {
             _userContext = userContext;
@@ -39,167 +47,9 @@ namespace FrcsPos.Repository
             _notificationService = notificationService;
             _mediaRepository = mediaRepository;
             _redisCacheService = redisCacheService;
-        }
-
-        public async Task<ApiResponse<ProductDTO>> CreateProductAsync(NewProductRequest request)
-        {
-
-            var existsSKU = await _context.Products.AnyAsync(p => p.Sku == request.SKU);
-            if (existsSKU != false)
-            {
-                return ApiResponse<ProductDTO>.Fail(message: "Duplicate SKU");
-            }
-
-            // var existsBarcode = await _context.Products.AnyAsync(p => p.Barcode == request.Barcode);
-            // if (existsBarcode != false)
-            // {
-            //     return ApiResponse<ProductDTO>.Fail(message: "Duplicate Barcode");
-            // }
-
-            var file = request.File;
-            if (file == null)
-            {
-                return ApiResponse<ProductDTO>.Fail(message: "Missing file");
-            }
-            var mediaToBeCreated = new Media
-            {
-                AltText = file.FileName,
-                FileName = file.FileName,
-                ShowInGallery = true,
-            };
-
-            if (file != null)
-            {
-                mediaToBeCreated.SizeInBytes = file.Length;
-                mediaToBeCreated.ContentType = file.ContentType;
-            }
-
-            var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == request.CompanyName);
-
-            if (company == null || newMedia == null)
-            {
-                return ApiResponse<ProductDTO>.Fail(message: "null company or media");
-            }
-
-            var modelToBeCreated = new Product
-            {
-                Name = request.ProductName,
-                CompanyId = company.Id,
-                Sku = request.SKU,
-
-                TaxCategoryId = request.TaxCategoryId,
-                IsPerishable = request.IsPerishable,
-            };
-
-            var model = await _context.Products.AddAsync(modelToBeCreated);
-            await _context.SaveChangesAsync();
-
-            // if (request.FirstWarningInDays != null && request.CriticalWarningInHours != null && request.IsPerishable)
-            // {
-            //     var expiryConfig = new ExpiryNotificationConfiguration
-            //     {
-            //         FirstWarningInDays = (int)request.FirstWarningInDays,
-            //         CriticalWarningInHours = (int)request.CriticalWarningInHours,
-            //         ProductId = modelToBeCreated.Id,
-            //     };
-            //     var expiryConfigModel = await _context.ExpiryNotificationConfigurations.AddAsync(expiryConfig);
-            //     await _context.SaveChangesAsync();
-            // }
-
-            var result = model.Entity.FromModelToDto();
-            var notification = new NotificationDTO
-            {
-                Title = "New Product",
-                Message = $"The product '{result.Name}' was created",
-                Type = NotificationType.SUCCESS,
-                ActionUrl = $"/{company.Name}/products/{result.UUID}",
-                IsSuperAdmin = false,
-                CompanyId = company.Id,
-                UserId = _userContext.UserId
-
-            };
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
-
-
-            return ApiResponse<ProductDTO>.Ok(data: result);
-        }
-
-        public async Task<ApiResponse<List<ProductDTO>>> GetAllProducts(RequestQueryObject queryObject, bool isForPos = false)
-        {
-            var now = DateTime.UtcNow;
-            var query = _context.Products
-                .Include(p => p.TaxCategory)
-                .Include(p => p.Variants)
-                    .ThenInclude(p => p.Media)
-                .Where(p => p.Company.Name == queryObject.CompanyName)
-                .AsQueryable();
-
-            if (isForPos)
-            {
-                // query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
-                query = query.Where(p => p.IsDeleted != true);
-
-            }
-            // filtering
-            if (queryObject.IsDeleted.HasValue && !isForPos)
-            {
-                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(queryObject.Search))
-            {
-                var search = queryObject.Search.ToLower();
-                query = query.Where(c =>
-                    c.Name.ToLower().Contains(search) ||
-                    c.Sku.ToLower().Contains(search)
-                );
-            }
-
-
-            // Sorting
-            query = queryObject.SortBy switch
-            {
-                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
-                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
-                _ => query.OrderByDescending(c => c.CreatedOn)
-            };
-
-            var totalCount = await query.CountAsync();
-
-            // Pagination
-            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var products = await query
-                .Skip(skip)
-                .Take(queryObject.PageSize)
-                .ToListAsync();
-
-            // Mapping to DTOs
-            var result = new List<ProductDTO>();
-            foreach (var product in products)
-            {
-                var dto = product.FromModelToDto();
-                result.Add(dto);
-
-                // dto.MaxStock = product.Batches
-                //     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
-                //     .Sum(b => b.Quantity);
-
-
-            }
-
-            return new ApiResponse<List<ProductDTO>>
-            {
-                Success = true,
-                StatusCode = 200,
-                Data = result,
-                Meta = new MetaData
-                {
-                    TotalCount = totalCount,
-                    PageNumber = queryObject.PageNumber,
-                    PageSize = queryObject.PageSize
-                }
-            };
+            _azureBlobService = azureBlobService;
+            _productVariantMapper = productVariantMapper;
+            _productMapper = productMapper;
         }
 
         public async Task<ApiResponse<List<ProductVariantDTO>>> GetAllProductsVariants(RequestQueryObject queryObject, bool isForPos = false)
@@ -207,6 +57,7 @@ namespace FrcsPos.Repository
             var now = DateTime.UtcNow;
             var query = _context.ProductVariants
                 .Include(p => p.Product.TaxCategory)
+                .Include(p => p.Product.Supplier)
                 .Include(p => p.Media)
                 .Where(p => p.Product.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
@@ -252,14 +103,22 @@ namespace FrcsPos.Repository
             var result = new List<ProductVariantDTO>();
             foreach (var product in products)
             {
-                var dto = product.FromModelToDto();
-                result.Add(dto);
+                var dto = await _productVariantMapper.FromModelToDtoAsync(product);
 
                 dto.MaxStock = product.Batches
                     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
                     .Sum(b => b.Quantity);
 
+                if (dto.Media != null)
+                {
+                    var signedUrl = await _azureBlobService.GetImageSignedUrl(dto.Media.ObjectKey ?? "");
+                    dto.Media.Url = signedUrl;
+                }
 
+                dto.TaxCategory = product.Product.TaxCategory.FromModelToDto();
+                dto.Supplier = product.Product.Supplier.FromModelToDto();
+
+                result.Add(dto);
             }
 
             return new ApiResponse<List<ProductVariantDTO>>
@@ -275,56 +134,8 @@ namespace FrcsPos.Repository
                 }
             };
         }
-        public async Task<ApiResponse<ProductDTO>> EditProductAsync(RequestQueryObject queryObject, EditProductRequest request)
-        {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
-            if (product == null)
-            {
-                return ApiResponse<ProductDTO>.NotFound();
-            }
 
-            var mediaId = 0;
-
-            if (request.File != null)
-            {
-                var mediaToBeCreated = new Media
-                {
-                    AltText = request.File.FileName,
-                    FileName = request.File.FileName,
-                    ShowInGallery = true,
-                };
-
-                mediaToBeCreated.SizeInBytes = request.File.Length;
-                mediaToBeCreated.ContentType = request.File.ContentType;
-
-
-                var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: request.File);
-                if (newMedia.Data != null)
-                {
-                    mediaId = newMedia.Data.Id;
-                }
-            }
-            else
-            {
-                mediaId = request.MediaId;
-            }
-            // Update fields
-            product.Name = request.ProductName;
-            product.Sku = request.SKU;
-
-            product.IsPerishable = request.IsPerishable;
-            product.TaxCategoryId = request.TaxCategoryId;
-
-            product.UpdatedOn = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            var productDto = product.FromModelToDto();
-
-            return ApiResponse<ProductDTO>.Ok(productDto);
-        }
-
-        public async Task<ApiResponse<ProductDTO>> TestCreate(ProductRequest request, RequestQueryObject queryObject)
+        public async Task<ApiResponse<ProductDTO>> CreateProductAsync(ProductRequest request, RequestQueryObject queryObject)
         {
             var options = new JsonSerializerOptions
             {
@@ -417,16 +228,15 @@ namespace FrcsPos.Repository
 
                     var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
                     variant.MediaId = newMedia.Data?.Id;
-                    // Save file to disk or cloud and attach path
-                    // variant.MediaPath = await SaveFileAsync(file);
                 }
 
                 _context.ProductVariants.Add(variant);
             }
 
             await _context.SaveChangesAsync();
+            var dto = await _productMapper.FromModelToDtoAsync(product);
 
-            return ApiResponse<ProductDTO>.Ok(product.FromModelToDto());
+            return ApiResponse<ProductDTO>.Ok(dto);
         }
 
 
@@ -442,6 +252,9 @@ namespace FrcsPos.Repository
 
             var product = await _context.Products
                 .Include(p => p.Variants)
+                    .ThenInclude(x => x.Media)
+                .Include(p => p.Supplier)
+                .Include(p => p.TaxCategory)
                 .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
             if (product == null)
             {
@@ -454,18 +267,12 @@ namespace FrcsPos.Repository
 
             var dto = new ProductEditInfo
             {
-                Product = product.FromModelToDto(),
+                Product = await _productMapper.FromModelToDtoAsync(product),
                 TaxCategories = allTaxes.FromModelToDto()
             };
 
             FireAndForget.Run(_redisCacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5)));
             return ApiResponse<ProductEditInfo>.Ok(dto);
-        }
-
-
-        public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<ApiResponse<InitialProductCreationData>> GetCreationInfoAsync(RequestQueryObject queryObject)
@@ -505,7 +312,7 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            var productDto = product.FromModelToDto();
+            var productDto = await _productMapper.FromModelToDtoAsync(product);
 
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
@@ -523,9 +330,125 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            var productDto = product.FromModelToDto();
+            var productDto = await _productMapper.FromModelToDtoAsync(product);
 
             return ApiResponse<ProductDTO>.Ok(productDto);
+        }
+
+        // was doing this
+        public async Task<ApiResponse<ProductDTO>> UpdateProductAsync(ProductRequest request, RequestQueryObject queryObject)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var product = await _context.Products.FirstOrDefaultAsync(x => x.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product url. could not understand product");
+            }
+
+            var productData = JsonSerializer.Deserialize<NewProdJson>(request.Product, options);
+            if (productData == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "malformed product data. could not understand product");
+            }
+
+            var company = await _context.Companies.FirstOrDefaultAsync(x => x.Name == queryObject.CompanyName);
+            if (company == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "invalid company");
+            }
+
+            var tax = await _context.TaxCategories.FirstOrDefaultAsync(x => x.UUID == productData.TaxCategoryId);
+            if (tax == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "invalid tax");
+            }
+
+            var sup = await _context.Suppliers.FirstOrDefaultAsync(x => x.UUID == productData.SupplierId);
+            if (sup == null)
+            {
+                return ApiResponse<ProductDTO>.Fail(message: "invalid supplier");
+            }
+
+            // update product
+            product.SupplierId = sup.Id;
+            product.TaxCategoryId = tax.Id;
+            product.Name = productData.Name;
+            product.Sku = productData.Sku;
+            product.IsPerishable = productData.IsPerishable;
+            product.UpdatedOn = DateTime.UtcNow;
+
+            if (productData.IsPerishable)
+            {
+                product.FirstWarningInDays = productData.FirstWarningInDays;
+                product.CriticalWarningInHours = productData.CriticalWarningInHours;
+            }
+            else
+            {
+                product.FirstWarningInDays = null;
+                product.CriticalWarningInHours = null;
+            }
+
+            for (int i = 0; i < request.Variants.Count; i++)
+            {
+                var variantData = JsonSerializer.Deserialize<EditVarData>(request.Variants[i], options);
+                if (variantData == null)
+                {
+                    return ApiResponse<ProductDTO>.Fail(message: "malformed variant data");
+                }
+
+                var variant = await _context.ProductVariants.FirstOrDefaultAsync(x => x.UUID == variantData.UUID);
+                if (variant == null)
+                {
+                    variant = _productVariantMapper.FromEditVarToModel(variantData);
+                }
+
+                else
+                {
+                    variant.Name = variantData.Name;
+                    variant.Sku = variantData.Sku;
+                    variant.Barcode = variantData.Barcode;
+                    variant.Price = variantData.Price;
+                }
+
+
+                if (request.VariantFiles != null && request.VariantFiles.Count > i)
+                {
+                    var file = request.VariantFiles[i];
+                    var mediaToBeCreated = new Media
+                    {
+                        AltText = file.FileName,
+                        FileName = file.FileName,
+                        ShowInGallery = true,
+                    };
+
+                    if (file != null)
+                    {
+                        mediaToBeCreated.SizeInBytes = file.Length;
+                        mediaToBeCreated.ContentType = file.ContentType;
+                    }
+
+                    var newMedia = await _mediaRepository.CreateAsync(mediaToBeCreated, file: file);
+                    variant.MediaId = newMedia.Data?.Id;
+                }
+
+                if (variant.UUID == null)
+                {
+                    _context.ProductVariants.Add(variant);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<ProductDTO>.Ok(await _productMapper.FromModelToDtoAsync(product));
+        }
+
+        public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid)
+        {
+            throw new NotImplementedException();
         }
     }
 }
