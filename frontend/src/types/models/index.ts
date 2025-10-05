@@ -49,7 +49,6 @@ export interface Product extends BaseModel {
 export interface ProductVariant extends BaseModel {
   productId: number;
   product: Product;
-  maxStock?: number;
 
   name: string;
   sku: string;
@@ -67,6 +66,10 @@ export interface ProductVariant extends BaseModel {
   criticalWarningInHours?: number | null;
 
   mediaFile?: File;
+
+  maxStock?: number;
+  taxCategory?: TaxCategory;
+  supplier?: Supplier;
 }
 
 export interface Media extends BaseModel {

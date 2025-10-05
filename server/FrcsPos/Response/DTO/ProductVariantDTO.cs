@@ -17,10 +17,13 @@ namespace FrcsPos.Response.DTO
         public decimal Price { get; set; }
         public int? FirstWarningInDays { get; set; } = 7;
         public int? CriticalWarningInHours { get; set; } = 24;
-        public int? MaxStock { get; set; } = 0;
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
         public bool? IsPerishable { get; set; } = null;
+
+        public int? MaxStock { get; set; } = 0;
+        public SupplierDTO? Supplier { get; set; } = null;
+        public TaxCategoryDTO? TaxCategory { get; set; } = null;
     }
 
     public class NewVarData

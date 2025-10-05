@@ -33,7 +33,7 @@ import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Product, QueryObject, Supplier, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Image as ImageIcon, Plus, PlusCircle, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -119,6 +119,9 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
   const searchParams = useSearchParams();
   const companyName = params.companyName;
   const router = useRouter();
+  const productId = String(params.productId);
+
+  const queryClient = useQueryClient();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -163,6 +166,10 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
     console.log(values);
   }, [product]);
 
+  const backBtn = () => {
+    router.push(`/${companyName}/products`);
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     console.log(data);
     // return;
@@ -198,8 +205,17 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
     const res = await EditProduct(formData, query);
 
     if (res.success) {
-      toast.success("Uploaded");
-      router.push(`/${companyName}/products`);
+      toast.success("Product Saved");
+
+      queryClient.invalidateQueries({
+        queryKey: ["editProduct", productId],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["products", companyName, {}],
+        exact: false,
+      });
+      backBtn();
     } else {
       toast.info("Failed to upload", { description: res.message });
     }
@@ -222,8 +238,11 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
           <Separator className="my-4 mt-auto" />
 
           <div className="flex gap-4 pt-4 ">
-            <Button type="submit" className="bg-green-600 hover:bg-green-700">
-              Finish
+            <Button onClick={backBtn} type="button" variant={"secondary"}>
+              Cancel
+            </Button>
+            <Button type="submit" variant={"default"}>
+              Save
             </Button>
           </div>
         </form>

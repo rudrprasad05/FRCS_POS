@@ -77,7 +77,7 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild className="">
             <Link
               href={`products/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
@@ -149,9 +149,24 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     header: "Barcode",
     cell: ({ row }) => {
       const company = row.original;
-      console.log(company);
 
       return <HandleBarcode barcode={company.barcode as string} />;
+    },
+  },
+  {
+    accessorKey: "product.supplier.code",
+    header: "Supplier",
+    cell: ({ row }) => {
+      const company = row.original;
+      return <div>{company.supplier?.code}</div>;
+    },
+  },
+  {
+    accessorKey: "product.tax.ratePercent",
+    header: "Tax",
+    cell: ({ row }) => {
+      const company = row.original;
+      return <div>{company.taxCategory?.ratePercent}%</div>;
     },
   },
   {
@@ -223,22 +238,20 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild className="">
             <Link
               href={`products/${prodv.product.uuid}/edit`}
-              className="w-24 flex items-center justify-between"
+              className=" flex items-center justify-between"
             >
-              Edit
               <Edit className="" />
             </Link>
           </Button>
 
-          <Button variant={"outline"} asChild className="w-24">
+          <Button variant={"outline"} asChild className="">
             <Link
               href={`products/${prodv.product.uuid}/view`}
-              className="w-24 flex items-center justify-between"
+              className=" flex items-center justify-between"
             >
-              View
               <Eye className="" />
             </Link>
           </Button>
@@ -251,7 +264,7 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
 export function HandleBarcode({ barcode }: { barcode: string }) {
   if (!barcode || barcode.length === 0) {
     return (
-      <div className="border-2 border-dashed rounded-lg p-2 text-center text-muted-foreground">
+      <div className="border-2 border-dashed rounded-sm p-1 text-xs text-center text-muted-foreground">
         Invalid
       </div>
     );
@@ -260,7 +273,7 @@ export function HandleBarcode({ barcode }: { barcode: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="underline flex items-center gap-1">
+        <button className="underline mx-auto flex items-center gap-1">
           {barcode} <SquareArrowUpRight className="w-4 h-4" />
         </button>
       </DialogTrigger>

@@ -128,6 +128,7 @@ namespace FrcsPos.Repository
             var now = DateTime.UtcNow;
             var query = _context.ProductVariants
                 .Include(p => p.Product.TaxCategory)
+                .Include(p => p.Product.Supplier)
                 .Include(p => p.Media)
                 .Where(p => p.Product.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
@@ -184,6 +185,9 @@ namespace FrcsPos.Repository
                     var signedUrl = await _azureBlobService.GetImageSignedUrl(dto.Media.ObjectKey ?? "");
                     dto.Media.Url = signedUrl;
                 }
+
+                dto.TaxCategory = product.Product.TaxCategory.FromModelToDto();
+                dto.Supplier = product.Product.Supplier.FromModelToDto();
 
                 result.Add(dto);
             }
