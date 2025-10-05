@@ -40,7 +40,7 @@ export const NewSocialLinkForm = z.object({
 });
 
 export const NewBatchDataSchema = z.object({
-  companyId: z.uuid({ error: "no company selected" }),
+  companyName: z.string({ error: "no company selected" }),
   supplierId: z.uuid({ error: "no supplier selected" }),
   productId: z.uuid({ error: "no product selected" }),
   warehouseId: z.string({ error: "Warehouse is required" }),
@@ -49,9 +49,13 @@ export const NewBatchDataSchema = z.object({
     .date({ error: "Expiry date is required" })
     .optional()
     .nullable(),
+  receiveDate: z
+    .date({ error: "Expiry date is required" })
+    .optional()
+    .nullable(),
 });
 
-export type NewBatchData = z.infer<typeof NewBatchDataSchema>;
+export type NewBatchData = z.output<typeof NewBatchDataSchema>;
 export type NewMediaFormType = z.infer<typeof NewMediaFormSchema>;
 export type SignInFormType = z.infer<typeof SignInForm>;
 export type RegisterFormType = z.infer<typeof RegisterForm>;

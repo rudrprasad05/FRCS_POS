@@ -45,11 +45,12 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductBatchRequest request)
         {
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == request.CompanyId);
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId);
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == request.CompanyName);
+            var product = await _context.ProductVariants.FirstOrDefaultAsync(p => p.UUID == request.ProductId);
+            var supp = await _context.Suppliers.FirstOrDefaultAsync(p => p.UUID == request.SupplierId);
             var wh = await _context.Warehouses.FirstOrDefaultAsync(w => w.UUID == request.WarehouseId);
 
-            if (company == null || product == null || wh == null)
+            if (company == null || product == null || wh == null || supp == null)
             {
                 return ApiResponse<ProductBatchDTO>.Fail(message: "invalid params");
             }
@@ -64,8 +65,10 @@ namespace FrcsPos.Repository
                 CompanyId = company.Id,
                 ProductVariantId = product.Id,
                 WarehouseId = wh.Id,
+                SupplierId = supp.Id,
                 Quantity = request.Quantity,
-                ExpiryDate = request.ExpiryDate,
+                ExpiryDate = request.ExpiryDate ?? null,
+                RecievedDate = request.ReceiveDate
             };
 
             var model = await _context.ProductBatches.AddAsync(newModel);
