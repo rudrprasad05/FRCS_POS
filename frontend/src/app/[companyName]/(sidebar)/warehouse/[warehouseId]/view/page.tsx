@@ -112,10 +112,8 @@ function BatchesSection() {
           </RoleWrapper>
         }
       >
-        <H1>Warehouses</H1>
-        <P className="text-muted-foreground">
-          Create and manage your warehouses
-        </P>
+        <H1>Product Batches</H1>
+        <P className="text-muted-foreground">Create and manage your batches</P>
       </Header>
 
       <HandleDataSection

@@ -100,7 +100,7 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<List<ProductBatchDTO>>> GetAllAsycn(RequestQueryObject queryObject)
         {
             var query = _context.ProductBatches
-                .Include(p => p.ProductVariant.Product)
+                .Include(p => p.ProductVariant)
                 .Where(p => p.Warehouse.UUID == queryObject.UUID)
                 .AsQueryable();
 

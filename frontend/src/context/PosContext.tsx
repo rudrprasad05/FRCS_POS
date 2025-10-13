@@ -6,7 +6,7 @@ import {
   ESortBy,
   PosSession,
   PosSessionWithProducts,
-  Product,
+  ProductVariant,
   QueryObject,
   SaleItem,
   SaleItemOmitted,
@@ -18,6 +18,7 @@ import hash from "object-hash";
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -28,7 +29,7 @@ import { toast } from "sonner";
 
 interface PosSessionContextType {
   session: PosSession;
-  products: (Product | undefined)[];
+  products: (ProductVariant | undefined)[];
   qr: string | undefined;
   cart: SaleItemOmitted[];
   pagination: QueryObject;
@@ -60,7 +61,7 @@ interface PosSessionContextType {
 
 const PosSessionContext = createContext<PosSessionContextType>({
   session: {} as PosSession,
-  products: {} as Product[],
+  products: {} as ProductVariant[],
   qr: undefined,
   cart: [],
   pagination: {} as QueryObject,
@@ -127,7 +128,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     isDeleted: undefined as boolean | undefined,
   });
 
-  const infiniteQuery = useInfiniteQuery<ApiResponse<Product[]>, Error>({
+  const infiniteQuery = useInfiniteQuery<ApiResponse<ProductVariant[]>, Error>({
     queryKey: ["posSessionProducts", session.id, pagination],
     queryFn: async ({ pageParam = 1 }) => {
       return GetAllProducts(
@@ -171,10 +172,13 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     setHasChanged(currentHash !== initialHashRef.current);
   }, [cart, products, session]);
 
-  function setInitialState(init: PosSessionWithProducts) {
-    setSession(init.posSession);
-    initialHashRef.current = hash({ ...init, products });
-  }
+  const setInitialState = useCallback(
+    (init: PosSessionWithProducts) => {
+      setSession(init.posSession);
+      initialHashRef.current = hash({ ...init, products });
+    },
+    [products]
+  );
 
   useEffect(() => {
     let subtotal = 0,
@@ -262,7 +266,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       moneyValues.subtotal != subtotal ||
       moneyValues.total != total
     ) {
-      toast.error("Checkout failed!");
+      toast.error("Checkout failed!", { description: "values dont match" });
       return;
     }
 
@@ -284,6 +288,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       toast.success("Checkout successful!");
       router.push(`${session.uuid}/checkout/${res.data.uuid}`);
     } else {
+      console.log(res);
       toast.error("Checkout failed!", { description: res.message });
     }
 

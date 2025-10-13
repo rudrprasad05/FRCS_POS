@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { usePosSession } from "@/context/PosContext";
-import { ESortBy, Product } from "@/types/models";
+import { ESortBy, ProductVariant } from "@/types/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw, Search } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -139,7 +139,7 @@ export default function PosTerminal() {
                 {products.map((product) => (
                   <RecentProductCard
                     key={product?.uuid}
-                    item={product as Product}
+                    item={product as ProductVariant}
                   />
                 ))}
                 {isProductsLoading &&

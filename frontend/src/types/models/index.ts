@@ -87,7 +87,7 @@ export interface SaleItem extends BaseModel {
   sale?: Sale;
 
   productId: number;
-  product: Product;
+  product: ProductVariant;
 
   quantity: number;
   unitPrice: number;
@@ -127,13 +127,15 @@ export interface ProductBatch extends BaseModel {
   company?: Company;
 
   productId: number;
-  product?: Product;
+  product?: ProductVariant;
+  supplier?: Supplier;
 
   warehouseId: number;
   warehouse?: Warehouse;
 
   quantity: number;
-  expiryDate?: string; // or Date, depending on your serialization
+  expiryDate?: string;
+  recievedDate?: string;
 
   notifications?: Notification[];
 }

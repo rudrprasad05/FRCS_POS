@@ -15,6 +15,8 @@ using FrcsPos.Socket;
 using StackExchange.Redis;
 using Azure.Storage.Blobs;
 using FrcsPos.Mappers;
+using Microsoft.AspNetCore.Mvc;
+using FrcsPos.Response;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +73,30 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAutho
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
 builder.Services.AddHostedService<ExpiryNotificationService>();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(ms => ms.Value?.Errors.Count > 0)
+            .SelectMany(ms => ms.Value?.Errors.Select(e => $"{ms.Key}: {e.ErrorMessage}"))
+            .ToList();
+
+        var response = new ApiResponse<object>
+        {
+            Success = false,
+            StatusCode = 400,
+            Message = "Validation failed",
+            Data = null,
+            Errors = errors,
+            Timestamp = DateTime.UtcNow,
+            TraceId = context.HttpContext.TraceIdentifier
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
 
 
 
