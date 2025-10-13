@@ -48,20 +48,17 @@ namespace FrcsPos.Repository
                 return ApiResponse<SaleDTO>.Fail(message: "sale is empty");
 
             // verify company exists
-            var company = await _context.Companies
-                .FirstOrDefaultAsync(c => c.Name == request.CompanyName);
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == request.CompanyName);
             if (company == null)
                 return ApiResponse<SaleDTO>.Fail(message: "Company not found");
 
             // verify session exists
-            var session = await _context.PosSessions
-                .FirstOrDefaultAsync(ps => ps.Id == request.PosSessionId && ps.IsActive == true);
+            var session = await _context.PosSessions.FirstOrDefaultAsync(ps => ps.Id == request.PosSessionId && ps.IsActive == true);
             if (session == null)
                 return ApiResponse<SaleDTO>.Fail(message: "POS session not found");
 
             // verify cashier exists
-            var cashier = await _userManager
-                .FindByIdAsync(request.CashierId);
+            var cashier = await _userManager.FindByIdAsync(request.CashierId);
             if (cashier == null)
                 return ApiResponse<SaleDTO>.Fail(message: "Cashier not found");
 

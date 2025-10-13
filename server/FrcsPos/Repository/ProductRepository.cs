@@ -58,17 +58,22 @@ namespace FrcsPos.Repository
             var query = _context.ProductVariants
                 .Include(p => p.Product.TaxCategory)
                 .Include(p => p.Product.Supplier)
+                .Include(p => p.Batches)
                 .Include(p => p.Media)
                 .Where(p => p.Product.Company.Name == queryObject.CompanyName)
                 .AsQueryable();
 
             if (isForPos)
             {
-                // query = query.Where(p => p.Batches.Any(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now)));
+                // get products only with batches arrived, non-expired
+                query = query.Where(p => p.Batches.Any(b =>
+                    b.Quantity > 0 &&
+                    (b.RecievedDate < now) &&
+                    (b.ExpiryDate == null || b.ExpiryDate > now)));
                 query = query.Where(p => p.IsDeleted != true);
 
             }
-            // filtering
+
             if (queryObject.IsDeleted.HasValue && !isForPos)
             {
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);

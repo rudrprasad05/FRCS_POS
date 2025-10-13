@@ -4,18 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { usePosSession } from "@/context/PosContext";
 import { cn } from "@/lib/utils";
-import { Product, SaleItemOmitted } from "@/types/models";
+import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import { Coins, ImageIcon, Plus, Warehouse } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
-export function RecentProductCard({ item }: { item: Product }) {
+export function RecentProductCard({ item }: { item: ProductVariant }) {
   const [isImageValid, setIsImageValid] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const { addProduct, cart } = usePosSession();
 
-  const handleAddProduct = (product: Product) => {
+  const handleAddProduct = (product: ProductVariant) => {
     const sI: SaleItemOmitted = {
       productId: product.id,
       product: product,

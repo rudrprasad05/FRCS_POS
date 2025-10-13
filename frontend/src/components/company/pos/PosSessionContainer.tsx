@@ -3,7 +3,7 @@
 import { GetPosSession } from "@/actions/PosSession";
 import { usePosSession } from "@/context/PosContext";
 import { WebSocketUrl } from "@/lib/utils";
-import { Product, SaleItemOmitted } from "@/types/models";
+import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import * as signalR from "@microsoft/signalr";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,8 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     addProduct,
   } = usePosSession();
 
-  const productsRef = useRef<Product[]>([]);
+  const productsRef = useRef<ProductVariant[]>([]);
+  const connectionRef = useRef<signalR.HubConnection | null>(null);
 
   const handleProductAdd = useCallback(
     async (scan: string) => {
@@ -36,7 +37,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       };
       addProduct(sI);
     },
-    [productsRef, addProduct]
+    [addProduct]
   );
 
   useEffect(() => {
@@ -53,18 +54,19 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
   }, [setInitialState, uuid]);
 
   useEffect(() => {
-    if (!uuid) return;
+    if (!uuid || connectionRef.current) return;
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${WebSocketUrl}/socket/posHub?terminalId=${uuid}`)
       .withAutomaticReconnect()
       .build();
 
+    connectionRef.current = connection;
+
     connection
       .start()
       .then(() => {
-        // setIsTerminalConnectedToServer(true);
-
+        setIsTerminalConnectedToServer(true);
         connection.invoke("JoinTerminal", uuid);
       })
       .catch((err) => {
@@ -92,12 +94,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       setIsTerminalConnectedToServer(false);
       connection.stop();
     };
-  }, [
-    uuid,
-    handleProductAdd,
-    setIsScannerConnectedToServer,
-    setIsTerminalConnectedToServer,
-  ]);
+  }, [uuid, handleProductAdd]);
 
   if (loading) return <>loading</>;
 

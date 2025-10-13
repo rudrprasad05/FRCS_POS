@@ -9,14 +9,15 @@ namespace FrcsPos.Response.DTO
         public int? CompanyId { get; set; }
         public CompanyDTO? Company { get; set; } = null;
 
-        public int? ProductVariantId { get; set; }
-        public ProductVariantDTO? ProductVariantDTO { get; set; } = null;
+        public int? ProductId { get; set; }
+        public ProductVariantDTO? Product { get; set; } = null;
 
         public int? WarehouseId { get; set; }
         public WarehouseDTO? Warehouse { get; set; } = null;
 
         public int Quantity { get; set; }
         public DateTime? ExpiryDate { get; set; }
+        public DateTime RecievedDate { get; set; }
     }
 
     public class LoadPreCreationInfo

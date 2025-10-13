@@ -1,5 +1,5 @@
 "use client";
-import type { Product, ProductBatch } from "@/types/models";
+import type { ProductBatch, ProductVariant } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Pause } from "lucide-react";
 import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
@@ -11,9 +11,10 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
     accessorKey: "product",
     header: "Product",
     cell: ({ row }) => {
-      const user = row.getValue("product") as Product;
-      if (!user) return <P>N/A</P>;
-      return <P>{user.name}</P>;
+      const pv = row.original.product as ProductVariant;
+
+      if (!pv) return <P>N/A</P>;
+      return <P>{pv.name}</P>;
     },
   },
   {
@@ -28,7 +29,7 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
 
   {
     accessorKey: "expiryDate",
-    header: "Expiry",
+    header: "Expiry Date",
     cell: ({ row }) => {
       const expiry = row.getValue("expiryDate") as string | null | undefined;
       if (!expiry) return <P>N/A</P>;
@@ -48,7 +49,7 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
   },
   {
     accessorKey: "expiryDate",
-    header: "Expiry",
+    header: "Expires In",
     cell: ({ row }) => {
       const expiry = row.getValue("expiryDate") as string | null | undefined;
       if (!expiry) return <P>N/A</P>;
@@ -79,6 +80,64 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
       } else {
         text = `${Math.floor(diffDays)}d left`;
         colorClass = "text-green-600";
+      }
+
+      return <P className={colorClass}>{text}</P>;
+    },
+  },
+  {
+    accessorKey: "recievedDate",
+    header: "Arrival Date",
+    cell: ({ row }) => {
+      const expiry = row.getValue("recievedDate") as string | null | undefined;
+      if (!expiry) return <P>N/A</P>;
+
+      // Convert to Date object
+      const date = new Date(expiry);
+
+      // Format nicely
+      const formatted = date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+
+      return <P>{formatted}</P>;
+    },
+  },
+  {
+    accessorKey: "recievedDate",
+    header: "Arrives In",
+    cell: ({ row }) => {
+      const expiry = row.getValue("recievedDate") as string | null | undefined;
+      if (!expiry) return <P>N/A</P>;
+
+      const now = new Date();
+      const expiryDate = new Date(expiry);
+
+      // time difference in ms
+      const diffMs = expiryDate.getTime() - now.getTime();
+
+      if (diffMs <= 0) {
+        return <P className="text-green-600 font-semibold">Arrived</P>;
+      }
+
+      // calculate days/hours left
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      let text = "";
+      let colorClass = "text-green-600"; // default (safe)
+
+      if (diffDays < 1) {
+        text = `${Math.floor(diffHours)}h left`;
+        colorClass = "text-green-600 font-semibold";
+      } else if (diffDays <= 5) {
+        text = `${Math.floor(diffDays)}d left`;
+        colorClass = "text-orange-500 font-semibold";
+      } else {
+        text = `${Math.floor(diffDays)}d left`;
+        colorClass = "text-red-600";
       }
 
       return <P className={colorClass}>{text}</P>;
