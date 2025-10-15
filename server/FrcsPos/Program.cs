@@ -67,12 +67,14 @@ builder.Services.AddScoped<IProductMapper, ProductMapper>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
+builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<IAzureBlobService, AzureBlobService>();
 builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
 builder.Services.AddHostedService<ExpiryNotificationService>();
+
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
