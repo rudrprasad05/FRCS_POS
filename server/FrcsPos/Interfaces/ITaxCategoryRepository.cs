@@ -12,7 +12,9 @@ namespace FrcsPos.Interfaces
         Task<ApiResponse<List<TaxCategoryDTO>>> GetAllTaxCategories(RequestQueryObject queryObject);
         Task<ApiResponse<TaxCategoryDTO>> GetOneAsync(RequestQueryObject queryObject);
         Task<ApiResponse<TaxCategoryDTO>> CreateTaxCategoryAsync(NewTaxRequest request);
+        Task<ApiResponse<TaxCategoryDTO>> EditTaxAsync(NewTaxRequest request, RequestQueryObject queryObject);
         Task<ApiResponse<TaxCategoryDTO>> SoftDelete(string uuid);
+        Task<ApiResponse<TaxCategoryDTO>> ActivateAsync(string uuid);
     }
 }
 

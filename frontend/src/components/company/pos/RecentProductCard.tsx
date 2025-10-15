@@ -17,13 +17,12 @@ export function RecentProductCard({ item }: { item: ProductVariant }) {
 
   const handleAddProduct = (product: ProductVariant) => {
     const sI: SaleItemOmitted = {
-      productId: product.id,
-      product: product,
+      productVariantId: product.id,
+      productVariant: product,
       quantity: 1,
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: product.price,
-      isDeleted: false,
     };
     addProduct(sI);
   };
@@ -89,7 +88,7 @@ export function RecentProductCard({ item }: { item: ProductVariant }) {
           size="sm"
           disabled={
             item.maxStock !== undefined &&
-            (cart.find((c) => c.productId === item.id)?.quantity ?? 0) >=
+            (cart.find((c) => c.productVariantId === item.id)?.quantity ?? 0) >=
               item.maxStock
           }
           onClick={(e) => {

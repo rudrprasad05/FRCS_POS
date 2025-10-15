@@ -7,7 +7,14 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Sale } from "@/types/models";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftIcon, Check, Download, Loader2, Mail } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Check,
+  Download,
+  Loader2,
+  Mail,
+  TriangleAlert,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import QRCode from "react-qr-code";
@@ -62,11 +69,6 @@ export default function ReceiptPage() {
     sale ? sale.createdOn : Date.now.toString()
   );
 
-  queryClient.invalidateQueries({
-    queryKey: ["posSessionProducts", sessionId],
-    exact: false,
-  });
-
   const handleDownloadReceipt = async () => {
     if (!sale) return;
 
@@ -113,15 +115,33 @@ export default function ReceiptPage() {
   }, [checkoutId]);
 
   useEffect(() => {
+    queryClient.invalidateQueries({
+      queryKey: ["posSessionProducts", sessionId],
+      exact: false,
+    });
     getDate();
   }, [params, getDate]);
 
   if (state == EReceiptPageState.LOADING) {
-    return <>loading</>;
+    return (
+      <div className="w-screen h-screen grid place-items-center">
+        <div className="flex items-center flex-col ">
+          <Loader2 className="animate-spin" />
+          Loading Products
+        </div>
+      </div>
+    );
   }
 
   if (sale == null || state == EReceiptPageState.ERROR) {
-    return <>error</>;
+    return (
+      <div className="w-screen h-screen grid place-items-center">
+        <div className="flex items-center flex-col ">
+          <TriangleAlert className="animate-spin" />
+          Error during Loading
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -182,10 +202,10 @@ export default function ReceiptPage() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <p className="font-medium text-foreground text-balance">
-                      {item.product.name}
+                      {item.productVariant.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      SKU: {item.product.sku}
+                      SKU: {item.productVariant.sku}
                     </p>
                   </div>
                   <div className="text-right ml-4">
@@ -198,7 +218,9 @@ export default function ReceiptPage() {
                   <span>
                     {item.quantity} x {formatCurrency(item.unitPrice)}
                   </span>
-                  <span>Tax: {item.product.taxCategory?.ratePercent}%</span>
+                  <span>
+                    Tax: {item.productVariant.taxCategory?.ratePercent}%
+                  </span>
                 </div>
               </div>
             ))}

@@ -19,7 +19,6 @@ namespace FrcsPos.Controllers
     public class MediaController : BaseController
     {
         private readonly IMediaRepository _mediaRepository;
-        private readonly IAmazonS3Service _amazonS3Service;
 
         public MediaController(IMediaRepository mediaRepository,
             IAmazonS3Service amazonS3Service,
@@ -29,7 +28,6 @@ namespace FrcsPos.Controllers
         ) : base(configuration, tokenService, logger)
         {
             _mediaRepository = mediaRepository;
-            _amazonS3Service = amazonS3Service;
         }
 
         [HttpPost("upsert")]
@@ -121,33 +119,32 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
-        [HttpGet("download")]
-        public async Task<IActionResult> DownloadFile([FromQuery] string objKey)
-        {
-            try
-            {
-                var fileStream = await _amazonS3Service.GetObjectAsync(objKey);
+        // [HttpGet("download")]
+        // public async Task<IActionResult> DownloadFile([FromQuery] string objKey)
+        // {
+        //     try
+        //     {
 
-                if (fileStream == null)
-                {
-                    return BadRequest("File not found or error retrieving file.");
-                }
+        //         if (fileStream == null)
+        //         {
+        //             return BadRequest("File not found or error retrieving file.");
+        //         }
 
-                using var responseStream = fileStream.ResponseStream;
-                using var memoryStream = new MemoryStream();
-                await responseStream.CopyToAsync(memoryStream);
+        //         using var responseStream = fileStream.ResponseStream;
+        //         using var memoryStream = new MemoryStream();
+        //         await responseStream.CopyToAsync(memoryStream);
 
-                var contentType = fileStream.Headers["Content-Type"];
-                return File(memoryStream.ToArray(), contentType, objKey);
-            }
-            catch (AmazonS3Exception ex)
-            {
-                return BadRequest($"S3 error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Server error: {ex.Message}");
-            }
-        }
+        //         var contentType = fileStream.Headers["Content-Type"];
+        //         return File(memoryStream.ToArray(), contentType, objKey);
+        //     }
+        //     catch (AmazonS3Exception ex)
+        //     {
+        //         return BadRequest($"S3 error: {ex.Message}");
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(500, $"Server error: {ex.Message}");
+        //     }
+        // }
     }
 }

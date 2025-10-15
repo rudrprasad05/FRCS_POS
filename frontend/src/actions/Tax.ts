@@ -1,3 +1,4 @@
+import { EditTaxData } from "@/components/superadmin/tax/EditTab";
 import { axiosGlobal } from "@/lib/axios";
 import { buildMediaQueryParams } from "@/lib/params";
 import {
@@ -30,11 +31,29 @@ export async function CreateTaxCategory(
     data,
   });
 }
+
+export async function EditTaxCategory(
+  data: EditTaxData,
+  query: QueryObject
+): Promise<ApiResponse<TaxCategory>> {
+  return RequestWrapper<TaxCategory>("POST", "tax/edit", {
+    data,
+    query,
+  });
+}
 export async function GetTaxByUUID(
   query: QueryObject
 ): Promise<ApiResponse<TaxCategory>> {
   return RequestWrapper<TaxCategory>("GET", "tax/get-by-uuid", {
     query,
+  });
+}
+
+export async function ActivateTax(
+  uuid: string
+): Promise<ApiResponse<TaxCategory>> {
+  return RequestWrapper<TaxCategory>("PATCH", "tax/activate", {
+    query: { uuid },
   });
 }
 

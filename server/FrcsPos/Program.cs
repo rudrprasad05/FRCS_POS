@@ -67,12 +67,38 @@ builder.Services.AddScoped<IProductMapper, ProductMapper>();
 
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
+builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<IAzureBlobService, AzureBlobService>();
 builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<BackgroundQueueService>();
 builder.Services.AddHostedService<ExpiryNotificationService>();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(ms => ms.Value?.Errors.Count > 0)
+            .SelectMany(ms => ms.Value?.Errors.Select(e => $"{ms.Key}: {e.ErrorMessage}"))
+            .ToList();
+
+        var response = new ApiResponse<object>
+        {
+            Success = false,
+            StatusCode = 400,
+            Message = "Validation failed",
+            Data = null,
+            Errors = errors,
+            Timestamp = DateTime.UtcNow,
+            TraceId = context.HttpContext.TraceIdentifier
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
+
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {

@@ -13,7 +13,8 @@ export const TaxOnlyColumn: ColumnDef<TaxCategory>[] = [
     accessorKey: "isDeleted",
     header: "Status",
     cell: ({ row }) => {
-      const isDeleted = row.getValue("isDeleted");
+      const isDeleted = row.original.isDeleted;
+      console.log(row.original);
       if (!isDeleted) return <Badge variant="secondary">Active</Badge>;
       return <Badge variant="destructive">Inactive</Badge>;
     },

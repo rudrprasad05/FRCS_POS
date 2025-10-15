@@ -46,8 +46,8 @@ interface PosSessionContextType {
   setInitialState: (data: PosSessionWithProducts) => void;
 
   addProduct: (product: SaleItemOmitted) => void;
-  removeProduct: (productId: string) => void;
-  deleteProduct: (productId: string) => void;
+  removeProduct: (productVariantId: string) => void;
+  deleteProduct: (productVariantId: string) => void;
   loadMore: () => void;
 
   checkout: () => Promise<void>;
@@ -153,7 +153,6 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     setIsProductsLoading(infiniteQuery.isLoading);
   }, [infiniteQuery.isLoading]);
 
-  // Merge all pages into a single array
   const products = useMemo(
     () => infiniteQuery.data?.pages.flatMap((p) => p.data) ?? [],
     [infiniteQuery.data?.pages]
@@ -188,16 +187,19 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       const unitTotal = item.unitPrice * item.quantity;
       subtotal += unitTotal;
       taxTotal +=
-        (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
+        (unitTotal * (item.productVariant.taxCategory?.ratePercent as number)) /
+        100;
     }
 
     total += taxTotal + subtotal;
     setMoneyValues({ subtotal, taxTotal, total });
   }, [cart]);
 
-  function addProduct(product: SaleItemOmitted) {
+  function addProduct(saleItem: SaleItemOmitted) {
     setCart((prev) => {
-      const existing = prev.find((p) => p.productId === product.productId);
+      const existing = prev.find(
+        (p) => p.productVariantId === saleItem.productVariantId
+      );
       if (existing) {
         return prev.map((p) => {
           const newQuant = p.quantity + 1;
@@ -206,15 +208,20 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
             quantity: newQuant,
             lineTotal: newQuant * p.unitPrice,
           };
-          return p.productId === product.productId ? { ...newP } : p;
+          return p.productVariantId === saleItem.productVariantId
+            ? { ...newP }
+            : p;
         });
       }
+      console.log("fjfjfjf", saleItem);
       return [
         ...prev,
         {
-          ...product,
+          ...saleItem,
           quantity: 1,
-          taxRatePercent: Number(product.product.taxCategory?.ratePercent),
+          taxRatePercent: Number(
+            saleItem.productVariant.taxCategory?.ratePercent
+          ),
         },
       ];
     });
@@ -222,24 +229,26 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
 
   function removeProduct(productUUID: string) {
     setCart((prev) => {
-      const existing = prev.find((p) => p.product.uuid === productUUID);
+      const existing = prev.find((p) => p.productVariant.uuid === productUUID);
       if (!existing) return prev; // product not found
 
       if (existing.quantity > 1) {
         return prev.map((p) =>
-          p.product.uuid === productUUID
+          p.productVariant.uuid === productUUID
             ? { ...p, quantity: p.quantity - 1 }
             : p
         );
       }
 
       // If quantity is 1, remove product entirely
-      return prev.filter((p) => p.product.uuid !== productUUID);
+      return prev.filter((p) => p.productVariant.uuid !== productUUID);
     });
   }
 
   function deleteProduct(productUUID: string) {
-    setCart((prev) => prev.filter((p) => p.product.uuid !== productUUID));
+    setCart((prev) =>
+      prev.filter((p) => p.productVariant.uuid !== productUUID)
+    );
   }
 
   async function checkout() {
@@ -256,7 +265,8 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       const unitTotal = item.unitPrice * item.quantity;
       subtotal += unitTotal;
       taxTotal +=
-        (unitTotal * (item.product.taxCategory?.ratePercent as number)) / 100;
+        (unitTotal * (item.productVariant.taxCategory?.ratePercent as number)) /
+        100;
     }
 
     total += taxTotal + subtotal;
@@ -281,12 +291,14 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
       items: cart as SaleItem[],
     };
 
+    console.log(checkoutDataToSend);
+    // return;
     setIsSaving(true);
     const res = await Checkout(checkoutDataToSend);
 
     if (res.success && res.data) {
       toast.success("Checkout successful!");
-      router.push(`${session.uuid}/checkout/${res.data.uuid}`);
+      router.push(`${session.uuid}/checkout/${res.data?.uuid}`);
     } else {
       console.log(res);
       toast.error("Checkout failed!", { description: res.message });

@@ -24,6 +24,7 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
                 RatePercent = request.RatePercent,
+                IsDeleted = request.IsDeleted,
             };
 
             return dto;

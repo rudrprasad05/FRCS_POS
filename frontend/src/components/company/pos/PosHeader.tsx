@@ -8,7 +8,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePosSession } from "@/context/PosContext";
 import {
+  ArrowLeft,
   CreditCard,
   Maximize,
   Menu,
@@ -23,13 +25,17 @@ import {
   Unplug,
   User,
 } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import PosQrCodeConnectDialoge from "./PosQrCodeConnectDialoge";
-import { usePosSession } from "@/context/PosContext";
 
 export default function PosHeader() {
   const { session, isTerminalConnectedToServer, isScannerConnectedToServer } =
     usePosSession();
+  const params = useParams();
+  const companyName = String(params.companyName);
+  const posId = String(params.posId);
 
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
 
@@ -60,7 +66,18 @@ export default function PosHeader() {
     <header className="flex items-center justify-between px-6 py-4 bg-background border-b border-border">
       {/* Left side - Logo/Brand */}
       <div className="flex items-center space-x-4">
-        <h1 className="text-xl font-semibold text-foreground">RetailPOS</h1>
+        <div className="flex items-center gap-1 text-sm">
+          <Link
+            className="flex items-center gap-1 text-sm"
+            prefetch
+            href={`/${companyName}/pos/${posId}`}
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Link>
+        </div>
+        <h1 className="text-xl font-semibold text-foreground">
+          <Link href={`/${companyName}/dashboard`}>RetailPOS</Link>
+        </h1>
         <div className="text-sm text-muted-foreground">
           {session.posTerminal?.name}
         </div>
