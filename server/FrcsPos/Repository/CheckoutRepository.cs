@@ -133,7 +133,7 @@ namespace FrcsPos.Repository
             var saleItems = request.Items.Select(i =>
             {
                 var lineSubtotal = i.Quantity * i.ProductVariant.Price;
-                var lineTax = lineSubtotal * i.ProductVariant.Product?.TaxCategory?.RatePercent ?? 0;
+                var lineTax = lineSubtotal * (i.ProductVariant.TaxCategory?.RatePercent / 100) ?? 0;
 
                 subtotal += lineSubtotal;
                 taxTotal += lineTax;
