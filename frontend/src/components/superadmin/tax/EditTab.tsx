@@ -1,6 +1,6 @@
 "use client";
 
-import { EditCompany } from "@/actions/Company";
+import { EditTaxCategory } from "@/actions/Tax";
 import { GetUnAssignedUsers } from "@/actions/User";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { RedStar } from "@/components/global/RedStart";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,36 +15,27 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { QueryObject, TaxCategory, User, UserRoles } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-export const productSchema = z.object({
+export const taxSchema = z.object({
   name: z
     .string()
-    .min(1, "Product name is required")
-    .max(100, "Name must be less than 100 characters"),
-  adminUserId: z
-    .string()
-    .min(1, "SKU is required")
-    .max(50, "SKU must be less than 50 characters"),
+    .min(1, "Tax name is required")
+    .max(50, "Name must be less than 100 characters"),
+  percentage: z.coerce
+    .number<number>()
+    .min(0, "percent to be above 0")
+    .max(100, "percent to be below 100"),
 });
 
-export type EditCompanyData = z.infer<typeof productSchema>;
+export type EditTaxData = z.infer<typeof taxSchema>;
 
 export function EditorTab({ tax }: { tax: TaxCategory }) {
   const [loading, setLoading] = useState(true);
@@ -55,11 +45,11 @@ export function EditorTab({ tax }: { tax: TaxCategory }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const form = useForm<EditCompanyData>({
-    resolver: zodResolver(productSchema),
+  const form = useForm<EditTaxData>({
+    resolver: zodResolver(taxSchema),
     defaultValues: {
       name: tax?.name,
-      adminUserId: "",
+      percentage: tax.ratePercent,
     },
   });
 
@@ -76,21 +66,21 @@ export function EditorTab({ tax }: { tax: TaxCategory }) {
     getData();
   }, [form]);
 
-  const onSubmit = async (data: EditCompanyData) => {
+  const onSubmit = async (data: EditTaxData) => {
     setIsSubmitting(true);
 
-    const res = await EditCompany(data, tax.uuid);
+    const res = await EditTaxCategory(data, { uuid: tax.uuid });
 
     if (res.success) {
       queryClient.invalidateQueries({
-        queryKey: ["editCompany", tax.uuid],
+        queryKey: ["editTax", tax.uuid],
       });
       queryClient.invalidateQueries({
-        queryKey: ["adminCompanies"],
+        queryKey: ["adminTax", {}],
         exact: false,
       });
       toast.success("Uploaded");
-      router.back();
+      router.push("/admin/tax");
     } else {
       toast.error("Failed to upload");
     }
@@ -102,8 +92,8 @@ export function EditorTab({ tax }: { tax: TaxCategory }) {
     <div className="min-h-screen bg-background pt-4">
       <div className="space-y-4">
         <div>
-          <LargeText>Company Information</LargeText>
-          <MutedText>Fill in the details below to create a new tax</MutedText>
+          <LargeText>Tax Information</LargeText>
+          <MutedText>Fill in the details below to edit tax</MutedText>
         </div>
         <div>
           <Form {...form}>
@@ -123,45 +113,21 @@ export function EditorTab({ tax }: { tax: TaxCategory }) {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
-                name="adminUserId"
+                name="percentage"
                 render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel>Select Admin</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl className="w-full">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an admin" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="w-full">
-                        {loading && <Loader2 className="animate-spin" />}
-                        {adminUsers.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {user.username ?? user.email}
-                          </SelectItem>
-                        ))}
-
-                        <Link
-                          href={{
-                            pathname: "/admin/users",
-                            query: {
-                              open_create: "true",
-                              returnUrl: `/admin/companies/${tax.uuid}/edit`,
-                            },
-                          }}
-                        >
-                          <div className="hover:bg-accent focus:bg-accent focus:text-accent-foreground  relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none ">
-                            <Plus className="w-4 h-4" /> New User
-                          </div>
-                        </Link>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Choose an admin for this tax.
-                    </FormDescription>
+                  <FormItem>
+                    <FormLabel className="">
+                      Percent <RedStar />
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="enter value between [0-100]"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

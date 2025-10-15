@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { usePosSession } from "@/context/PosContext";
 import { ESortBy, ProductVariant } from "@/types/models";
 import { useQueryClient } from "@tanstack/react-query";
-import { RefreshCcw, Search } from "lucide-react";
+import { PackageOpen, RefreshCcw, Search } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PosHeader from "./PosHeader";
@@ -101,6 +101,8 @@ export default function PosTerminal() {
     };
   }, [loadMoreRef, loadMore]);
 
+  console.log(products);
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <PosHeader />
@@ -147,6 +149,14 @@ export default function PosTerminal() {
                     <LoadingProductsPosCard key={i} />
                   ))}
               </div>
+              {products.length === 0 && (
+                <div className="ml-6 mb-4 w-full h-80 grid place-items-center">
+                  <div className="text-center text-xl flex flex-col items-center">
+                    <PackageOpen className="w-24 h-24 stroke-1" />
+                    No Items to Display
+                  </div>
+                </div>
+              )}
               <div ref={loadMoreRef}></div>
             </ScrollArea>
           </Card>
@@ -164,7 +174,7 @@ export default function PosTerminal() {
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <ScrollArea className="h-full">
                     <div className="space-y-3 pr-4">
-                      {products.length === 0 && (
+                      {cart.length === 0 && (
                         <div className="w-full h-80 border border-dashed rounded-lg grid place-items-center">
                           <div className="text-center text-sm">
                             No Items in cart
@@ -174,7 +184,10 @@ export default function PosTerminal() {
 
                       {cart.length > 0 &&
                         cart.map((item) => (
-                          <SaleItemCard key={item.product.uuid} item={item} />
+                          <SaleItemCard
+                            key={item.productVariant.uuid}
+                            item={item}
+                          />
                         ))}
                     </div>
                   </ScrollArea>

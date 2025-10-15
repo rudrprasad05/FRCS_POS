@@ -50,8 +50,7 @@ export function BatchCreationStep3({
                 value={field.value ?? ""}
                 onChange={(e) => {
                   const val = (e.target as HTMLInputElement).value;
-                  const num = val === "" ? 0 : Number(val); // or parseInt(val, 10)
-                  field.onChange(num);
+                  field.onChange(Number(val));
                 }}
               />
             </FormControl>

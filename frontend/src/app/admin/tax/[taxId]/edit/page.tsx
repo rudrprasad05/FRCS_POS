@@ -1,6 +1,6 @@
 "use client";
 
-import { GetTaxByUUID, SoftDeleteTax } from "@/actions/Tax";
+import { ActivateTax, GetTaxByUUID, SoftDeleteTax } from "@/actions/Tax";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import ConfigTab from "@/components/superadmin/tax/ConfigTab";
 import { EditorTab } from "@/components/superadmin/tax/EditTab";
@@ -9,7 +9,7 @@ import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { TaxCategory } from "@/types/models";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +19,7 @@ export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();
   const taxId = String(params.taxId);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["editTax", taxId],
@@ -36,11 +37,19 @@ export default function EditorPage() {
 
   const deleteFn = async (uuid: string): Promise<{ success: boolean }> => {
     const res = await SoftDeleteTax(uuid);
+    queryClient.invalidateQueries({
+      queryKey: ["adminTax", {}],
+      exact: false,
+    });
     return { success: res.success };
   };
 
   const activateFn = async (uuid: string): Promise<{ success: boolean }> => {
-    const res = await SoftDeleteTax(uuid);
+    const res = await ActivateTax(uuid);
+    queryClient.invalidateQueries({
+      queryKey: ["adminTax", {}],
+      exact: false,
+    });
     return { success: res.success };
   };
 
@@ -84,7 +93,7 @@ export default function EditorPage() {
           </TabsPrimitive.Trigger>
         </TabsPrimitive.List>
         <TabsContent value="edit">
-          <EditorTab company={tax} />
+          <EditorTab tax={tax} />
         </TabsContent>
         <TabsContent value="config">
           <ConfigTab entity={tax} deleteFn={deleteFn} activateFn={activateFn} />

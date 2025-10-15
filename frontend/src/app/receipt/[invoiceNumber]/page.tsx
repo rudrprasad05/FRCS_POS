@@ -69,7 +69,6 @@ export default function ReceiptPage() {
     try {
       setIsDownloading(true);
 
-      // Call your API that returns the uploaded S3 PDF URL
       const res = await DownloadRecieptFromServer(sale.invoiceNumber); // or your dedicated endpoint
 
       if (!res.success || !res.data) {
@@ -163,10 +162,10 @@ export default function ReceiptPage() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <p className="font-medium text-foreground text-balance">
-                      {item.product.name}
+                      {item.productVariant.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      SKU: {item.product.sku}
+                      SKU: {item.productVariant.sku}
                     </p>
                   </div>
                   <div className="text-right ml-4">
@@ -179,7 +178,9 @@ export default function ReceiptPage() {
                   <span>
                     {item.quantity} x {formatCurrency(item.unitPrice)}
                   </span>
-                  <span>Tax: {item.product.taxCategory?.ratePercent}%</span>
+                  <span>
+                    Tax: {item.productVariant.taxCategory?.ratePercent}%
+                  </span>
                 </div>
               </div>
             ))}

@@ -15,7 +15,7 @@ namespace FrcsPos.Response.DTO
         public string? Barcode { get; set; }
         public decimal Price { get; set; }
         public int TaxCategoryId { get; set; }
-        public TaxCategoryDTO TaxCategory { get; set; } = default!;
+        public TaxCategoryDTO? TaxCategory { get; set; } = default!;
         public bool IsPerishable { get; set; } = false;
         public int MediaId { get; set; } = default!;
         public MediaDto? Media { get; set; } = default!;
@@ -23,7 +23,7 @@ namespace FrcsPos.Response.DTO
         public int FirstWarningInDays { get; set; }
         public int CriticalWarningInHours { get; set; }
         public int SupplierId { get; set; }
-        public SupplierDTO Supplier { get; set; } = default!;
+        public SupplierDTO? Supplier { get; set; } = default!;
         public List<ProductVariantDTO> Variants { get; set; } = [];
 
     }

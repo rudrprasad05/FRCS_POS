@@ -97,7 +97,7 @@ export default function ConfigTab({
                 description="This action cannot be undone."
                 confirmWord="delete"
                 actionLabel="Delete"
-                successMessage="entity Deleted"
+                successMessage="Entity Deleted"
                 errorMessage="Error Occurred"
                 buttonVariant="destructive"
                 buttonIcon={<Trash />}

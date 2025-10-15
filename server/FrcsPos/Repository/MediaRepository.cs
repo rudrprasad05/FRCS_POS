@@ -18,7 +18,6 @@ namespace FrcsPos.Repository
     public class MediaRepository : IMediaRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAmazonS3Service _amazonS3Service;
         private readonly IAzureBlobService _azureBlobService;
         private readonly IMediaMapper _mediaMapper;
 
@@ -27,7 +26,6 @@ namespace FrcsPos.Repository
         public MediaRepository(IMediaMapper mediaMapper, IAzureBlobService azureBlobService, INotificationService notificationService, ApplicationDbContext context, IAmazonS3Service amazonS3Service)
         {
             _context = context;
-            _amazonS3Service = amazonS3Service;
             _notificationService = notificationService;
             _azureBlobService = azureBlobService;
             _mediaMapper = mediaMapper;
@@ -115,7 +113,7 @@ namespace FrcsPos.Repository
 
             foreach (var item in res)
             {
-                var signedUrl = await _amazonS3Service.GetImageSignedUrl(item.ObjectKey);
+                var signedUrl = await _azureBlobService.GetImageSignedUrl(item.ObjectKey);
 
                 item.Url = signedUrl;
                 signedMedia.Add(item);
@@ -153,7 +151,7 @@ namespace FrcsPos.Repository
             if (file != null)
             {
                 var newMediaObjectKey = Guid.NewGuid().ToString();
-                var fileUrl = await _amazonS3Service.UploadFileAsync(file, newMediaObjectKey);
+                var fileUrl = await _azureBlobService.UploadFileAsync(file, newMediaObjectKey);
                 if (fileUrl == null)
                 {
                     return new ApiResponse<MediaDto>

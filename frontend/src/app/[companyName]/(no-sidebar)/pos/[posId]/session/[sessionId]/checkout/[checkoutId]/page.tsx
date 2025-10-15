@@ -182,10 +182,10 @@ export default function ReceiptPage() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <p className="font-medium text-foreground text-balance">
-                      {item.product.name}
+                      {item.productVariant.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      SKU: {item.product.sku}
+                      SKU: {item.productVariant.sku}
                     </p>
                   </div>
                   <div className="text-right ml-4">
@@ -198,7 +198,9 @@ export default function ReceiptPage() {
                   <span>
                     {item.quantity} x {formatCurrency(item.unitPrice)}
                   </span>
-                  <span>Tax: {item.product.taxCategory?.ratePercent}%</span>
+                  <span>
+                    Tax: {item.productVariant.taxCategory?.ratePercent}%
+                  </span>
                 </div>
               </div>
             ))}

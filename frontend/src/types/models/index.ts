@@ -6,6 +6,7 @@ export interface BaseModel {
   createdOn: string;
   updatedOn: string;
   isDeleted: boolean;
+  isActive: boolean;
 }
 
 export interface Supplier extends BaseModel {
@@ -86,8 +87,8 @@ export interface SaleItem extends BaseModel {
   saleId: number;
   sale?: Sale;
 
-  productId: number;
-  product: ProductVariant;
+  productVariantId: number;
+  productVariant: ProductVariant;
 
   quantity: number;
   unitPrice: number;
@@ -97,7 +98,14 @@ export interface SaleItem extends BaseModel {
 
 export type SaleItemOmitted = Omit<
   SaleItem,
-  "sale" | "saleId" | "id" | "uuid" | "createdOn" | "updatedOn"
+  | "sale"
+  | "saleId"
+  | "id"
+  | "uuid"
+  | "createdOn"
+  | "updatedOn"
+  | "isActive"
+  | "isDeleted"
 >;
 
 export interface Company extends BaseModel {

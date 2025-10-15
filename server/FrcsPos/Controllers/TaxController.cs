@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using FrcsPos.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,11 +52,30 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("edit")]
+        public async Task<IActionResult> EditTax([FromBody] NewTaxRequest request, [FromQuery] RequestQueryObject queryObject)
+        {
+            if (request == null) return BadRequest("Invalid request data");
+            var model = await _taxRepository.EditTaxAsync(request, queryObject);
+            if (!model.Success) return BadRequest(model);
+            return Ok(model);
+        }
+
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteTax([FromQuery] string uuid)
         {
-            if (string.IsNullOrWhiteSpace(uuid)) return BadRequest("UUID is required");
+            if (string.IsNullOrWhiteSpace(uuid))
+                return BadRequest(ApiResponse<string>.Fail(message: "invalid uuid"));
             var model = await _taxRepository.SoftDelete(uuid);
+            if (!model.Success) return BadRequest(model);
+            return Ok(model);
+        }
+        [HttpPatch("activate")]
+        public async Task<IActionResult> Activate([FromQuery] string uuid)
+        {
+            if (string.IsNullOrWhiteSpace(uuid))
+                return BadRequest(ApiResponse<string>.Fail(message: "invalid uuid"));
+            var model = await _taxRepository.ActivateAsync(uuid);
             if (!model.Success) return BadRequest(model);
             return Ok(model);
         }

@@ -2,49 +2,50 @@
 
 import { Button } from "@/components/ui/button";
 import { usePosSession } from "@/context/PosContext";
-import { Product, SaleItemOmitted } from "@/types/models";
+import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
   const { cart, addProduct, deleteProduct, removeProduct } = usePosSession();
 
-  const handleAddProduct = (product: Product) => {
+  const handleAddProduct = (product: ProductVariant) => {
     const sI: SaleItemOmitted = {
-      productId: product.id,
-      product: product,
+      productVariantId: product.id,
+      productVariant: product,
       quantity: 1,
       unitPrice: product.price,
       taxRatePercent: 0.125,
       lineTotal: 0,
-      isDeleted: false,
     };
     addProduct(sI);
   };
 
-  const handleRemoveProduct = (product: Product) => {
+  const handleRemoveProduct = (product: ProductVariant) => {
     removeProduct(product.uuid);
   };
 
-  const handleDeleteProduct = (product: Product) => {
+  const handleDeleteProduct = (product: ProductVariant) => {
     deleteProduct(product.uuid);
   };
 
   return (
     <div
-      key={item?.product?.id}
+      key={item?.productVariant?.id}
       className="bg-card/20 text-card-foreground flex rounded-xl border shadow-smflex items-center justify-between py-4 px-5"
     >
       <div className="flex-1">
-        <h4 className="font-medium text-sm">{item?.product?.name}</h4>
+        <h4 className="font-medium text-sm">{item?.productVariant?.name}</h4>
         <p className="text-primary font-semibold">
-          ${item.product?.price.toFixed(2)}
+          ${item.productVariant?.price.toFixed(2)}
         </p>
       </div>
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handleRemoveProduct(item.product as Product)}
+          onClick={() =>
+            handleRemoveProduct(item.productVariant as ProductVariant)
+          }
         >
           <Minus className="w-3 h-3" />
         </Button>
@@ -53,18 +54,20 @@ export default function SaleItemCard({ item }: { item: SaleItemOmitted }) {
           variant="outline"
           size="sm"
           disabled={
-            item.product.maxStock !== undefined &&
-            (cart.find((c) => c.productId === item.product.id)?.quantity ??
-              0) >= item.product.maxStock
+            item.productVariant.maxStock !== undefined &&
+            (cart.find((c) => c.productVariantId === item.productVariant.id)
+              ?.quantity ?? 0) >= item.productVariant.maxStock
           }
-          onClick={() => handleAddProduct(item.product as Product)}
+          onClick={() =>
+            handleAddProduct(item.productVariant as ProductVariant)
+          }
         >
           <Plus className="w-3 h-3" />
         </Button>
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => handleDeleteProduct(item.product)}
+          onClick={() => handleDeleteProduct(item.productVariant)}
         >
           <Trash2 className="w-3 h-3" />
         </Button>

@@ -5,6 +5,7 @@ import { usePosSession } from "@/context/PosContext";
 import { WebSocketUrl } from "@/lib/utils";
 import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import * as signalR from "@microsoft/signalr";
+import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import PosTerminal from "./PosTerminal";
@@ -27,13 +28,12 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       const product = productsRef.current.find((p) => p.barcode === scan);
       if (!product) return;
       const sI: SaleItemOmitted = {
-        productId: product.id,
-        product: product,
+        productVariantId: product.id,
+        productVariant: product,
         quantity: 1,
         unitPrice: product.price,
         taxRatePercent: product.taxCategory?.ratePercent as number,
         lineTotal: product.price,
-        isDeleted: false,
       };
       addProduct(sI);
     },
@@ -96,7 +96,15 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     };
   }, [uuid, handleProductAdd]);
 
-  if (loading) return <>loading</>;
+  if (loading)
+    return (
+      <div className="w-screen h-screen grid place-items-center">
+        <div className="flex items-center flex-col ">
+          <Loader2 className="animate-spin" />
+          Loading Products
+        </div>
+      </div>
+    );
 
   return <PosTerminal />;
 }

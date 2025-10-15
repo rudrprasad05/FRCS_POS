@@ -25,20 +25,21 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly UserManager<User> _userManager;
-        private readonly IAmazonS3Service _amazonS3Service;
+        private readonly IAzureBlobService _azureBlobService;
+
 
 
         public CheckoutRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
             UserManager<User> userManager,
-            IAmazonS3Service amazonS3Service
+            IAzureBlobService azureBlobService
         )
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
-            _amazonS3Service = amazonS3Service;
+            _azureBlobService = azureBlobService;
 
         }
 
@@ -66,16 +67,19 @@ namespace FrcsPos.Repository
             // Generate InvoiceNumber (example: CompanyID-YYYYMMDD-HHMMSS)
             var invoiceNumber = $"{request.CompanyName[0..2]}-{DateTime.UtcNow:yyyyMMddHHmmss}";
 
+            var variantIds = request.Items.Select(i => i.ProductVariant.Id).ToList();
+
             var productIds = request.Items.Select(i => i.ProductVariant.ProductId).ToList();
             var products = await _context.Products
                 .Include(p => p.TaxCategory)
                 .Where(p => productIds.Contains(p.Id))
                 .ToDictionaryAsync(p => p.Id);
 
+
             // Load product batches for this company
             var productBatches = await _context.ProductBatches
-                .Include(pb => pb.ProductVariant.Product)
-                .Where(pb => productIds.Contains(pb.ProductVariant.ProductId)
+                .Include(pb => pb.ProductVariant)
+                .Where(pb => variantIds.Contains(pb.ProductVariant.Id)
                             && pb.Warehouse.CompanyId == company.Id
                             && (pb.ExpiryDate == null || pb.ExpiryDate > DateTime.UtcNow))
                 .ToListAsync();
@@ -84,7 +88,7 @@ namespace FrcsPos.Repository
             foreach (var item in request.Items)
             {
                 var availableQty = productBatches
-                    .Where(pb => pb.ProductVariant.ProductId == item.ProductVariant.ProductId)
+                    .Where(pb => pb.ProductVariant.Id == item.ProductVariant.Id)
                     .Sum(pb => pb.Quantity);
 
                 if (availableQty < item.Quantity)
@@ -95,12 +99,13 @@ namespace FrcsPos.Repository
                 }
             }
 
+            // deduct stock
             foreach (var item in request.Items)
             {
                 var needed = item.Quantity;
 
                 var batches = productBatches
-                    .Where(pb => pb.ProductVariant.ProductId == item.ProductVariant.ProductId)
+                    .Where(pb => pb.ProductVariant.Id == item.ProductVariant.Id)
                     .OrderBy(pb => pb.ExpiryDate ?? DateTime.MaxValue) // oldest first
                     .ToList();
 
@@ -116,7 +121,7 @@ namespace FrcsPos.Repository
                 if (needed > 0)
                 {
                     return ApiResponse<SaleDTO>.Fail(
-                        message: $"Not enough stock for product {item.ProductVariant.ProductId}"
+                        message: $"Not enough stock for product {item.ProductVariant.Id}"
                     );
                 }
             }
@@ -127,18 +132,15 @@ namespace FrcsPos.Repository
 
             var saleItems = request.Items.Select(i =>
             {
-                if (!products.TryGetValue(i.ProductVariant.ProductId, out var product))
-                    throw new Exception($"Product {i.ProductVariant.ProductId} not found");
-
                 var lineSubtotal = i.Quantity * i.ProductVariant.Price;
-                var lineTax = lineSubtotal * product.TaxCategory.RatePercent;
+                var lineTax = lineSubtotal * i.ProductVariant.Product?.TaxCategory?.RatePercent ?? 0;
 
                 subtotal += lineSubtotal;
                 taxTotal += lineTax;
 
                 return new SaleItem
                 {
-                    ProductVariantId = i.ProductVariant.ProductId,
+                    ProductVariantId = i.ProductVariant.Id,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
                     LineTotal = lineSubtotal + lineTax
@@ -206,15 +208,25 @@ namespace FrcsPos.Repository
             if (sale == null)
                 return ApiResponse<string>.NotFound(message: "Sale not found");
 
+            var maybeObjKey = $"frcs/{uuid}.pdf";
+            var checkUrl = await _azureBlobService.GetImageSignedUrl(maybeObjKey);
+            if (checkUrl != null && !string.IsNullOrEmpty(checkUrl))
+            {
+                return ApiResponse<string>.Ok(data: checkUrl);
+            }
+
             // Generate PDF bytes using QuestPDF
             var pdfBytes = GenerateReceiptPdfBytes(sale);
-
-            // Upload to S3
             var formFile = ToFormFile(pdfBytes, $"{sale.InvoiceNumber}.pdf");
-            var fileUrl = await _amazonS3Service.UploadFileAsync(formFile, sale.InvoiceNumber);
 
+            var objKey = await _azureBlobService.UploadFileAsync(formFile, sale.InvoiceNumber);
+            if (objKey == null || string.IsNullOrEmpty(objKey))
+            {
+                return ApiResponse<string>.Fail(message: "invalid pdf url");
+            }
+
+            var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
             return ApiResponse<string>.Ok(data: fileUrl);
-
         }
         private static IFormFile ToFormFile(byte[] fileBytes, string fileName)
         {

@@ -99,18 +99,18 @@ namespace FrcsPos.Repository
 
             // Pagination
             var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var products = await query
+            var productVariants = await query
                 .Skip(skip)
                 .Take(queryObject.PageSize)
                 .ToListAsync();
 
             // Mapping to DTOs
             var result = new List<ProductVariantDTO>();
-            foreach (var product in products)
+            foreach (var variant in productVariants)
             {
-                var dto = await _productVariantMapper.FromModelToDtoAsync(product);
+                var dto = await _productVariantMapper.FromModelToDtoAsync(variant);
 
-                dto.MaxStock = product.Batches
+                dto.MaxStock = variant.Batches
                     .Where(b => b.Quantity > 0 && (b.ExpiryDate == null || b.ExpiryDate > now))
                     .Sum(b => b.Quantity);
 
@@ -120,8 +120,8 @@ namespace FrcsPos.Repository
                     dto.Media.Url = signedUrl;
                 }
 
-                dto.TaxCategory = product.Product.TaxCategory.FromModelToDto();
-                dto.Supplier = product.Product.Supplier.FromModelToDto();
+                dto.TaxCategory = variant.Product.TaxCategory.FromModelToDto();
+                dto.Supplier = variant.Product.Supplier.FromModelToDto();
 
                 result.Add(dto);
             }
