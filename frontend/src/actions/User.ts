@@ -5,6 +5,7 @@ import { axiosGlobal } from "@/lib/axios";
 import { ApiResponse, QueryObject, User } from "@/types/models";
 import { cookies } from "next/headers";
 
+import { ResetPasswordSchemaType } from "@/types/forms/zod";
 import https from "https";
 import { RequestWrapper } from "./RequestWrapper";
 
@@ -52,6 +53,18 @@ export async function RequestPasswordReset(
 ): Promise<ApiResponse<User>> {
   return RequestWrapper<User>("POST", `user/request-password-reset`, {
     data: { email },
+  });
+}
+
+export async function PasswordReset(
+  data: ResetPasswordSchemaType
+): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("POST", `user/handle-password-reset`, {
+    data: {
+      code: data.code,
+      userId: data.userId,
+      password: data.newPassword,
+    },
   });
 }
 

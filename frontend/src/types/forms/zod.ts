@@ -55,6 +55,25 @@ export const NewBatchDataSchema = z.object({
     .nullable(),
 });
 
+export const ResetPasswordSchema = z
+  .object({
+    code: z.string().min(1),
+    userId: z.string().min(1),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(50, "Password must be less than 50 characters"),
+    confirmPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(50, "Password must be less than 50 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
 export type NewBatchData = z.output<typeof NewBatchDataSchema>;
 export type NewMediaFormType = z.infer<typeof NewMediaFormSchema>;
 export type SignInFormType = z.infer<typeof SignInForm>;

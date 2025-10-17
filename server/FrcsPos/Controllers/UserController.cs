@@ -104,14 +104,31 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("request-password-reset")]
-        public async Task<IActionResult> RequestPasswordReset([FromBody] string email)
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordReset requestPasswordReset)
         {
-            if (string.IsNullOrEmpty(email))
+            if (string.IsNullOrEmpty(requestPasswordReset.Email))
             {
                 return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
             }
 
-            var model = await _emailRepository.SendPasswordResetEmail(email);
+            var model = await _emailRepository.SendPasswordResetEmail(requestPasswordReset.Email);
+            if (!model)
+            {
+                return BadRequest(ApiResponse<bool>.Fail(message: "email not sent"));
+            }
+
+            return Ok(ApiResponse<bool>.Ok(true, message: "email sent"));
+        }
+
+        [HttpPost("handle-password-reset")]
+        public async Task<IActionResult> HandlePasswordReset([FromBody] PasswordResetRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Code) || string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
+            }
+
+            var model = await _emailRepository.ResetPassword(request);
             if (model == null || !model.Success)
             {
                 return BadRequest(model);
