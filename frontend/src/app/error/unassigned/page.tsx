@@ -48,9 +48,9 @@ export default function UnAssigned() {
                 </Link>
               </Button>
               <Button variant="ghost" asChild className="w-full">
-                <Link href="javascript:history.back()">
+                <Link href="/auth/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Go Back
+                  Sign In
                 </Link>
               </Button>
             </div>

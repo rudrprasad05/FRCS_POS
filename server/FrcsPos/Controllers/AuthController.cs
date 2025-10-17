@@ -71,6 +71,11 @@ namespace FrcsPos.Controllers
                     return BadRequest(ApiResponse<LoginDTO>.Fail(message: "invalid username or password"));
                 }
 
+                if (!user.EmailConfirmed)
+                {
+                    return UnprocessableEntity(ApiResponse<LoginDTO>.Forbidden(message: "email not verified"));
+                }
+
                 var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                 if (!result.Succeeded)
                 {

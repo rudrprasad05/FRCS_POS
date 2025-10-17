@@ -59,11 +59,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           password,
         }
       );
-      const data = res.data.data;
-      if (data == undefined) {
+
+      if (res.status == 422) {
+        router.push("/auth/verify-email");
         return;
       }
-      localStorage.setItem("token", data.token);
+
+      const data = res.data.data;
+      if (data == undefined) {
+        router.push("/error/unauthorised");
+        return;
+      }
+
       tempUser = {
         id: data.id,
         username: data.username,
@@ -74,9 +81,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
+      localStorage.setItem("token", data.token);
 
       if (redirect && redirect.trim().length > 0) {
         router.push("/admin" + redirect);
+        return;
       } else {
         helperHandleRedirectAfterLogin(tempUser);
       }

@@ -13,17 +13,22 @@ export default function Redirect() {
   const router = useRouter();
 
   const handleCompanyRedirect = useCallback(async () => {
+    console.log("r1", user);
     if (user == null) {
       router.push("/auth/login");
       return;
     }
 
+    console.log("r2", user);
     if (user.role?.toUpperCase() == UserRoles.SUPERADMIN) {
+      console.log("r2b", user);
+
       router.push("/admin/dashboard");
       return;
     }
 
     const res = await GetCompanyByAdminUserId(user.id);
+    console.log("r3", res);
 
     if (res.success) {
       const name = res.data?.name;

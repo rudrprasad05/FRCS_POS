@@ -55,6 +55,15 @@ export async function RequestPasswordReset(
   });
 }
 
+export async function Login(
+  email: string,
+  password: string
+): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("POST", `auth/login`, {
+    data: { email, password },
+  });
+}
+
 export async function CreateUser(
   data: NewUserForm,
   query?: QueryObject

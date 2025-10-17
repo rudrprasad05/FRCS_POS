@@ -127,5 +127,18 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpGet("exists")]
+        public async Task<IActionResult> CheckCompanyExists([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _companyRepository.Exists(queryObject);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
     }
 }

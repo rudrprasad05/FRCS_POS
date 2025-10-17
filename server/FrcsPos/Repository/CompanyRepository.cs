@@ -37,6 +37,16 @@ namespace FrcsPos.Repository
 
         }
 
+        public async Task<ApiResponse<bool>> Exists(RequestQueryObject queryObject)
+        {
+            var model = await _context.Companies.FirstOrDefaultAsync(c => c.UUID == queryObject.CompanyName);
+            if (model == null)
+            {
+                return ApiResponse<bool>.Fail();
+            }
+            return ApiResponse<bool>.Ok(true);
+        }
+
         public async Task<ApiResponse<CompanyDTO>> CreateCompanyAsync(NewCompanyRequest request)
         {
             var company = request.FromNewCompanyRequestToModel();
