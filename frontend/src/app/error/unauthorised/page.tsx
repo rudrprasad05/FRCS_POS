@@ -32,7 +32,7 @@ export default function UnauthorizedPage() {
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-3">
               <Button asChild className="w-full">
-                <Link href="/login">
+                <Link href="/auth/login">
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In
                 </Link>

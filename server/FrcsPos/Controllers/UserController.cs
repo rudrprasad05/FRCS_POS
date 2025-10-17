@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
 using FrcsPos.Models;
+using FrcsPos.Repository;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
@@ -23,12 +24,10 @@ namespace FrcsPos.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
-        private readonly IWebHostEnvironment _env;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly INotificationService _notificationService;
-
         private readonly ICompanyRepository _companyRepository;
-        private readonly IUserContext _userContext;
+        private readonly IEmailVerificationRepository _emailRepository;
 
         public UserController(
             UserManager<User> userManager,
@@ -36,21 +35,19 @@ namespace FrcsPos.Controllers
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
-            IWebHostEnvironment env,
             ILogger<UserController> logger,
             IUserRepository userRepository,
             INotificationService notificationService,
-            IUserContext userContext
+            IEmailVerificationRepository emailRepository
 
         ) : base(configuration, tokenService, logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _env = env;
             _userRepository = userRepository;
             _notificationService = notificationService;
             _companyRepository = companyRepository;
-            _userContext = userContext;
+            _emailRepository = emailRepository;
         }
 
         [HttpGet("get-all-users")]
@@ -81,6 +78,40 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetUserByCompany([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _userRepository.GetUserByCompany(queryObject);
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromQuery] RequestQueryObject queryObject)
+        {
+            if (string.IsNullOrEmpty(queryObject.UUID) || string.IsNullOrEmpty(queryObject.UserId))
+            {
+                return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
+            }
+
+            var model = await _emailRepository.VerifyLink(queryObject.UUID, queryObject.UserId);
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
+        [HttpPost("request-password-reset")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
+            }
+
+            var model = await _emailRepository.SendPasswordResetEmail(email);
             if (model == null || !model.Success)
             {
                 return BadRequest(model);
@@ -203,8 +234,7 @@ namespace FrcsPos.Controllers
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
-
-
+                await _emailRepository.CreateNewLink(user);
 
                 return Ok(ApiResponse<UserDTO>.Ok(
                     data: dto,

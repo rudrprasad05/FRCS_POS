@@ -14,7 +14,7 @@ export default function Redirect() {
 
   const handleCompanyRedirect = useCallback(async () => {
     if (user == null) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 

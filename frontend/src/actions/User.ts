@@ -41,6 +41,20 @@ export async function GetUnAssignedUsers(
   });
 }
 
+export async function VerifyEmail(
+  query?: QueryObject
+): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("GET", `user/verify-email`, { query });
+}
+
+export async function RequestPasswordReset(
+  email: string
+): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("POST", `user/request-password-reset`, {
+    data: { email },
+  });
+}
+
 export async function CreateUser(
   data: NewUserForm,
   query?: QueryObject

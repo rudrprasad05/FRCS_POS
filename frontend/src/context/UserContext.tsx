@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
 
     toast.info("Logging out");
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   const checkAuth = useCallback(async () => {

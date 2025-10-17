@@ -59,15 +59,15 @@ builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 
 // DI mappers
 builder.Services.AddScoped<IMediaMapper, MediaMapper>();
 builder.Services.AddScoped<IProductVariantMapper, ProductVariantMapper>();
 builder.Services.AddScoped<IProductMapper, ProductMapper>();
 
-
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
-builder.Services.AddSingleton<EmailService>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddSingleton<IAzureBlobService, AzureBlobService>();
 builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
