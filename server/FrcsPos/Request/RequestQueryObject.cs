@@ -22,6 +22,7 @@ namespace FrcsPos.Request
         public ESortBy? SortBy { get; set; } = null;
         public string? Role { get; set; } = null;
         public string? UUID { get; set; } = null;
+        public string? UserId { get; set; } = null;
         public string? Search { get; set; } = string.Empty;
 
 

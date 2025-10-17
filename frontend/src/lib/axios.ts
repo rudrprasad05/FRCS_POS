@@ -29,8 +29,7 @@ axiosGlobal.interceptors.response.use(
     const status = error?.response?.status;
     const res = error?.response;
 
-    if (status === 401 || status === 403) {
-      // Remove token cookie or localStorage
+    if (status === 401) {
       destroyCookie(null, "token");
 
       if (typeof window !== "undefined") {

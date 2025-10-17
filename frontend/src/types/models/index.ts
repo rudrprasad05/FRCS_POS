@@ -166,6 +166,7 @@ export interface QueryObject {
   role?: UserRoles;
   isAvailable?: boolean;
   search?: string;
+  userId?: string;
 }
 
 export enum ESortBy {

@@ -31,6 +31,7 @@ namespace FrcsPos.Context
         public DbSet<RefundItem> RefundItems => Set<RefundItem>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<QuickConnect> QuickConnect => Set<QuickConnect>();
+        public DbSet<EmailVerification> EmailVerifications => Set<EmailVerification>();
         public DbSet<Media> Medias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder b)
@@ -53,6 +54,15 @@ namespace FrcsPos.Context
             b.Entity<User>(e =>
             {
                 e.HasIndex(x => x.Email).IsUnique();
+            });
+
+            b.Entity<EmailVerification>(e =>
+            {
+                e.HasIndex(x => x.Code).IsUnique();
+                e.HasOne(x => x.User)
+                    .WithMany(u => u.EmailVerifications)
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             b.Entity<Company>(e =>

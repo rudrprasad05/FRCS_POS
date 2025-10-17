@@ -32,7 +32,7 @@ export default function UnAssigned() {
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-3">
               <Button asChild className="w-full">
-                <Link href="/login">
+                <Link href="/auth/login">
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In
                 </Link>
@@ -48,9 +48,9 @@ export default function UnAssigned() {
                 </Link>
               </Button>
               <Button variant="ghost" asChild className="w-full">
-                <Link href="javascript:history.back()">
+                <Link href="/auth/login">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Go Back
+                  Sign In
                 </Link>
               </Button>
             </div>

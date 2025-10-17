@@ -21,7 +21,6 @@ namespace FrcsPos.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly IWebHostEnvironment _env;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserContext _userContext;
 
@@ -31,7 +30,6 @@ namespace FrcsPos.Controllers
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
-            IWebHostEnvironment env,
             ILogger<AuthController> logger,
             IUserContext userContext
         ) : base(configuration, tokenService, logger)
@@ -39,7 +37,6 @@ namespace FrcsPos.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
-            _env = env;
             _userContext = userContext;
         }
 
@@ -72,6 +69,11 @@ namespace FrcsPos.Controllers
                 if (user == null)
                 {
                     return BadRequest(ApiResponse<LoginDTO>.Fail(message: "invalid username or password"));
+                }
+
+                if (!user.EmailConfirmed)
+                {
+                    return UnprocessableEntity(ApiResponse<LoginDTO>.Forbidden(message: "email not verified"));
                 }
 
                 var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);

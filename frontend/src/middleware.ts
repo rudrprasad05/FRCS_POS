@@ -18,10 +18,10 @@ export async function middleware(req: NextRequest) {
     const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
 
     if (returnUrl == "/") {
-      return NextResponse.redirect(new URL(`/login`, req.url));
+      return NextResponse.redirect(new URL(`/auth/login`, req.url));
     }
     return NextResponse.redirect(
-      new URL(`/login?returnUrl=${encodeURIComponent(returnUrl)}`, req.url)
+      new URL(`/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`, req.url)
     );
   }
 
@@ -39,7 +39,10 @@ export async function middleware(req: NextRequest) {
       console.error("qqqqq Auth check failed  md.ts:", res.status);
       const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
       return NextResponse.redirect(
-        new URL(`/login?returnUrl=${encodeURIComponent(returnUrl)}`, req.url)
+        new URL(
+          `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`,
+          req.url
+        )
       );
     }
 
@@ -60,5 +63,5 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 export const config = {
-  matcher: ["/((?!login|quickconnect|error|receipt|_next|api|favicon.ico).*)"],
+  matcher: ["/((?!auth|quickconnect|error|receipt|_next|api|favicon.ico).*)"],
 };
