@@ -305,7 +305,7 @@ namespace FrcsPos.Repository
             var result = new List<SaleDTO>();
             foreach (var product in products)
             {
-                var dto = product.FromModelToDto();
+                var dto = product.FromModelToDtoStatic();
                 result.Add(dto);
             }
 

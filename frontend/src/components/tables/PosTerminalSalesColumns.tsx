@@ -53,13 +53,13 @@ export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const company = row.original;
+      const sale = row.original;
 
       return (
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`/admin/companies/${company.uuid}`}
+              href={`sales/${sale.uuid}/view`}
               className="w-24 flex items-center justify-between"
             >
               View

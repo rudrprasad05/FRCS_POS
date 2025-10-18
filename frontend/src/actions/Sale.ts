@@ -19,6 +19,14 @@ export async function GetSaleByReceipt(
   });
 }
 
+export async function GetSaleByUuid(
+  query: QueryObject
+): Promise<ApiResponse<Sale>> {
+  return RequestWrapper<Sale>("GET", `sale/get-by-uuid`, {
+    query,
+  });
+}
+
 export async function DownloadRecieptFromServer(
   uuid: string
 ): Promise<ApiResponse<string>> {

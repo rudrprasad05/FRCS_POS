@@ -26,6 +26,7 @@ namespace FrcsPos.Repository
         private readonly INotificationService _notificationService;
         private readonly UserManager<User> _userManager;
         private readonly IAzureBlobService _azureBlobService;
+        private readonly ISaleMapper _saleMapper;
 
 
 
@@ -33,13 +34,15 @@ namespace FrcsPos.Repository
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
             UserManager<User> userManager,
-            IAzureBlobService azureBlobService
+            IAzureBlobService azureBlobService,
+            ISaleMapper saleMapper
         )
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
             _azureBlobService = azureBlobService;
+            _saleMapper = saleMapper;
 
         }
 
@@ -162,14 +165,14 @@ namespace FrcsPos.Repository
                 Subtotal = subtotal,
                 TaxTotal = taxTotal,
                 Total = total,
-                Status = SaleStatus.PENDING,
+                Status = SaleStatus.COMPLETED,
                 Items = saleItems
             };
 
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
 
-            return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
         }
         public async Task<ApiResponse<SaleDTO>> GetByUUIDAsync(string uuid)
         {
@@ -177,8 +180,12 @@ namespace FrcsPos.Repository
             var sale = await _context.Sales
                 .Include(s => s.Company)
                 .Include(s => s.Items)
-                    .ThenInclude(si => si.ProductVariant.Product)
-                        .ThenInclude(p => p.TaxCategory)
+                    .ThenInclude(si => si.ProductVariant)
+                        .ThenInclude(x => x.Media)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant)
+                        .ThenInclude(x => x.Product)
+                            .ThenInclude(p => p.TaxCategory)
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
                 .Include(s => s.Cashier)
@@ -189,7 +196,7 @@ namespace FrcsPos.Repository
             if (sale.Company == null)
                 return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
 
-            return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
 
         }
 
@@ -433,7 +440,7 @@ namespace FrcsPos.Repository
             if (sale.Company == null)
                 return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
 
-            return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
         }
 
         public async Task<ApiResponse<List<SaleDTO>>> GetSaleByCompanyAsync(RequestQueryObject queryObject)
@@ -461,16 +468,16 @@ namespace FrcsPos.Repository
 
             // Pagination
             var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var products = await query
+            var sales = await query
                 .Skip(skip)
                 .Take(queryObject.PageSize)
                 .ToListAsync();
 
             // Mapping to DTOs
             var result = new List<SaleDTO>();
-            foreach (var product in products)
+            foreach (var sale in sales)
             {
-                var dto = product.FromModelToDto();
+                var dto = await _saleMapper.FromModelToDtoAsync(sale);
                 result.Add(dto);
             }
 
@@ -486,6 +493,11 @@ namespace FrcsPos.Repository
                     PageSize = queryObject.PageSize
                 }
             };
+        }
+
+        public Task<ApiResponse<SaleDTO>> GetFullByUUIDAsync(string uuid)
+        {
+            throw new NotImplementedException();
         }
     }
 }

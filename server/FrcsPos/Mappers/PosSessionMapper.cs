@@ -48,7 +48,7 @@ namespace FrcsPos.Mappers
 
             if (includeSale && session.Sales != null)
             {
-                result.Sales = session.Sales.FromModelToDto();
+                result.Sales = session.Sales.FromModelToDtoStatic();
             }
 
             return result;

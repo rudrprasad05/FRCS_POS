@@ -7,7 +7,6 @@ using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Mappers
 {
-    // Make it injectable
     public interface ISaleItemMapper
     {
         Task<SaleItemDTO> FromModelToDtoAsync(SaleItem request, bool includeSale = true);

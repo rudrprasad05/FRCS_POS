@@ -17,6 +17,7 @@ using Azure.Storage.Blobs;
 using FrcsPos.Mappers;
 using Microsoft.AspNetCore.Mvc;
 using FrcsPos.Response;
+using FrcsPos.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +66,8 @@ builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationReposi
 builder.Services.AddScoped<IMediaMapper, MediaMapper>();
 builder.Services.AddScoped<IProductVariantMapper, ProductVariantMapper>();
 builder.Services.AddScoped<IProductMapper, ProductMapper>();
+builder.Services.AddScoped<ISaleItemMapper, SaleItemMapper>();
+builder.Services.AddScoped<ISaleMapper, SaleMapper>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IEmailService, EmailService>();

@@ -39,7 +39,7 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 LocationDescription = request.LocationDescription ?? string.Empty,
                 SerialNumber = request.SerialNumber ?? string.Empty,
-                Sales = request.Sales.FromModelToDto(),
+                Sales = request.Sales.FromModelToDtoStatic(),
                 Company = request.Company.FromModelToDTOWithoutPosTerminals(),
                 Session = request.Session.FromPosSessionListToPosSessionDTOList(),
             };
