@@ -130,6 +130,17 @@ builder.Services.AddSignalR();
 
 builder.WebHost.UseUrls(builder.Configuration["Backend:Url"] ?? throw new InvalidOperationException());
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("allowSpecificOrigin",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // frontend URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
