@@ -35,5 +35,10 @@ namespace FrcsPos.Services
         {
             return _repo.ApproveRefundAsync(refundId, request);
         }
+
+        public Task<ApiResponse<RefundDTO>> GetRefundByUUIDAsync(RequestQueryObject query)
+        {
+            return _repo.GetRefundByUUIDAsync(query);
+        }
     }
 }

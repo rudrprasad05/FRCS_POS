@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import { SaleStatus } from "@/types/enum";
+import { RefundStatus, SaleStatus } from "@/types/enum";
 import { ProductVariant, Sale, SaleItem } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
@@ -27,15 +27,16 @@ import {
   ArrowLeft,
   Calendar,
   DollarSign,
+  ExternalLink,
   ImageIcon,
   Loader2,
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { RefundData, RefundDialog } from "./RefundDialoge";
+import { RefundDialog } from "./RefundDialoge";
 
 const getStatusColor = (status: SaleStatus) => {
   switch (status) {
@@ -56,47 +57,13 @@ export default function SaleDetailPage() {
   const params = useParams();
   const saleId = String(params.saleId);
   const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
-  const [refundedItemIds, setRefundedItemIds] = useState<Set<number>>(
-    new Set()
-  );
-  const [refundHistory, setRefundHistory] = useState<
-    Array<RefundData & { date: string; id: number }>
-  >([]);
+  const router = useRouter();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["viewSale", saleId],
     queryFn: () => GetSaleByUuid({ uuid: saleId }),
     staleTime: FIVE_MINUTE_CACHE,
   });
-
-  const handleRefund = (refundData: RefundData) => {
-    console.log("[v0] Processing refund:", refundData);
-
-    // Add to refund history
-    const newRefund = {
-      ...refundData,
-      date: new Date().toISOString(),
-      id: refundHistory.length + 1,
-    };
-    setRefundHistory((prev) => [...prev, newRefund]);
-
-    // Mark items as refunded
-    const newRefundedIds = new Set(refundedItemIds);
-    refundData.items.forEach((item) => {
-      const saleItem = sale.items?.find((si) => si.id === item.saleItemId);
-      if (saleItem && item.quantity === saleItem.quantity) {
-        // Fully refunded
-        newRefundedIds.add(item.saleItemId);
-      }
-    });
-    setRefundedItemIds(newRefundedIds);
-
-    // TODO: Make API call to backend
-    // await fetch(`/api/sales/${id}/refund`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(refundData)
-    // })
-  };
 
   if (isLoading) {
     return <Loader2 className="animate-spin" />;
@@ -117,10 +84,8 @@ export default function SaleDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
               <div className="flex items-baseline gap-2">
@@ -202,7 +167,6 @@ export default function SaleDetailPage() {
               open={isRefundDialogOpen}
               onOpenChange={setIsRefundDialogOpen}
               saleItems={sale.items as SaleItem[]}
-              onRefund={handleRefund}
             />
           </div>
           <TabsContent value="items" className="space-y-4">
@@ -297,7 +261,7 @@ export default function SaleDetailPage() {
                       <TableRow>
                         <TableHead>Date</TableHead>
                         <TableHead>Reason</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Requested By</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -307,12 +271,29 @@ export default function SaleDetailPage() {
                           <TableCell>
                             {new Date(refund.createdOn).toLocaleDateString()}
                           </TableCell>
-                          <TableCell>{refund.reason}</TableCell>
-                          <TableCell className="text-right">
-                            {/* ${refund.amount.toFixed(2)} */}
+                          <TableCell>
+                            {refund.reason ? refund.reason : "---"}
+                          </TableCell>
+                          <TableCell>{refund.requestedBy?.username}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={cn(
+                                "text-black capitalize",
+                                refund.status == RefundStatus.APPROVED &&
+                                  "bg-green-500",
+                                refund.status == RefundStatus.PENDING &&
+                                  "bg-orange-500",
+                                refund.status == RefundStatus.REJECTED &&
+                                  "bg-rose-500"
+                              )}
+                            >
+                              {refund.status}
+                            </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="secondary">{refund.status}</Badge>
+                            <Link href={`refund/${refund.uuid}/view`}>
+                              <ExternalLink className="stroke-1 w-4" />
+                            </Link>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -325,9 +306,6 @@ export default function SaleDetailPage() {
                     <p className="mb-4 text-sm text-muted-foreground">
                       This sale has no refund requests.
                     </p>
-                    <Button variant="outline" disabled>
-                      Request Refund (Coming Soon)
-                    </Button>
                   </div>
                 )}
               </CardContent>

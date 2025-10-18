@@ -16,10 +16,12 @@ namespace FrcsPos.Mappers
     public class SaleMapper : ISaleMapper
     {
         private readonly ISaleItemMapper _saleItemMapper;
+        private readonly IRefundMapper _refundMapper;
 
-        public SaleMapper(ISaleItemMapper saleItemMapper)
+        public SaleMapper(ISaleItemMapper saleItemMapper, IRefundMapper refundMapper)
         {
             _saleItemMapper = saleItemMapper ?? throw new ArgumentNullException(nameof(saleItemMapper));
+            _refundMapper = refundMapper ?? throw new ArgumentNullException(nameof(refundMapper));
         }
 
         public async Task<SaleDTO> FromModelToDtoAsync(Sale request)
@@ -63,6 +65,11 @@ namespace FrcsPos.Mappers
             if (request.Items != null)
             {
                 dto.Items = await _saleItemMapper.FromModelToDtoAsync(request.Items, includeSale: false);
+            }
+
+            if (request.Refunds != null)
+            {
+                dto.Refunds = await _refundMapper.FromModelToDtoAsync(request.Refunds);
             }
 
             return dto;

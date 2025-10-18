@@ -5,7 +5,7 @@ namespace FrcsPos.Request
 {
     public class StartRefundRequest
     {
-        public int SaleId { get; set; }
+        public string SaleId { get; set; } = null!;
         public List<RefundItemRequest> Items { get; set; } = new();
         public string? Reason { get; set; }
     }

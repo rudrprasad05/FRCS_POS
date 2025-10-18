@@ -7,7 +7,7 @@ import { Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
+export const PosTerminalCashierSalesColumns: ColumnDef<Sale>[] = [
   {
     accessorKey: "id",
     header: "Sale ID",
@@ -64,11 +64,13 @@ export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
 const ViewBtn = ({ uuid }: { uuid: string }) => {
   const params = useParams();
   const companyName = String(params.companyName);
+  const posId = String(params.posId);
+  const sessionId = String(params.sessionId);
   return (
     <div className="flex gap-2">
       <Button variant={"outline"} asChild className="w-24">
         <Link
-          href={`/${companyName}/sales/${uuid}/view`}
+          href={`/${companyName}/pos/${posId}/session/${sessionId}/sales/${uuid}`}
           className="w-24 flex items-center justify-between"
         >
           View

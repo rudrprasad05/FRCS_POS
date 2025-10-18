@@ -146,7 +146,8 @@ namespace FrcsPos.Repository
                     ProductVariantId = i.ProductVariant.Id,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
-                    LineTotal = lineSubtotal + lineTax
+                    LineTotal = lineSubtotal + lineTax,
+                    TaxRatePercent = i.ProductVariant.TaxCategory?.RatePercent ?? 0
                 };
             }).ToList();
 
@@ -189,6 +190,14 @@ namespace FrcsPos.Repository
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
                 .Include(s => s.Cashier)
+                .Include(s => s.Refunds)
+                    .ThenInclude(si => si.RequestedBy)
+                .Include(s => s.Refunds)
+                    .ThenInclude(si => si.Items)
+                        .ThenInclude(x => x.SaleItem)
+                            .ThenInclude(si => si.ProductVariant)
+                                .ThenInclude(x => x.Media)
+
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
 
             if (sale == null)
@@ -196,7 +205,9 @@ namespace FrcsPos.Repository
             if (sale.Company == null)
                 return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
 
-            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
+            var dto = await _saleMapper.FromModelToDtoAsync(sale);
+
+            return ApiResponse<SaleDTO>.Ok(dto);
 
         }
 

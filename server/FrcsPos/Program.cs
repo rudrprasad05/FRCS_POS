@@ -42,6 +42,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
@@ -61,6 +62,7 @@ builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+builder.Services.AddScoped<IRefundRepository, RefundRepository>();
 
 // DI mappers
 builder.Services.AddScoped<IMediaMapper, MediaMapper>();
@@ -68,6 +70,8 @@ builder.Services.AddScoped<IProductVariantMapper, ProductVariantMapper>();
 builder.Services.AddScoped<IProductMapper, ProductMapper>();
 builder.Services.AddScoped<ISaleItemMapper, SaleItemMapper>();
 builder.Services.AddScoped<ISaleMapper, SaleMapper>();
+builder.Services.AddScoped<IRefundMapper, RefundMapper>();
+builder.Services.AddScoped<IRefundItemMapper, RefundItemMapper>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IEmailService, EmailService>();

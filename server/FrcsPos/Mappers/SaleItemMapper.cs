@@ -43,12 +43,13 @@ namespace FrcsPos.Mappers
 
             if (request.ProductVariant != null)
             {
+
                 dto.ProductVariant = await _productVariantMapper.FromModelToDtoAsync(request.ProductVariant);
             }
 
             if (includeSale && request.Sale != null)
             {
-                // dto.Sale = _productMapper.FromModelToOnlyDto(request.Sale);
+                // dto.Sale = _sale.FromModelToOnlyDto(request.Sale);
             }
 
             return dto;

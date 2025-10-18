@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
+using FrcsPos.Mappers;
 using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
@@ -19,17 +20,20 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IRefundMapper _refundMapper;
         private readonly UserManager<User> _userManager;
 
         public RefundRepository(
             ApplicationDbContext context,
             INotificationService notificationService,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IRefundMapper refundMapper
         )
         {
             _context = context;
             _notificationService = notificationService;
             _userManager = userManager;
+            _refundMapper = refundMapper;
         }
 
         public async Task<ApiResponse<RefundDTO>> StartRefundAsync(StartRefundRequest request, string cashierUserId)
@@ -38,10 +42,21 @@ namespace FrcsPos.Repository
                 .Include(s => s.Items)
                     .ThenInclude(si => si.ProductVariant)
                         .ThenInclude(p => p.Batches)
-                .FirstOrDefaultAsync(s => s.Id == request.SaleId);
+                .FirstOrDefaultAsync(s => s.UUID == request.SaleId);
 
             if (sale == null)
+            {
                 return ApiResponse<RefundDTO>.Fail(message: "Sale not found");
+            }
+
+            var requestedBy = await _userManager.FindByIdAsync(cashierUserId);
+            if (requestedBy == null)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "User not found");
+            }
+
+            var roles = await _userManager.GetRolesAsync(requestedBy);
+            var isAdmin = roles.Contains("admin");
 
             foreach (var ri in request.Items)
             {
@@ -50,7 +65,14 @@ namespace FrcsPos.Repository
                     return ApiResponse<RefundDTO>.Fail(message: "Product not in sale");
                 if (ri.Quantity > saleItem.Quantity)
                     return ApiResponse<RefundDTO>.Fail(message: $"Cannot refund more than purchased quantity for {saleItem.ProductVariant.Name}");
+
+                if (isAdmin)
+                {
+                    saleItem.Quantity -= ri.Quantity;
+                }
             }
+
+            // todo: add role check to requested by
 
             var refund = new RefundRequest
             {
@@ -58,7 +80,7 @@ namespace FrcsPos.Repository
                 SaleId = sale.Id,
                 RequestedByUserId = cashierUserId,
                 Reason = request.Reason,
-                Status = RefundStatus.PENDING,
+                Status = isAdmin ? RefundStatus.APPROVED : RefundStatus.PENDING,
                 CreatedOn = DateTime.UtcNow
             };
 
@@ -87,7 +109,7 @@ namespace FrcsPos.Repository
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
 
 
-            return ApiResponse<RefundDTO>.Ok(MapRefundToDTO(refund));
+            return ApiResponse<RefundDTO>.Ok(await _refundMapper.FromModelToDtoAsync(refund));
         }
 
         public async Task<ApiResponse<RefundDTO>> GetRefundByIdAsync(int refundId)
@@ -102,7 +124,7 @@ namespace FrcsPos.Repository
             if (refund == null)
                 return ApiResponse<RefundDTO>.Fail(message: "Refund not found");
 
-            return ApiResponse<RefundDTO>.Ok(MapRefundToDTO(refund));
+            return ApiResponse<RefundDTO>.Ok(await _refundMapper.FromModelToDtoAsync(refund));
         }
 
         public async Task<ApiResponse<List<RefundDTO>>> GetAllRefundsAsync(RequestQueryObject query)
@@ -123,7 +145,9 @@ namespace FrcsPos.Repository
             var skip = (query.PageNumber - 1) * query.PageSize;
             var items = await q.Skip(skip).Take(query.PageSize).ToListAsync();
 
-            var dtos = items.Select(MapRefundToDTO).ToList();
+
+            var dtos = await _refundMapper.FromModelToDtoAsync(items);
+
 
             return new ApiResponse<List<RefundDTO>>
             {
@@ -189,33 +213,33 @@ namespace FrcsPos.Repository
             _context.RefundRequests.Update(refund);
             await _context.SaveChangesAsync();
 
-            return ApiResponse<RefundDTO>.Ok(MapRefundToDTO(refund));
+            return ApiResponse<RefundDTO>.Ok(await _refundMapper.FromModelToDtoAsync(refund));
         }
 
-        private RefundDTO MapRefundToDTO(RefundRequest refund)
+        public async Task<ApiResponse<RefundDTO>> GetRefundByUUIDAsync(RequestQueryObject query)
         {
-            return new RefundDTO
+            var refund = await _context.RefundRequests
+                .Include(si => si.RequestedBy)
+                .Include(si => si.Sale)
+                .Include(si => si.Items)
+                    .ThenInclude(x => x.SaleItem)
+                        .ThenInclude(si => si.ProductVariant)
+                            .ThenInclude(x => x.Media)
+                .Include(si => si.Items)
+                    .ThenInclude(x => x.SaleItem)
+                        .ThenInclude(si => si.ProductVariant)
+                            .ThenInclude(x => x.Product)
+                                .ThenInclude(x => x.TaxCategory)
+                .FirstOrDefaultAsync(x => x.UUID == query.UUID);
+
+            if (refund == null)
             {
-                Id = refund.Id,
-                UUID = refund.UUID,
-                CompanyId = refund.CompanyId,
-                SaleId = refund.SaleId,
-                RequestedByUserId = refund.RequestedByUserId,
-                CreatedOn = refund.CreatedOn,
-                Reason = refund.Reason,
-                Status = refund.Status.ToString(),
-                ApprovedByUserId = refund.ApprovedByUserId,
-                Items = refund.Items.Select(i => new RefundItemDTO
-                {
-                    Id = i.Id,
-                    SaleItemId = i.SaleItemId,
-                    ProductId = i.SaleItem?.ProductVariantId ?? 0,
-                    ProductName = i.SaleItem?.ProductVariant?.Name,
-                    Quantity = i.Quantity,
-                    ApprovedQuantity = i.ApprovedQuantity,
-                    Note = i.Note
-                }).ToList()
-            };
+                return ApiResponse<RefundDTO>.Fail(message: "no refund found");
+            }
+
+            var dto = await _refundMapper.FromModelToDtoAsync(refund);
+
+            return ApiResponse<RefundDTO>.Ok(dto);
         }
     }
 }

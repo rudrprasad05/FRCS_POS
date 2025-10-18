@@ -14,5 +14,6 @@ namespace FrcsPos.Response.DTO
         public int Quantity { get; set; }
         public int? ApprovedQuantity { get; set; }
         public string? Note { get; set; }
+        public SaleItemDTO SaleItem { get; set; } = new SaleItemDTO();
     }
 }

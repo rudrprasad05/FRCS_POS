@@ -1,5 +1,6 @@
 "use client";
 
+import { StartRefund } from "@/actions/Refund";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -16,14 +17,17 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { SaleItem } from "@/types/models";
-import { AlertCircle, Minus, Plus, RotateCcw } from "lucide-react";
+import { StartRefundRequest } from "@/types/res";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, Loader2, Minus, Plus, RotateCcw } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface RefundDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   saleItems: SaleItem[];
-  onRefund: (refundData: RefundData) => void;
 }
 
 export interface RefundData {
@@ -41,12 +45,39 @@ export function RefundDialog({
   open,
   onOpenChange,
   saleItems,
-  onRefund,
 }: RefundDialogProps) {
+  const queryClient = useQueryClient();
+  const params = useParams();
+  const saleId = String(params.saleId);
   const [refundQuantities, setRefundQuantities] = useState<
     Record<number, number>
   >({});
+  const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState("");
+
+  const handleRefund = async (refundData: RefundData) => {
+    setLoading(true);
+
+    // TODO: Make API call to backend
+    const data: StartRefundRequest = {
+      saleId: saleId,
+      items: refundData.items,
+      reason: refundData.reason,
+    };
+
+    const res = await StartRefund(data);
+
+    if (res.success) {
+      toast.success("Refund requested");
+      queryClient.invalidateQueries({
+        queryKey: ["viewSale", saleId],
+        exact: false,
+      });
+    } else {
+      toast.error("Refund not processed", { description: res.message });
+    }
+    setLoading(false);
+  };
 
   // Calculate refund totals
   const refundSummary = useMemo(() => {
@@ -110,7 +141,7 @@ export function RefundDialog({
       return;
     }
 
-    onRefund({
+    handleRefund({
       items: refundSummary.items,
       reason,
       totalAmount: refundSummary.total,
@@ -304,8 +335,11 @@ export function RefundDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!hasSelectedItems}>
-            Process Refund{" "}
+          <Button
+            onClick={handleSubmit}
+            disabled={!hasSelectedItems || loading}
+          >
+            {loading && <Loader2 className="animate-spin" />}Process Refund{" "}
             {hasSelectedItems && `($${refundSummary.total.toFixed(2)})`}
           </Button>
         </DialogFooter>

@@ -92,3 +92,15 @@ export interface NewProductData {
   suppliers: Supplier[];
   taxCategories: TaxCategory[];
 }
+
+export interface StartRefundRequest {
+  saleId: string;
+  items: RefundItemRequest[];
+  reason?: string;
+}
+
+export interface RefundItemRequest {
+  saleItemId: number;
+  quantity: number;
+  note?: string;
+}

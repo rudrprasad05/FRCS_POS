@@ -14,7 +14,7 @@ namespace FrcsPos.Mappers
             if (request == null)
                 return new ProductDTO();
 
-            return new ProductDTO
+            var dto = new ProductDTO
             {
                 UUID = request.UUID,
                 Id = request.Id,
@@ -27,6 +27,13 @@ namespace FrcsPos.Mappers
                 TaxCategoryId = request.TaxCategoryId,
                 IsPerishable = request.IsPerishable
             };
+
+            if (request.TaxCategory != null)
+            {
+                dto.TaxCategory = request.TaxCategory.FromModelToDto();
+            }
+
+            return dto;
         }
 
         public static List<ProductDTO> FromModelToDtoStatic(this ICollection<Product> request)
