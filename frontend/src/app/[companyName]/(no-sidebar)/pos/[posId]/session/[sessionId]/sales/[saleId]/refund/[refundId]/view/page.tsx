@@ -1,6 +1,7 @@
 "use client";
 
 import { GetRefundByUUID } from "@/actions/Refund";
+import ApproveRefundDialoge from "@/components/company/sales/view/ApproveRefundDialoge";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -336,15 +337,7 @@ export default function RefundRequestPage() {
               <Button variant="outline" size="lg">
                 Reject
               </Button>
-              <Button
-                size="lg"
-                onClick={handleApprove}
-                disabled={isApproving}
-                className="gap-2"
-              >
-                <CheckCircle className="h-5 w-5" />
-                {isApproving ? "Approving..." : "Approve Refund"}
-              </Button>
+              <ApproveRefundDialoge />
             </div>
           )}
         </RoleWrapper>
