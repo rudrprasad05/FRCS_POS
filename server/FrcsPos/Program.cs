@@ -163,14 +163,11 @@ if (app.Environment.IsDevelopment())
 // app.UseMiddleware<TokenMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
-app.MapHub<NotificationHub>("/socket/notificationHub");
-app.MapHub<PosHub>("/socket/posHub")
-    .RequireCors("allowSpecificOrigin"); ;
-
-// TODO was adding barcodes. 
 
 app.MapControllers();
 
+app.MapHub<NotificationHub>("/socket/notificationHub");
+app.MapHub<PosHub>("/socket/posHub");
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
