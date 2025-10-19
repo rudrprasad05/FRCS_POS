@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Azure.Communication.Email;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
@@ -24,6 +25,7 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
         private readonly UserManager<User> _userManager;
         private readonly IAzureBlobService _azureBlobService;
         private readonly ISaleMapper _saleMapper;
@@ -35,7 +37,8 @@ namespace FrcsPos.Repository
             INotificationService notificationService,
             UserManager<User> userManager,
             IAzureBlobService azureBlobService,
-            ISaleMapper saleMapper
+            ISaleMapper saleMapper,
+            IEmailService emailService
         )
         {
             _userManager = userManager;
@@ -43,6 +46,7 @@ namespace FrcsPos.Repository
             _notificationService = notificationService;
             _azureBlobService = azureBlobService;
             _saleMapper = saleMapper;
+            _emailService = emailService;
 
         }
 
@@ -509,6 +513,37 @@ namespace FrcsPos.Repository
         public Task<ApiResponse<SaleDTO>> GetFullByUUIDAsync(string uuid)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<ApiResponse<bool>> EmailReceiptPDF(string uuid, string email)
+        {
+            var sale = await _context.Sales
+                .Include(s => s.Company)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant.Product)
+                        .ThenInclude(p => p.TaxCategory)
+                .Include(s => s.PosSession)
+                    .ThenInclude(ps => ps.PosTerminal)
+                .Include(s => s.Cashier)
+                .FirstOrDefaultAsync(s => s.UUID == uuid);
+
+            if (sale == null)
+                return ApiResponse<bool>.NotFound(message: "Sale not found");
+
+            var pdfBytes = GenerateReceiptPdfBytes(sale);
+
+            using var stream = new MemoryStream(pdfBytes);
+            var attachment = new EmailAttachment(
+                name: $"Receipt_{uuid}.pdf",
+                contentType: "application/pdf",
+                content: BinaryData.FromStream(stream)
+            );
+            var subject = "Your Receipt";
+            var htmlBody = "<p>Dear Customer,</p><p>Please find your receipt attached.</p>";
+
+            FireAndForget.Run(_emailService.SendVerifyEmailAsync(email, subject, htmlBody, attachment));
+
+            return ApiResponse<bool>.Ok(true);
         }
     }
 }

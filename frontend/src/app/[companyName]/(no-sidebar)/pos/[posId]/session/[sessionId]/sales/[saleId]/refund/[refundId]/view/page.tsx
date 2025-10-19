@@ -20,8 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { RefundStatus } from "@/types/enum";
+import { UserRoles } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle, Clock, Loader2, XCircle } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -328,22 +330,24 @@ export default function RefundRequestPage() {
         </Card>
 
         {/* Actions */}
-        {refundRequest.status === RefundStatus.PENDING && (
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" size="lg">
-              Reject
-            </Button>
-            <Button
-              size="lg"
-              onClick={handleApprove}
-              disabled={isApproving}
-              className="gap-2"
-            >
-              <CheckCircle className="h-5 w-5" />
-              {isApproving ? "Approving..." : "Approve Refund"}
-            </Button>
-          </div>
-        )}
+        <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+          {refundRequest.status === RefundStatus.PENDING && (
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" size="lg">
+                Reject
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleApprove}
+                disabled={isApproving}
+                className="gap-2"
+              >
+                <CheckCircle className="h-5 w-5" />
+                {isApproving ? "Approving..." : "Approve Refund"}
+              </Button>
+            </div>
+          )}
+        </RoleWrapper>
       </div>
     </div>
   );

@@ -55,11 +55,11 @@ namespace FrcsPos.Controllers
         }
 
         // POST api/refunds/{id}/approve
-        [HttpPost("{id}/approve")]
+        [HttpPost("approve")]
         [Authorize]
-        public async Task<IActionResult> Approve(int id, [FromBody] AdminApprovalRequest request)
+        public async Task<IActionResult> Approve([FromQuery] RequestQueryObject query, [FromBody] AdminApprovalRequest request)
         {
-            var res = await _refundService.ApproveRefundAsync(id, request);
+            var res = await _refundService.ApproveRefundAsync(query, request);
             return StatusCode(res.StatusCode, res);
         }
     }

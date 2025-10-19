@@ -7,6 +7,9 @@ export const SignInForm = z.object({
     .min(2, { message: "Should have more than 2 characters" })
     .max(50, { message: "Should have less than 50 characters" }),
 });
+export const EmailReceipt = z.object({
+  email: z.email(),
+});
 
 export const RegisterForm = z.object({
   username: z
@@ -74,6 +77,7 @@ export const ResetPasswordSchema = z
   });
 
 export type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
+export type EmailReceiptSchemaType = z.infer<typeof EmailReceipt>;
 export type NewBatchData = z.output<typeof NewBatchDataSchema>;
 export type NewMediaFormType = z.infer<typeof NewMediaFormSchema>;
 export type SignInFormType = z.infer<typeof SignInForm>;

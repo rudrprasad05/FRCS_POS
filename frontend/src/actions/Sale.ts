@@ -34,3 +34,13 @@ export async function DownloadRecieptFromServer(
     query: { uuid },
   });
 }
+
+export async function EmailReceiptAsync(
+  uuid: string,
+  email: string
+): Promise<ApiResponse<boolean>> {
+  return RequestWrapper<boolean>("POST", `checkout/email-receipt`, {
+    query: { uuid },
+    data: { email },
+  });
+}

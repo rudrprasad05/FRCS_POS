@@ -12,6 +12,7 @@ namespace FrcsPos.Interfaces
     {
         public Task<ApiResponse<SaleDTO>> CreateCheckoutAsync(NewCheckoutRequest request);
         public Task<ApiResponse<string>> GenerateReceiptPDF(string uuid);
+        public Task<ApiResponse<bool>> EmailReceiptPDF(string uuid, string email);
         public Task<ApiResponse<SaleDTO>> GetByUUIDAsync(string uuid);
         public Task<ApiResponse<SaleDTO>> GetFullByUUIDAsync(string uuid);
         public Task<ApiResponse<List<SaleDTO>>> GetSaleByCompanyAsync(RequestQueryObject queryObject);

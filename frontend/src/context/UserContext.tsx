@@ -67,7 +67,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const data = res.data.data;
       if (data == undefined) {
-        router.push("/error/unauthorised");
+        // router.push("/error/unauthorised");
+        toast.error("An error occured", { description: res.data.message });
         return;
       }
 

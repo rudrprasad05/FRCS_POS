@@ -31,9 +31,9 @@ namespace FrcsPos.Services
             return _repo.GetAllRefundsAsync(query);
         }
 
-        public Task<ApiResponse<RefundDTO>> ApproveRefundAsync(int refundId, AdminApprovalRequest request)
+        public Task<ApiResponse<RefundDTO>> ApproveRefundAsync(RequestQueryObject query, AdminApprovalRequest request)
         {
-            return _repo.ApproveRefundAsync(refundId, request);
+            return _repo.ApproveRefundAsync(query, request);
         }
 
         public Task<ApiResponse<RefundDTO>> GetRefundByUUIDAsync(RequestQueryObject query)

@@ -55,9 +55,6 @@ namespace FrcsPos.Repository
                 return ApiResponse<RefundDTO>.Fail(message: "User not found");
             }
 
-            var roles = await _userManager.GetRolesAsync(requestedBy);
-            var isAdmin = roles.Contains("admin");
-
             foreach (var ri in request.Items)
             {
                 var saleItem = sale.Items.FirstOrDefault(si => si.Id == ri.SaleItemId);
@@ -65,11 +62,6 @@ namespace FrcsPos.Repository
                     return ApiResponse<RefundDTO>.Fail(message: "Product not in sale");
                 if (ri.Quantity > saleItem.Quantity)
                     return ApiResponse<RefundDTO>.Fail(message: $"Cannot refund more than purchased quantity for {saleItem.ProductVariant.Name}");
-
-                if (isAdmin)
-                {
-                    saleItem.Quantity -= ri.Quantity;
-                }
             }
 
             // todo: add role check to requested by
@@ -80,7 +72,7 @@ namespace FrcsPos.Repository
                 SaleId = sale.Id,
                 RequestedByUserId = cashierUserId,
                 Reason = request.Reason,
-                Status = isAdmin ? RefundStatus.APPROVED : RefundStatus.PENDING,
+                Status = RefundStatus.PENDING,
                 CreatedOn = DateTime.UtcNow
             };
 
@@ -158,14 +150,14 @@ namespace FrcsPos.Repository
             };
         }
 
-        public async Task<ApiResponse<RefundDTO>> ApproveRefundAsync(int refundId, AdminApprovalRequest request)
+        public async Task<ApiResponse<RefundDTO>> ApproveRefundAsync(RequestQueryObject requestQuery, AdminApprovalRequest request)
         {
             var refund = await _context.RefundRequests
                 .Include(r => r.Items)
                     .ThenInclude(i => i.SaleItem)
                         .ThenInclude(si => si.ProductVariant)
                             .ThenInclude(p => p.Batches)
-                .FirstOrDefaultAsync(r => r.Id == refundId);
+                .FirstOrDefaultAsync(r => r.UUID == requestQuery.UUID);
 
             if (refund == null) return ApiResponse<RefundDTO>.Fail(message: "Refund not found");
             if (refund.Status != RefundStatus.PENDING) return ApiResponse<RefundDTO>.Fail(message: "Refund already processed");
@@ -177,11 +169,12 @@ namespace FrcsPos.Repository
             var ok = await _userManager.CheckPasswordAsync(admin, request.AdminPassword);
             if (!ok) return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
 
-            var claims = await _userManager.GetClaimsAsync(admin);
-            var roleClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-            if (roleClaim == null || (roleClaim.Value != "ADMIN" && roleClaim.Value != "MANAGER"))
-                return ApiResponse<RefundDTO>.Fail(message: "Admin privileges required");
-
+            var roles = await _userManager.GetRolesAsync(admin);
+            var isAdmin = roles.Contains("admin");
+            if (!isAdmin)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "Admin creds required");
+            }
             // Restock items by updating ProductBatch quantities
             foreach (var item in refund.Items)
             {

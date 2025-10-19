@@ -104,3 +104,8 @@ export interface RefundItemRequest {
   quantity: number;
   note?: string;
 }
+
+export interface IApproveRefund {
+  adminUsernameOrEmail: string;
+  adminPassword: string;
+}

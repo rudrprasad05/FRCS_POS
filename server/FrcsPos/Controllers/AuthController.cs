@@ -76,11 +76,29 @@ namespace FrcsPos.Controllers
                     return UnprocessableEntity(ApiResponse<LoginDTO>.Forbidden(message: "email not verified"));
                 }
 
+                if (user.LockoutEnd > DateTime.UtcNow)
+                {
+                    return UnprocessableEntity(ApiResponse<LoginDTO>.Forbidden(message: "too to many requests"));
+                }
+
                 var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                 if (!result.Succeeded)
                 {
+                    user.AccessFailedCount += 1;
+                    if (user.AccessFailedCount > 3)
+                    {
+                        user.LockoutEnabled = true;
+                        user.LockoutEnd = DateTime.UtcNow.AddMinutes(5);
+                        user.AccessFailedCount = 0;
+                    }
+                    await _userManager.UpdateAsync(user);
+
                     return BadRequest(ApiResponse<LoginDTO>.Fail(message: "invalid username or password"));
                 }
+                user.LockoutEnabled = false;
+                user.LockoutEnd = null;
+                user.AccessFailedCount = 0;
+
                 var roles = await _userManager.GetRolesAsync(user);
                 var tokenString = _tokenService.CreateToken(user, roles);
 
@@ -93,6 +111,7 @@ namespace FrcsPos.Controllers
                 });
 
                 var userRole = roles.FirstOrDefault() ?? "user";
+                await _userManager.UpdateAsync(user);
 
                 return Ok(
                     ApiResponse<LoginDTO>.Ok(

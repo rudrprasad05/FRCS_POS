@@ -27,7 +27,7 @@ namespace FrcsPos.Services
             _emailClient = new EmailClient(connectionString);
         }
 
-        public async Task<bool> SendVerifyEmailAsync(string to, string subject, string htmlBody)
+        public async Task<bool> SendVerifyEmailAsync(string to, string subject, string htmlBody, EmailAttachment? attachment = null)
         {
             try
             {
@@ -41,11 +41,16 @@ namespace FrcsPos.Services
                     senderAddress: _senderAddress,
                     content: new EmailContent(subject)
                     {
-                        PlainText = "Please verify your email.",
+                        PlainText = subject,
                         Html = htmlBody
                     },
                     recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(to) })
                 );
+
+                if (attachment != null)
+                {
+                    emailMessage.Attachments.Add(attachment);
+                }
 
                 EmailSendOperation emailSendOperation = await policy.ExecuteAsync(async () =>
                     await _emailClient.SendAsync(WaitUntil.Completed, emailMessage));
