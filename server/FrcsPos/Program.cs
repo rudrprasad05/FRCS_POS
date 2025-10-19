@@ -17,6 +17,7 @@ using Azure.Storage.Blobs;
 using FrcsPos.Mappers;
 using Microsoft.AspNetCore.Mvc;
 using FrcsPos.Response;
+using FrcsPos.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
@@ -60,11 +62,16 @@ builder.Services.AddScoped<IProductBatchRepository, ProductBatchRepository>();
 builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+builder.Services.AddScoped<IRefundRepository, RefundRepository>();
 
 // DI mappers
 builder.Services.AddScoped<IMediaMapper, MediaMapper>();
 builder.Services.AddScoped<IProductVariantMapper, ProductVariantMapper>();
 builder.Services.AddScoped<IProductMapper, ProductMapper>();
+builder.Services.AddScoped<ISaleItemMapper, SaleItemMapper>();
+builder.Services.AddScoped<ISaleMapper, SaleMapper>();
+builder.Services.AddScoped<IRefundMapper, RefundMapper>();
+builder.Services.AddScoped<IRefundItemMapper, RefundItemMapper>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
@@ -156,14 +163,11 @@ if (app.Environment.IsDevelopment())
 // app.UseMiddleware<TokenMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
-app.MapHub<NotificationHub>("/socket/notificationHub");
-app.MapHub<PosHub>("/socket/posHub")
-    .RequireCors("allowSpecificOrigin"); ;
-
-// TODO was adding barcodes. 
 
 app.MapControllers();
 
+app.MapHub<NotificationHub>("/socket/notificationHub");
+app.MapHub<PosHub>("/socket/posHub");
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

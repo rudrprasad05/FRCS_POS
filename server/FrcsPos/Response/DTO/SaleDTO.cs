@@ -24,6 +24,6 @@ namespace FrcsPos.Response.DTO
         public SaleStatus Status { get; set; } = SaleStatus.COMPLETED;
 
         public ICollection<SaleItemDTO> Items { get; set; } = [];
-        public ICollection<RefundItemDTO> Refunds { get; set; } = [];
+        public ICollection<RefundDTO> Refunds { get; set; } = [];
     }
 }

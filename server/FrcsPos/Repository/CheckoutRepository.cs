@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Azure.Communication.Email;
 using FrcsPos.Context;
 using FrcsPos.Interfaces;
 using FrcsPos.Mappers;
@@ -24,8 +25,10 @@ namespace FrcsPos.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
         private readonly UserManager<User> _userManager;
         private readonly IAzureBlobService _azureBlobService;
+        private readonly ISaleMapper _saleMapper;
 
 
 
@@ -33,13 +36,17 @@ namespace FrcsPos.Repository
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
             UserManager<User> userManager,
-            IAzureBlobService azureBlobService
+            IAzureBlobService azureBlobService,
+            ISaleMapper saleMapper,
+            IEmailService emailService
         )
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
             _azureBlobService = azureBlobService;
+            _saleMapper = saleMapper;
+            _emailService = emailService;
 
         }
 
@@ -143,7 +150,8 @@ namespace FrcsPos.Repository
                     ProductVariantId = i.ProductVariant.Id,
                     Quantity = i.Quantity,
                     UnitPrice = i.UnitPrice,
-                    LineTotal = lineSubtotal + lineTax
+                    LineTotal = lineSubtotal + lineTax,
+                    TaxRatePercent = i.ProductVariant.TaxCategory?.RatePercent ?? 0
                 };
             }).ToList();
 
@@ -162,14 +170,14 @@ namespace FrcsPos.Repository
                 Subtotal = subtotal,
                 TaxTotal = taxTotal,
                 Total = total,
-                Status = SaleStatus.PENDING,
+                Status = SaleStatus.COMPLETED,
                 Items = saleItems
             };
 
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
 
-            return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
         }
         public async Task<ApiResponse<SaleDTO>> GetByUUIDAsync(string uuid)
         {
@@ -177,11 +185,23 @@ namespace FrcsPos.Repository
             var sale = await _context.Sales
                 .Include(s => s.Company)
                 .Include(s => s.Items)
-                    .ThenInclude(si => si.ProductVariant.Product)
-                        .ThenInclude(p => p.TaxCategory)
+                    .ThenInclude(si => si.ProductVariant)
+                        .ThenInclude(x => x.Media)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant)
+                        .ThenInclude(x => x.Product)
+                            .ThenInclude(p => p.TaxCategory)
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
                 .Include(s => s.Cashier)
+                .Include(s => s.Refunds)
+                    .ThenInclude(si => si.RequestedBy)
+                .Include(s => s.Refunds)
+                    .ThenInclude(si => si.Items)
+                        .ThenInclude(x => x.SaleItem)
+                            .ThenInclude(si => si.ProductVariant)
+                                .ThenInclude(x => x.Media)
+
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
 
             if (sale == null)
@@ -189,7 +209,9 @@ namespace FrcsPos.Repository
             if (sale.Company == null)
                 return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
 
-            return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            var dto = await _saleMapper.FromModelToDtoAsync(sale);
+
+            return ApiResponse<SaleDTO>.Ok(dto);
 
         }
 
@@ -433,7 +455,7 @@ namespace FrcsPos.Repository
             if (sale.Company == null)
                 return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
 
-            return ApiResponse<SaleDTO>.Ok(sale.FromModelToDto());
+            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
         }
 
         public async Task<ApiResponse<List<SaleDTO>>> GetSaleByCompanyAsync(RequestQueryObject queryObject)
@@ -461,16 +483,16 @@ namespace FrcsPos.Repository
 
             // Pagination
             var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var products = await query
+            var sales = await query
                 .Skip(skip)
                 .Take(queryObject.PageSize)
                 .ToListAsync();
 
             // Mapping to DTOs
             var result = new List<SaleDTO>();
-            foreach (var product in products)
+            foreach (var sale in sales)
             {
-                var dto = product.FromModelToDto();
+                var dto = await _saleMapper.FromModelToDtoAsync(sale);
                 result.Add(dto);
             }
 
@@ -486,6 +508,42 @@ namespace FrcsPos.Repository
                     PageSize = queryObject.PageSize
                 }
             };
+        }
+
+        public Task<ApiResponse<SaleDTO>> GetFullByUUIDAsync(string uuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ApiResponse<bool>> EmailReceiptPDF(string uuid, string email)
+        {
+            var sale = await _context.Sales
+                .Include(s => s.Company)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant.Product)
+                        .ThenInclude(p => p.TaxCategory)
+                .Include(s => s.PosSession)
+                    .ThenInclude(ps => ps.PosTerminal)
+                .Include(s => s.Cashier)
+                .FirstOrDefaultAsync(s => s.UUID == uuid);
+
+            if (sale == null)
+                return ApiResponse<bool>.NotFound(message: "Sale not found");
+
+            var pdfBytes = GenerateReceiptPdfBytes(sale);
+
+            using var stream = new MemoryStream(pdfBytes);
+            var attachment = new EmailAttachment(
+                name: $"Receipt_{uuid}.pdf",
+                contentType: "application/pdf",
+                content: BinaryData.FromStream(stream)
+            );
+            var subject = "Your Receipt";
+            var htmlBody = "<p>Dear Customer,</p><p>Please find your receipt attached.</p>";
+
+            FireAndForget.Run(_emailService.SendVerifyEmailAsync(email, subject, htmlBody, attachment));
+
+            return ApiResponse<bool>.Ok(true);
         }
     }
 }

@@ -250,8 +250,7 @@ namespace FrcsPos.Controllers
 
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
-
-                await _emailRepository.CreateNewLink(user);
+                FireAndForget.Run(_emailRepository.CreateNewLink(user));
 
                 return Ok(ApiResponse<UserDTO>.Ok(
                     data: dto,

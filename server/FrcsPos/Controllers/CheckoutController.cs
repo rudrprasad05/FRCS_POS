@@ -50,6 +50,19 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("email-receipt")]
+        public async Task<IActionResult> Download([FromQuery] string uuid, [FromBody] RequestPasswordReset requestPasswordReset)
+        {
+            var model = await _checkoutRepository.EmailReceiptPDF(uuid, requestPasswordReset.Email);
+
+            if (model == null || !model.Success || model.Success == false)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
 
     }
 }

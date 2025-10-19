@@ -13,7 +13,8 @@ namespace FrcsPos.Interfaces
     {
         public Task<ApiResponse<RefundDTO>> StartRefundAsync(StartRefundRequest request, string cashierUserId);
         public Task<ApiResponse<RefundDTO>> GetRefundByIdAsync(int refundId);
+        public Task<ApiResponse<RefundDTO>> GetRefundByUUIDAsync(RequestQueryObject query);
         public Task<ApiResponse<List<RefundDTO>>> GetAllRefundsAsync(RequestQueryObject query);
-        public Task<ApiResponse<RefundDTO>> ApproveRefundAsync(int refundId, AdminApprovalRequest request);
+        public Task<ApiResponse<RefundDTO>> ApproveRefundAsync(RequestQueryObject query, AdminApprovalRequest request);
     }
 }

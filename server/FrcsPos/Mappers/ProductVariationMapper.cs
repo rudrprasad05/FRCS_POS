@@ -15,13 +15,11 @@ namespace FrcsPos.Mappers
     public class ProductVariantMapper : IProductVariantMapper
     {
         private readonly IMediaMapper _mediaMapper;
-        // private readonly IProductMapper _productMapper;
 
 
         public ProductVariantMapper(IMediaMapper mediaMapper)
         {
             _mediaMapper = mediaMapper;
-            // _productMapper = productMapper;
         }
 
         public async Task<ProductVariantDTO> FromModelToDtoAsync(ProductVariant request)

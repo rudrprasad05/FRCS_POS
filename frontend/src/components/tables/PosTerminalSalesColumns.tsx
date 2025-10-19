@@ -5,6 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
   {
@@ -53,21 +54,27 @@ export const PosTerminalSalesColumns: ColumnDef<Sale>[] = [
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const company = row.original;
+      const sale = row.original;
 
-      return (
-        <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/admin/companies/${company.uuid}`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
-        </div>
-      );
+      return <ViewBtn uuid={sale.uuid} />;
     },
   },
 ];
+
+const ViewBtn = ({ uuid }: { uuid: string }) => {
+  const params = useParams();
+  const companyName = String(params.companyName);
+  return (
+    <div className="flex gap-2">
+      <Button variant={"outline"} asChild className="w-24">
+        <Link
+          href={`/${companyName}/sales/${uuid}/view`}
+          className="w-24 flex items-center justify-between"
+        >
+          View
+          <Eye className="" />
+        </Link>
+      </Button>
+    </div>
+  );
+};

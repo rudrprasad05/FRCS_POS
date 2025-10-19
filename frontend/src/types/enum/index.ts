@@ -1,7 +1,7 @@
 export enum RefundStatus {
-  Pending = 1,
-  Approved = 2,
-  Rejected = 3,
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
 }
 
 export enum CompanyRole {

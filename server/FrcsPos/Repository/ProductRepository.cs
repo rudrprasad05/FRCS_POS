@@ -83,8 +83,11 @@ namespace FrcsPos.Repository
             {
                 var search = queryObject.Search.ToLower();
                 query = query.Where(c =>
-                    c.Name.ToLower().Contains(search) ||
-                    c.Sku.ToLower().Contains(search)
+                    c.Name.Contains(search) ||
+                    c.Sku.Contains(search) ||
+                    c.Barcode.Contains(search) ||
+                    c.Product.Name.Contains(search) ||
+                    c.Product.Sku.Contains(search)
                 );
             }
             // Sorting

@@ -1,6 +1,7 @@
 "use client";
 
 import { DownloadRecieptFromServer, GetSaleByUUID } from "@/actions/Sale";
+import { EmailReceiptDialog } from "@/components/company/pos/EmailReceiptDialog";
 import { XSmallText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,7 +13,6 @@ import {
   Check,
   Download,
   Loader2,
-  Mail,
   TriangleAlert,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -54,6 +54,7 @@ export default function ReceiptPage() {
   const [sale, setSale] = useState<Sale | undefined>(undefined);
   const [recieptUrl, setRecieptUrl] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
   const params = useParams();
   const checkoutId = String(params.checkoutId);
   const sessionId = String(params.sessionId);
@@ -68,6 +69,8 @@ export default function ReceiptPage() {
   const { date, time } = formatDateTime(
     sale ? sale.createdOn : Date.now.toString()
   );
+
+  const handleSendEmail = () => {};
 
   const handleDownloadReceipt = async () => {
     if (!sale) return;
@@ -127,7 +130,7 @@ export default function ReceiptPage() {
       <div className="w-screen h-screen grid place-items-center">
         <div className="flex items-center flex-col ">
           <Loader2 className="animate-spin" />
-          Loading Products
+          Loading Reciept
         </div>
       </div>
     );
@@ -285,12 +288,7 @@ export default function ReceiptPage() {
                 <Download className="w-4 h-4" />
               )}
             </div>
-            <div
-              onClick={handleDownloadReceipt}
-              className="bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 rounded-full p-2"
-            >
-              <Mail className="w-4 h-4" />
-            </div>
+            <EmailReceiptDialog />
           </div>
 
           {/* Back to POS Button */}

@@ -10,7 +10,7 @@ using FrcsPos.Response.DTO;
 namespace FrcsPos.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/refunds")]
     public class RefundsController : ControllerBase
     {
         private readonly IRefundService _refundService;
@@ -20,7 +20,6 @@ namespace FrcsPos.Controllers
             _refundService = refundService;
         }
 
-        // GET api/refunds
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] RequestQueryObject query)
@@ -29,12 +28,19 @@ namespace FrcsPos.Controllers
             return StatusCode(res.StatusCode, res);
         }
 
-        // GET api/refunds/{id}
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IActionResult> Get(int id)
         {
             var res = await _refundService.GetRefundByIdAsync(id);
+            return StatusCode(res.StatusCode, res);
+        }
+
+        [HttpGet("get-by-uuid")]
+        [Authorize]
+        public async Task<IActionResult> GetByUUID([FromQuery] RequestQueryObject query)
+        {
+            var res = await _refundService.GetRefundByUUIDAsync(query);
             return StatusCode(res.StatusCode, res);
         }
 
@@ -49,11 +55,11 @@ namespace FrcsPos.Controllers
         }
 
         // POST api/refunds/{id}/approve
-        [HttpPost("{id}/approve")]
+        [HttpPost("approve")]
         [Authorize]
-        public async Task<IActionResult> Approve(int id, [FromBody] AdminApprovalRequest request)
+        public async Task<IActionResult> Approve([FromQuery] RequestQueryObject query, [FromBody] AdminApprovalRequest request)
         {
-            var res = await _refundService.ApproveRefundAsync(id, request);
+            var res = await _refundService.ApproveRefundAsync(query, request);
             return StatusCode(res.StatusCode, res);
         }
     }

@@ -24,8 +24,9 @@ import { Input } from "@/components/ui/input";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { PosTerminal } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, Loader2, Play } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -38,8 +39,11 @@ interface NewSessionDialogProps {
 export default function NewSessionDialog({ terminal }: NewSessionDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const params = useParams();
+  const posId = String(params.posId);
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInForm),
@@ -69,6 +73,10 @@ export default function NewSessionDialog({ terminal }: NewSessionDialogProps) {
       const url = res.data?.uuid;
       if (uuidValidate(url)) {
         toast.success("Session created. Redirecting");
+        queryClient.invalidateQueries({
+          queryKey: ["getPosSessions", posId, {}],
+          exact: false,
+        });
         router.push(`session/${url}`);
       } else {
         toast.error("Session url was invalid");

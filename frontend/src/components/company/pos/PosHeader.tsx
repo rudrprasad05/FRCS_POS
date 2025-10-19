@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePosSession } from "@/context/PosContext";
@@ -19,23 +18,22 @@ import {
   Moon,
   Plug,
   RotateCcw,
-  Settings,
   Smartphone,
   Sun,
   Unplug,
-  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import PosQrCodeConnectDialoge from "./PosQrCodeConnectDialoge";
 
-export default function PosHeader() {
+export default function PosHeader({ back }: { back?: string }) {
   const { session, isTerminalConnectedToServer, isScannerConnectedToServer } =
     usePosSession();
   const params = useParams();
   const companyName = String(params.companyName);
   const posId = String(params.posId);
+  const sessionId = String(params.sessionId);
 
   const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
 
@@ -70,7 +68,7 @@ export default function PosHeader() {
           <Link
             className="flex items-center gap-1 text-sm"
             prefetch
-            href={`/${companyName}/pos/${posId}`}
+            href={back || `/${companyName}/pos/${posId}`}
           >
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
@@ -105,29 +103,6 @@ export default function PosHeader() {
           )}
         </Button>
 
-        {/* Theme Toggle */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              {getThemeIcon()}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
-              <Sun className="h-4 w-4 mr-2" />
-              Light
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
-              <Moon className="h-4 w-4 mr-2" />
-              Dark
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
-              <Monitor className="h-4 w-4 mr-2" />
-              System
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         {/* Main Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -136,22 +111,19 @@ export default function PosHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>
-              <CreditCard className="h-4 w-4 mr-2" />
-              Terminal
+            <DropdownMenuItem asChild>
+              <Link href={`/${companyName}/pos/${posId}/session/${sessionId}`}>
+                <CreditCard className="h-4 w-4 mr-2" />
+                Terminal
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Refunds
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <User className="h-4 w-4 mr-2" />
-              User Profile
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/${companyName}/pos/${posId}/session/${sessionId}/sales`}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Refunds
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

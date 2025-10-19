@@ -19,10 +19,28 @@ export async function GetSaleByReceipt(
   });
 }
 
+export async function GetSaleByUuid(
+  query: QueryObject
+): Promise<ApiResponse<Sale>> {
+  return RequestWrapper<Sale>("GET", `sale/get-by-uuid`, {
+    query,
+  });
+}
+
 export async function DownloadRecieptFromServer(
   uuid: string
 ): Promise<ApiResponse<string>> {
   return RequestWrapper<string>("GET", `checkout/download-receipt`, {
     query: { uuid },
+  });
+}
+
+export async function EmailReceiptAsync(
+  uuid: string,
+  email: string
+): Promise<ApiResponse<boolean>> {
+  return RequestWrapper<boolean>("POST", `checkout/email-receipt`, {
+    query: { uuid },
+    data: { email },
   });
 }

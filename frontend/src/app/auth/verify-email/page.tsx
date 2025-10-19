@@ -146,7 +146,7 @@ export default function VerifyEmailConfirmPage() {
           {status === "success" && (
             <div className="space-y-3">
               <Button className="w-full" size="lg" asChild>
-                <Link href="/login">Continue to sign in</Link>
+                <Link href="/auth/login">Continue to sign in</Link>
               </Button>
               <Button
                 variant="outline"

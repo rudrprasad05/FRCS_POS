@@ -158,7 +158,7 @@ namespace FrcsPos.Repository
             string baseUrl = _configuration["BASE_URL"] ?? throw new InvalidOperationException("base url not found");
             var verificationLink = $"{baseUrl}/auth/forgot-password?code={code}&userId={user.Id}";
 
-            FireAndForget.Run(_emailService.SendVerifyEmailAsync(user.Email ?? "", "Verify Email Address", EmailTemplates.ResetPasswordBody(verificationLink)));
+            FireAndForget.Run(_emailService.SendVerifyEmailAsync(user.Email ?? "", "Reset Password", EmailTemplates.ResetPasswordBody(verificationLink)));
 
             return true;
         }
