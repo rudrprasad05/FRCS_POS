@@ -106,7 +106,7 @@ namespace FrcsPos.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,  // Set to false for local development
-                    SameSite = SameSiteMode.None,
+                    SameSite = SameSiteMode.Strict,
                     Expires = DateTime.UtcNow.AddHours(1)
                 });
 

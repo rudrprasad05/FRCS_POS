@@ -106,35 +106,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState
-            .Where(ms => ms.Value?.Errors.Count > 0)
-            .SelectMany(ms => ms.Value?.Errors.Select(e => $"{ms.Key}: {e.ErrorMessage}"))
-            .ToList();
-
-        var response = new ApiResponse<object>
-        {
-            Success = false,
-            StatusCode = 400,
-            Message = "Validation failed",
-            Data = null,
-            Errors = errors,
-            Timestamp = DateTime.UtcNow,
-            TraceId = context.HttpContext.TraceIdentifier
-        };
-
-        return new BadRequestObjectResult(response);
-    };
-});
-
-
-
 builder.Services.AddSignalR();
-
 builder.WebHost.UseUrls(builder.Configuration["Backend:Url"] ?? throw new InvalidOperationException());
 
 var app = builder.Build();

@@ -43,55 +43,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     router.push(searchParams.get("returnUrl") || "/redirect");
-    // router.push("/redirect");
   };
 
   const login = async (email: string, password: string, redirect?: string) => {
     setIsLoading(true);
     let tempUser: User;
     try {
-      const res = await axiosGlobal.post<ApiResponse<LoginResponse>>(
-        "auth/login",
-        {
-          email,
-          password,
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // Ensures cookies are sent and received
+        body: JSON.stringify({ email, password }),
+      });
+
+      console.log("d12456", res);
+
+      // Check response status
+      if (!res.ok) {
+        if (res.status === 422) {
+          router.push("/auth/verify-email");
+          return;
         }
-      );
-
-      if (res.status == 422) {
-        router.push("/auth/verify-email");
+        const errorData = await res.json();
+        toast.error("An error occurred", {
+          description: errorData.message || "Invalid credentials",
+        });
         return;
       }
 
-      const data = res.data.data;
-      if (data == undefined) {
-        // router.push("/error/unauthorised");
-        toast.error("An error occured", { description: res.data.message });
+      // Parse JSON response
+      const data = await res.json();
+
+      console.log("d123", data);
+      // Validate response data
+      if (!data || !data.token) {
+        toast.error("An error occurred", { description: "No token received" });
         return;
       }
 
+      // Construct user object (adjust based on API response structure)
       tempUser = {
-        id: data.id,
-        username: data.username,
-        email: data.email,
+        id: data.id || "", // Adjust fields based on your API response
+        username: data.username || "",
+        email: data.email || "",
         token: data.token,
-        role: data.role,
+        role: data.role || "",
       } as User;
 
-      setUser(tempUser);
+      // Store user and token
+      setUser(tempUser); // Assuming setUser is a state setter from a context or hook
       localStorage.setItem("user", JSON.stringify(tempUser));
       localStorage.setItem("token", data.token);
 
-      if (redirect && redirect.trim().length > 0) {
-        router.push("/admin" + redirect);
+      // Handle redirect
+      console.log("1wwwq hit", user);
+
+      if (user?.role?.toUpperCase() == "SUPERADMIN") {
+        console.log("1wwwq hit", user);
+        router.push(`/admin${redirect}`);
         return;
       } else {
         helperHandleRedirectAfterLogin(tempUser);
       }
     } catch (error) {
       console.error("Login failed:", error);
-      throw new Error("Invalid credentials");
+      toast.error("Login failed", {
+        description: "Invalid credentials or server error",
+      });
+    } finally {
+      setIsLoading(false);
     }
+
     setIsLoading(false);
   };
 
