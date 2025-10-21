@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FrcsPos.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSupplierToCompany : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -262,6 +262,34 @@ namespace FrcsPos.Migrations
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateTable(
+                name: "EmailVerifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    Code = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    IsVerified = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    UseBy = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
+                    CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmailVerifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmailVerifications_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
                 name: "CompanyUsers",
                 columns: table => new
                 {
@@ -431,13 +459,10 @@ namespace FrcsPos.Migrations
                     SupplierId = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
                     Sku = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    Barcode = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    FirstWarningInDays = table.Column<int>(type: "int", nullable: false),
-                    CriticalWarningInHours = table.Column<int>(type: "int", nullable: false),
-                    TaxCategoryId = table.Column<int>(type: "int", nullable: false),
                     IsPerishable = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    MediaId = table.Column<int>(type: "int", nullable: true),
+                    FirstWarningInDays = table.Column<int>(type: "int", nullable: true),
+                    CriticalWarningInHours = table.Column<int>(type: "int", nullable: true),
+                    TaxCategoryId = table.Column<int>(type: "int", nullable: false),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -453,11 +478,6 @@ namespace FrcsPos.Migrations
                         principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Products_Medias_MediaId",
-                        column: x => x.MediaId,
-                        principalTable: "Medias",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Products_Suppliers_SupplierId",
                         column: x => x.SupplierId,
@@ -565,6 +585,7 @@ namespace FrcsPos.Migrations
                     Sku = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
                     Barcode = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci"),
                     Price = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    MediaId = table.Column<int>(type: "int", nullable: true),
                     FirstWarningInDays = table.Column<int>(type: "int", nullable: true),
                     CriticalWarningInHours = table.Column<int>(type: "int", nullable: true),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
@@ -576,6 +597,11 @@ namespace FrcsPos.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductVariants", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductVariants_Medias_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Medias",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_ProductVariants_Products_ProductId",
                         column: x => x.ProductId,
@@ -595,7 +621,7 @@ namespace FrcsPos.Migrations
                     SaleId = table.Column<int>(type: "int", nullable: false),
                     RequestedByUserId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Reason = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_general_ci"),
+                    Reason = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true, collation: "utf8mb4_general_ci"),
                     ApprovedByUserId = table.Column<string>(type: "varchar(255)", nullable: true, collation: "utf8mb4_general_ci"),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -776,7 +802,7 @@ namespace FrcsPos.Migrations
                     SaleItemId = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     ApprovedQuantity = table.Column<int>(type: "int", nullable: true),
-                    Note = table.Column<string>(type: "longtext", nullable: true, collation: "utf8mb4_general_ci"),
+                    Note = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: true, collation: "utf8mb4_general_ci"),
                     UUID = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci"),
                     CreatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedOn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -878,6 +904,23 @@ namespace FrcsPos.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EmailVerifications_Code",
+                table: "EmailVerifications",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailVerifications_UserId",
+                table: "EmailVerifications",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailVerifications_UUID",
+                table: "EmailVerifications",
+                column: "UUID",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Medias_UUID",
                 table: "Medias",
                 column: "UUID",
@@ -975,22 +1018,10 @@ namespace FrcsPos.Migrations
                 column: "WarehouseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_CompanyId_Barcode",
-                table: "Products",
-                columns: new[] { "CompanyId", "Barcode" },
-                unique: true,
-                filter: "[Barcode] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_CompanyId_Sku",
                 table: "Products",
                 columns: new[] { "CompanyId", "Sku" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_MediaId",
-                table: "Products",
-                column: "MediaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_SupplierId",
@@ -1007,6 +1038,11 @@ namespace FrcsPos.Migrations
                 table: "Products",
                 column: "UUID",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_MediaId",
+                table: "ProductVariants",
+                column: "MediaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductId_Name",
@@ -1211,6 +1247,9 @@ namespace FrcsPos.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "EmailVerifications");
+
+            migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
@@ -1244,13 +1283,13 @@ namespace FrcsPos.Migrations
                 name: "Sales");
 
             migrationBuilder.DropTable(
+                name: "Medias");
+
+            migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
                 name: "PosSessions");
-
-            migrationBuilder.DropTable(
-                name: "Medias");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");

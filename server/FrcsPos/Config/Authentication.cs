@@ -14,16 +14,16 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FrcsPos.Config
 {
-   public static class Authentication
+    public static class Authentication
     {
         public static void AddAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {   
+        {
             var frontend = configuration["AllowedHosts"] ?? throw new InvalidOperationException();
-            var allowedOrigins = configuration.GetSection("CorsOrigins").Get<string[]>();
+            var allowedOrigins = configuration.GetSection("CorsOrigins").Get<string[]>() ?? ["http://localhost:3000"]; ;
 
-            services.AddCors(c => 
+            services.AddCors(c =>
             {
-                c.AddPolicy("allowSpecificOrigin", options => 
+                c.AddPolicy("allowSpecificOrigin", options =>
                 {
                     options
                     .WithOrigins(allowedOrigins!)
@@ -80,5 +80,5 @@ namespace FrcsPos.Config
         }
     }
 
-    
+
 }

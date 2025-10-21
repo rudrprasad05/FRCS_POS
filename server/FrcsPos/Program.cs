@@ -150,7 +150,7 @@ app.UseRouting();
 
 app
 .UseCors("allowSpecificOrigin")
-.UseHttpsRedirection()
+// .UseHttpsRedirection()
 .UseWebSockets()
 .UseAuthentication()
 .UseAuthorization();
