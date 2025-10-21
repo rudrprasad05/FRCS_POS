@@ -26,7 +26,7 @@ import { QueryObject } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -36,10 +36,8 @@ export default function ApproveRefundDialoge() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
   const queryClient = useQueryClient();
   const params = useParams();
-  const posId = String(params.posId);
   const refundId = String(params.refundId);
 
   const form = useForm<SignInFormType>({

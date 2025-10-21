@@ -126,7 +126,7 @@ export function EditorTab({
       formData.append("File", data.image); // IFormFile
     }
 
-    const res = await EditProduct(formData, product.uuid);
+    const res = await EditProduct(formData, { uuid: product.uuid });
 
     if (res.success) {
       queryClient.invalidateQueries({

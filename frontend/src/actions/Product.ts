@@ -14,7 +14,7 @@ export async function GetAllProducts(
   query?: QueryObject,
   forPos?: boolean
 ): Promise<ApiResponse<ProductVariant[]>> {
-  let a = RequestWrapper<ProductVariant[]>("POST", `product/get-all-var`, {
+  const a = RequestWrapper<ProductVariant[]>("POST", `product/get-all-var`, {
     query,
     data: {
       ForPos: forPos || false,
@@ -22,6 +22,16 @@ export async function GetAllProducts(
   });
   console.dir(a);
   return a;
+}
+
+export async function CreateProductAsync(
+  data: FormData,
+  query: QueryObject
+): Promise<ApiResponse<Product>> {
+  return RequestWrapper<Product>("POST", `product/create`, {
+    query,
+    data: data,
+  });
 }
 export async function GetAllProductVar(
   query?: QueryObject,

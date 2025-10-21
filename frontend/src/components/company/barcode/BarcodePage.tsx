@@ -73,9 +73,9 @@ export default function BarcodeScanner() {
           })
           .catch((err) => console.error("SignalR connection failed", err));
 
-        conn.on("ReceiveMessage", (msg) => {});
+        // conn.on("ReceiveMessage", (msg) => {});
 
-        conn.on("ReceivedJoinScanner", (msg) => {});
+        // conn.on("ReceivedJoinScanner", (msg) => {});
 
         setConnection(conn);
       } else {

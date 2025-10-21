@@ -94,15 +94,6 @@ export async function Logout(): Promise<ApiResponse<string>> {
   return res.data;
 }
 
-export async function ConfirmEmail(token: string): Promise<boolean> {
-  try {
-    await axiosGlobal.post("auth/confirm-email/" + token);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
 export async function GetToken(): Promise<string | undefined> {
   const a = await cookies();
   const token = a.get("token")?.value;

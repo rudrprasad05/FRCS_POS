@@ -28,9 +28,8 @@ import {
 import { formatDateIntoFormat } from "@/lib/utils";
 import { ILoadPreCreationInfo } from "@/types/res";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
 import { Asterisk, CalendarIcon, Loader2, PackagePlus } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
@@ -60,8 +59,6 @@ export default function NewProductBatchContainer() {
   const params = useParams();
   const companyName = String(params.companyName);
   const warehouseId = String(params.warehouseId);
-  const router = useRouter();
-  const queryClient = useQueryClient();
 
   const form = useForm<NewBatchFormData>({
     resolver: zodResolver(schema),
@@ -107,6 +104,7 @@ export default function NewProductBatchContainer() {
 
   const onSubmit = async (data: NewBatchFormData) => {
     setIsSubmitting(true);
+    console.log(data);
 
     // const res = await CreateProductBatch(data);
 

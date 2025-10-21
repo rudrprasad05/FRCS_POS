@@ -46,7 +46,7 @@ namespace FrcsPos.Static
                         <tr>
                             <td style='padding: 20px; text-align: center; background-color: #f4f4f4;'>
                                 <p style='font-size: 12px; color: #999999; margin: 0;'>
-                                    &copy; {currentYear} YourAppName. All rights reserved.
+                                    &copy; {currentYear} TapNGo. All rights reserved.
                                 </p>
                             </td>
                         </tr>

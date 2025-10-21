@@ -35,6 +35,7 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
                 AdminUser = request.AdminUser.FromUserToDto(),
+                AdminUserId = request.AdminUserId,
                 PosTerminals = request.PosTerminals.FromModelToDtoWithoutCompany(),
                 Warehouses = request.Warehouses.FromModelToDto(),
                 Users = request.Users.FromCompanyUserToDTO(),

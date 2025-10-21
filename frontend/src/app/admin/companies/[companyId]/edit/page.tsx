@@ -44,7 +44,7 @@ export default function EditorPage() {
           <h1 className="text-3xl font-bold">Edit Company</h1>
         </div>
         <p className="text-muted-foreground">
-          You are editing the product &quot;{company?.name}&quot;
+          You are editing the company &quot;{company?.name}&quot;
         </p>
       </div>
       <Tabs

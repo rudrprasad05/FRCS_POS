@@ -65,8 +65,9 @@ export default function VerifyEmailConfirmPage() {
                 Verify your email
               </CardTitle>
               <CardDescription className="text-base leading-relaxed">
-                We've sent a verification link to your email address. Please
-                check your inbox and click the link to verify your account.
+                We&apos;ve sent a verification link to your email address.
+                Please check your inbox and click the link to verify your
+                account.
               </CardDescription>
             </div>
           </CardHeader>
@@ -75,7 +76,7 @@ export default function VerifyEmailConfirmPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Check your spam folder if you don't see the email in your
+                  Check your spam folder if you don&apos;t see the email in your
                   inbox
                 </p>
               </div>
@@ -104,7 +105,7 @@ export default function VerifyEmailConfirmPage() {
             <p className="text-center text-sm text-muted-foreground">
               Already verified?{" "}
               <Link
-                href="/login"
+                href="/auth/login"
                 className="text-foreground font-medium hover:underline"
               >
                 Sign in

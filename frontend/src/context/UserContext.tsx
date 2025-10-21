@@ -42,8 +42,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: "Redirecting shortly",
     });
 
-    let returnUrl = searchParams.get("returnUrl");
-
     router.push(searchParams.get("returnUrl") || "/redirect");
     // router.push("/redirect");
   };

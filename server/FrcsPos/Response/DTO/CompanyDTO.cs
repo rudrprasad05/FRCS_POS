@@ -13,7 +13,9 @@ namespace FrcsPos.Response.DTO
             AdminUser = default!;
         }
         public string Name { get; set; } = default!;
+        public string AdminUserId { get; set; } = default!;
         public UserDTO AdminUser { get; set; } = default!;
+
         public List<PosTerminalDTO> PosTerminals { get; set; } = default!;
         public List<CompanyUserDTO> Users { get; set; } = [];
         public List<WarehouseDTO> Warehouses { get; set; } = [];

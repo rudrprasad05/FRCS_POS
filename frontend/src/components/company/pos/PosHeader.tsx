@@ -14,12 +14,9 @@ import {
   Maximize,
   Menu,
   Minimize,
-  Monitor,
-  Moon,
   Plug,
   RotateCcw,
   Smartphone,
-  Sun,
   Unplug,
 } from "lucide-react";
 import Link from "next/link";
@@ -34,19 +31,6 @@ export default function PosHeader({ back }: { back?: string }) {
   const companyName = String(params.companyName);
   const posId = String(params.posId);
   const sessionId = String(params.sessionId);
-
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case "light":
-        return <Sun className="h-4 w-4" />;
-      case "dark":
-        return <Moon className="h-4 w-4" />;
-      default:
-        return <Monitor className="h-4 w-4" />;
-    }
-  };
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 

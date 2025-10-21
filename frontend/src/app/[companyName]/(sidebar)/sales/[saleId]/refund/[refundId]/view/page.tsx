@@ -28,14 +28,12 @@ import { UserRoles } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle, Clock, Loader2, XCircle } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export default function RefundRequestPage() {
   const params = useParams();
   const refundId = String(params.refundId);
   const router = useRouter();
-  const [isApproving, setIsApproving] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["viewRefund", refundId],
@@ -95,20 +93,6 @@ export default function RefundRequestPage() {
       }
       return total;
     }, 0);
-  };
-
-  const handleApprove = async () => {
-    setIsApproving(true);
-    try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Refresh or redirect
-      router.refresh();
-    } catch (error) {
-    } finally {
-      setIsApproving(false);
-    }
   };
 
   return (

@@ -82,10 +82,8 @@ export default function NewProductPage() {
   const [isLoadingTaxCategories, setIsLoadingTaxCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [customExpiryDays, setCustomExpiryDays] = useState([1, 2, 3, 5, 7, 10]);
-  const [customExpiryHours, setCustomExpiryHours] = useState([
-    6, 12, 24, 48, 72,
-  ]);
+  const customExpiryDays = [1, 2, 3, 5, 7, 10];
+  const customExpiryHours = [6, 12, 24, 48, 72];
   const [isSelectCustom, setIsSelectCustom] = useState({
     customExpiryDays: false,
     customExpiryHours: false,
@@ -126,7 +124,7 @@ export default function NewProductPage() {
     };
 
     loadTaxCategories();
-  }, []);
+  }, [form]);
 
   useEffect(() => {
     if (file && file.type.startsWith("image/")) {
