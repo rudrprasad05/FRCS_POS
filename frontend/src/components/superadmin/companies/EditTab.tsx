@@ -52,6 +52,8 @@ export function EditorTab({ company }: { company: Company }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
 
+  console.log("fkfkf", company);
+
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -59,7 +61,7 @@ export function EditorTab({ company }: { company: Company }) {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: company?.name,
-      adminUserId: "",
+      adminUserId: company?.adminUserId,
     },
   });
 

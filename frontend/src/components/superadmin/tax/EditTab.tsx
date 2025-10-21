@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { QueryObject, TaxCategory, User, UserRoles } from "@/types/models";
+import { QueryObject, TaxCategory, UserRoles } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -38,9 +38,7 @@ export const taxSchema = z.object({
 export type EditTaxData = z.infer<typeof taxSchema>;
 
 export function EditorTab({ tax }: { tax: TaxCategory }) {
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [adminUsers, setAdminUsers] = useState<User[]>([]);
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -60,8 +58,6 @@ export function EditorTab({ tax }: { tax: TaxCategory }) {
       } as QueryObject);
 
       const users = data.data ?? [];
-
-      setLoading(false);
     };
     getData();
   }, [form]);

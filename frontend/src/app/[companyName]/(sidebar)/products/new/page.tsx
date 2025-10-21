@@ -1,6 +1,5 @@
 "use client";
-import { GetNewPageInfo } from "@/actions/Product";
-import { RequestWrapper } from "@/actions/RequestWrapper";
+import { CreateProductAsync, GetNewPageInfo } from "@/actions/Product";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import StepperCircles from "@/components/global/StepperCircles";
 import { Button } from "@/components/ui/button";
@@ -34,13 +33,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import {
-  ApiResponse,
-  Product,
-  QueryObject,
-  Supplier,
-  TaxCategory,
-} from "@/types/models";
+import { ProductFormData, productSchema } from "@/types/forms/zod";
+import { Supplier, TaxCategory } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -63,7 +57,6 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { v4 as uuid } from "uuid";
-import z from "zod";
 
 const steps = [
   "Supplier",
@@ -76,66 +69,7 @@ const steps = [
 const customExpiryDays = [1, 2, 3, 5, 7, 10];
 const customExpiryHours = [6, 12, 24, 48, 72];
 
-export async function CreateProduct(
-  data: FormData,
-  query: QueryObject
-): Promise<ApiResponse<Product>> {
-  return RequestWrapper<Product>("POST", `product/create`, {
-    query,
-    data: data,
-  });
-}
-
-const productVariantSchema = z.object({
-  uuid: z.uuid(),
-  name: z.string().min(1, "Variant name is required"),
-  sku: z.string().min(1, "Variant SKU is required"),
-  barcode: z.string(),
-  price: z.number().min(0, "Price must be >= 0"),
-  mediaFile: z.any().optional(),
-});
-
-export const productSchema = z
-  .object({
-    firstWarningInDays: z.number().optional(),
-    criticalWarningInHours: z.number().optional(),
-    name: z
-      .string()
-      .min(1, "Product name is required")
-      .max(100, "Name must be less than 100 characters"),
-    sku: z
-      .string()
-      .min(1, "SKU is required")
-      .max(50, "SKU must be less than 50 characters"),
-    taxCategoryId: z.uuid("select a tax"),
-    supplierId: z.uuid("select a supplier"),
-    isPerishable: z.boolean(),
-    variants: z.array(productVariantSchema),
-  })
-  .refine(
-    (data) => {
-      if (!data.isPerishable) return true;
-      if (
-        data.firstWarningInDays == null ||
-        data.criticalWarningInHours == null
-      )
-        return false;
-      return (
-        Number(data.criticalWarningInHours) <
-        Number(data.firstWarningInDays) * 24
-      );
-    },
-    {
-      message:
-        "Critical warning (hours) must be less than first warning (days x 24)",
-      path: ["criticalWarningInHours"],
-    }
-  );
-
-export type ProductFormData = z.infer<typeof productSchema>;
-
 export default function StepperForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -156,7 +90,7 @@ export default function StepperForm() {
     },
   });
 
-  const { data, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ["NewProductData", companyName],
     queryFn: () => GetNewPageInfo(companyName?.toString()),
     staleTime: FIVE_MINUTE_CACHE,
@@ -179,20 +113,16 @@ export default function StepperForm() {
   };
   const prevStep = () => {
     setCurrentStep((prev) => {
-      let x = Math.max(prev - 1, 0);
-      return x;
+      return Math.max(prev - 1, 0);
     });
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    // return;
-    setIsSubmitting(true);
-
     const formData = new FormData();
 
     formData.append("Product", JSON.stringify(data));
 
-    data.variants.forEach((variant, index) => {
+    data.variants.forEach((variant) => {
       formData.append(
         `Variants`,
         JSON.stringify({
@@ -210,7 +140,7 @@ export default function StepperForm() {
 
     console.log(formData);
 
-    const res = await CreateProduct(formData, {
+    const res = await CreateProductAsync(formData, {
       companyName: String(companyName),
     });
 
@@ -220,19 +150,11 @@ export default function StepperForm() {
     } else {
       toast.info("Failed to upload", { description: res.message });
     }
-
-    setIsSubmitting(false);
   };
 
   useEffect(() => {
-    console.log("Form errors:", form.formState.errors);
-    console.dir(form.getValues());
-  }, [form.formState.errors]);
-
-  useEffect(() => {
     form.setValue("taxCategoryId", String(data?.data?.taxCategories[0].uuid));
-    console.log(error);
-  }, [data]);
+  }, [data, form]);
 
   return (
     <div className="mx-auto p-6 h-full flex flex-col">
@@ -271,7 +193,7 @@ export default function StepperForm() {
           {/* set var 4 */}
           {currentStep === 3 && <Step4 form={form} />}
           {currentStep === 4 && <Step5 form={form} />}
-          {currentStep === 5 && <Step6 form={form} />}
+          {currentStep === 5 && <Step6 />}
 
           <Separator className="my-4 mt-auto" />
 
@@ -732,7 +654,7 @@ function Step5({ form }: { form: UseFormReturn<ProductFormData> }) {
   );
 }
 
-function Step6({ form }: { form: UseFormReturn<ProductFormData> }) {
+function Step6() {
   return (
     <div className="grid grid-cols-1 gap-4">
       <div>

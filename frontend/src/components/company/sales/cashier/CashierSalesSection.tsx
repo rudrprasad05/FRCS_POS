@@ -19,8 +19,6 @@ import { PosTerminalCashierSalesColumns } from "./PosTerminalCashierSalesColumns
 export default function CashierSalesSection() {
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
-  const posId = decodeURIComponent(params.posId as string);
-  const sessionId = decodeURIComponent(params.sessionId as string);
   const queryClient = useQueryClient();
 
   const [pagination, setPagination] = useState<QueryObject>({

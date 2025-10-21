@@ -268,7 +268,6 @@ namespace FrcsPos.Repository
                 return ApiResponse<CompanyDTO>.Fail(message: "Company not found");
             }
 
-            // Map company → DTO
             var dto = model.FromModelToDto();
 
             // Populate user DTOs (CompanyUser → User → UserDTO with role)

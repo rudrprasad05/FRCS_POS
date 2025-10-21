@@ -76,6 +76,54 @@ export const ResetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const productVariantSchema = z.object({
+  uuid: z.uuid(),
+  name: z.string().min(1, "Variant name is required"),
+  sku: z.string().min(1, "Variant SKU is required"),
+  barcode: z.string(),
+  price: z.number().min(0, "Price must be >= 0"),
+  mediaFile: z.any().optional(),
+});
+
+export const productSchema = z
+  .object({
+    firstWarningInDays: z.number().optional(),
+    criticalWarningInHours: z.number().optional(),
+    name: z
+      .string()
+      .min(1, "Product name is required")
+      .max(100, "Name must be less than 100 characters"),
+    sku: z
+      .string()
+      .min(1, "SKU is required")
+      .max(50, "SKU must be less than 50 characters"),
+    taxCategoryId: z.uuid("select a tax"),
+    supplierId: z.uuid("select a supplier"),
+    isPerishable: z.boolean(),
+    variants: z.array(productVariantSchema),
+  })
+  .refine(
+    (data) => {
+      if (!data.isPerishable) return true;
+      if (
+        data.firstWarningInDays == null ||
+        data.criticalWarningInHours == null
+      )
+        return false;
+      return (
+        Number(data.criticalWarningInHours) <
+        Number(data.firstWarningInDays) * 24
+      );
+    },
+    {
+      message:
+        "Critical warning (hours) must be less than first warning (days x 24)",
+      path: ["criticalWarningInHours"],
+    }
+  );
+
+export type ProductFormData = z.infer<typeof productSchema>;
+
 export type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
 export type EmailReceiptSchemaType = z.infer<typeof EmailReceipt>;
 export type NewBatchData = z.output<typeof NewBatchDataSchema>;

@@ -19,14 +19,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PackagePlus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 const steps = ["Supplier", "Product", "Expiry", "Review"];
 
 export default function StepperForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const params = useParams();
   const companyName = String(params.companyName);
   const warehouseId = String(params.warehouseId);
@@ -49,7 +48,7 @@ export default function StepperForm() {
 
   const supplierId = form.watch("supplierId");
 
-  const { data, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ["newBatchData", companyName, supplierId],
     queryFn: () => LoadPreCreationInfo({ companyName, uuid: supplierId }),
     staleTime: FIVE_MINUTE_CACHE,
@@ -75,14 +74,11 @@ export default function StepperForm() {
   };
   const prevStep = () => {
     setCurrentStep((prev) => {
-      let x = Math.max(prev - 1, 0);
-      return x;
+      return Math.max(prev - 1, 0);
     });
   };
 
   const onSubmit = async (data: NewBatchData) => {
-    setIsSubmitting(true);
-
     const res = await CreateProductBatch(data);
 
     if (res.success) {
@@ -95,14 +91,7 @@ export default function StepperForm() {
     } else {
       toast.error("Error creating batch", { description: res.message });
     }
-
-    setIsSubmitting(false);
   };
-
-  useEffect(() => {
-    console.log("Form errors:", form.formState.errors);
-    console.dir(form.getValues());
-  }, [form.formState.errors]);
 
   return (
     <div className="mx-auto p-6 h-full flex flex-col">

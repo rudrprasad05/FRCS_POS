@@ -50,6 +50,7 @@ export default function LoginPage() {
       await login(values.email, values.password, redirect as string);
     } catch (error) {
       toast.error("Failed login");
+      console.dir(error);
     }
 
     setIsLoading(false);

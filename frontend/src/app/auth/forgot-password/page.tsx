@@ -38,7 +38,6 @@ export default function ResetPasswordPage() {
   const [status, setStatus] = useState<
     "loading" | "success" | "error" | "default" | "reset"
   >("loading");
-  const [message, setMessage] = useState("");
 
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
@@ -57,18 +56,15 @@ export default function ResetPasswordPage() {
     } else {
       toast.error("An error occured", { description: res.message });
       setStatus("error");
-      setMessage(res.message as string);
     }
   };
 
   useEffect(() => {
     if (!code || !userId) {
       setStatus("error");
-      setMessage("Invalid verification link. Missing code or user ID.");
       return;
     }
     setStatus("reset");
-    setMessage(""); // Clear message when link is valid
   }, [code, userId]);
 
   if (status == "success") {
@@ -91,8 +87,8 @@ export default function ResetPasswordPage() {
               Reset your password
             </CardTitle>
             <CardDescription className="text-base leading-relaxed">
-              Enter your email address and we'll send you instructions to reset
-              your password
+              Enter your email address and we&apos;ll send you instructions to
+              reset your password
             </CardDescription>
           </div>
         </CardHeader>
@@ -295,7 +291,7 @@ function Success({ email }: { email: string }) {
               Check your email
             </CardTitle>
             <CardDescription className="text-base leading-relaxed">
-              We've sent password reset instructions to{" "}
+              We&apos;ve sent password reset instructions to{" "}
               <span className="font-medium text-foreground">{email}</span>
             </CardDescription>
           </div>
@@ -303,8 +299,8 @@ function Success({ email }: { email: string }) {
         <CardContent className="space-y-6">
           <div className="bg-muted/50 rounded-lg p-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              If you don't receive an email within a few minutes, please check
-              your spam folder or try again.
+              If you don&apos;t receive an email within a few minutes, please
+              check your spam folder or try again.
             </p>
           </div>
 

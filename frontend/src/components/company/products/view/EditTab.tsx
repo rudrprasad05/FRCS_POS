@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   Controller,
@@ -56,14 +56,6 @@ import { toast } from "sonner";
 import { v4 as uuid } from "uuid";
 import z from "zod";
 
-const steps = [
-  "Supplier",
-  "Details",
-  "Expiry",
-  "Variants",
-  "Review",
-  "Confirm",
-];
 const customExpiryDays = [1, 2, 3, 5, 7, 10];
 const customExpiryHours = [6, 12, 24, 48, 72];
 
@@ -123,7 +115,6 @@ interface IProductEditorPage {
 export default function EditorTab({ product, taxes }: IProductEditorPage) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const params = useParams();
-  const searchParams = useSearchParams();
   const companyName = params.companyName;
   const router = useRouter();
   const productId = String(params.productId);
@@ -144,7 +135,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
     },
   });
 
-  const { data, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ["NewProductData", companyName],
     queryFn: () => GetNewPageInfo(companyName?.toString()),
     staleTime: FIVE_MINUTE_CACHE,
@@ -171,7 +162,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
 
     const values = form.getValues();
     console.log(values);
-  }, [product]);
+  }, [product, form]);
 
   const backBtn = () => {
     router.push(`/${companyName}/products`);
@@ -186,7 +177,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
 
     formData.append("Product", JSON.stringify(data));
 
-    data.variants.forEach((variant, index) => {
+    data.variants.forEach((variant) => {
       formData.append(
         `Variants`,
         JSON.stringify({
@@ -205,7 +196,7 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
 
     console.log(formData);
 
-    let query: QueryObject = {
+    const query: QueryObject = {
       uuid: product.uuid,
       companyName: String(companyName),
     };

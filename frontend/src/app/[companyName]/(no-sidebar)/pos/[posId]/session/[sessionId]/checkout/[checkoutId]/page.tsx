@@ -54,7 +54,6 @@ export default function ReceiptPage() {
   const [sale, setSale] = useState<Sale | undefined>(undefined);
   const [recieptUrl, setRecieptUrl] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isEmailing, setIsEmailing] = useState(false);
   const params = useParams();
   const checkoutId = String(params.checkoutId);
   const sessionId = String(params.sessionId);
@@ -69,8 +68,6 @@ export default function ReceiptPage() {
   const { date, time } = formatDateTime(
     sale ? sale.createdOn : Date.now.toString()
   );
-
-  const handleSendEmail = () => {};
 
   const handleDownloadReceipt = async () => {
     if (!sale) return;
@@ -123,7 +120,7 @@ export default function ReceiptPage() {
       exact: false,
     });
     getDate();
-  }, [params, getDate]);
+  }, [params, getDate, queryClient, sessionId]);
 
   if (state == EReceiptPageState.LOADING) {
     return (
