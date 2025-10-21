@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (user?.role?.toUpperCase() == "SUPERADMIN") {
         console.log("1wwwq hit", user);
-        router.push(`/admin${redirect}`);
+        router.push(`/admin`);
         return;
       } else {
         helperHandleRedirectAfterLogin(tempUser);
