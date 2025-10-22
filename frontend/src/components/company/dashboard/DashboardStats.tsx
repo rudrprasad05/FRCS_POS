@@ -18,12 +18,12 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { QuickActions } from "@/components/superadmin/dashboard/QuickActions";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { formatFileSize } from "@/lib/utils";
 import { Notification, NotificationTypes, UserRoles } from "@/types/models";
 import { useParams } from "next/navigation";
 import CompanyDashboardStatsCard from "./CompanyDashboardStatsCard";
-import { QuickActions } from "./QuickActions";
 
 function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
@@ -138,7 +138,7 @@ export function CompanyDashboardStats() {
           </div>
         </Card>
         <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
-          <QuickActions />
+          <QuickActions isSuperAdmin={false} />
         </RoleWrapper>
       </div>
     </div>

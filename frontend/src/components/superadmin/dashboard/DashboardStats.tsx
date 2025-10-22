@@ -118,7 +118,7 @@ export function DashboardStats() {
             </Link>
           </div>
         </Card>
-        <QuickActions />
+        <QuickActions isSuperAdmin />
       </div>
     </div>
   );

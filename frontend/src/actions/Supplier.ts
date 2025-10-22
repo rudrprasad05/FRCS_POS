@@ -1,5 +1,4 @@
 import { SupplierInput } from "@/components/company/suppliers/new/NewSupplierPage";
-import { WarehouseEditData } from "@/components/company/warehouse/edit/EditTab";
 import { ApiResponse, QueryObject, Supplier } from "@/types/models";
 import { RequestWrapper } from "./RequestWrapper";
 
@@ -13,6 +12,18 @@ export async function CreateSupplier(
   data: SupplierInput
 ): Promise<ApiResponse<Supplier>> {
   return RequestWrapper<Supplier>("POST", `supplier/create`, { data });
+}
+
+export async function SoftDeleteSupplier(
+  query: QueryObject
+): Promise<ApiResponse<Supplier>> {
+  return RequestWrapper<Supplier>("DELETE", `supplier/delete`, { query });
+}
+
+export async function ActivateSupplier(
+  query: QueryObject
+): Promise<ApiResponse<Supplier>> {
+  return RequestWrapper<Supplier>("POST", `supplier/activate`, { query });
 }
 
 export async function GetOneSupplierWithBatch(
@@ -38,8 +49,8 @@ export async function ActivateWarehouse(
   });
 }
 
-export async function EditWarehouse(
-  data: WarehouseEditData,
+export async function EditSupplier(
+  data: SupplierInput,
   uuid: string
 ): Promise<ApiResponse<Supplier>> {
   return RequestWrapper<Supplier>("PATCH", `supplier/edit`, {

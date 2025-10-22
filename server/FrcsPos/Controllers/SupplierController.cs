@@ -38,7 +38,7 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPatch("edit")]
-        public async Task<IActionResult> EditWarehouse([FromBody] EditSupplierData data, [FromQuery] RequestQueryObject queryObject)
+        public async Task<IActionResult> EditSupplier([FromBody] EditSupplierData data, [FromQuery] RequestQueryObject queryObject)
         {
             var model = await _supplierRepository.EditAsync(data, queryObject);
 

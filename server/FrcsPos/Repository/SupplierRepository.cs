@@ -68,24 +68,24 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<SupplierDTO>> EditAsync(EditSupplierData request, RequestQueryObject queryObject)
         {
-            var wh = await _context.Suppliers.FirstOrDefaultAsync(w => w.UUID == queryObject.UUID);
-            if (wh == null)
+            var supplier = await _context.Suppliers.FirstOrDefaultAsync(w => w.UUID == queryObject.UUID);
+            if (supplier == null)
             {
-                return ApiResponse<SupplierDTO>.Fail(message: "warehouse not found");
+                return ApiResponse<SupplierDTO>.Fail(message: "supplier not found");
             }
 
-            wh.Name = request.Name;
-            wh.Code = request.Code;
-            wh.ContactName = request.ContactName;
-            wh.Phone = request.Phone;
-            wh.Email = request.Email;
-            wh.Address = request.Address;
-            wh.TaxNumber = request.TaxNumber;
+            supplier.Name = request.Name;
+            supplier.Code = request.Code;
+            supplier.ContactName = request.ContactName;
+            supplier.Phone = request.Phone;
+            supplier.Email = request.Email;
+            supplier.Address = request.Address;
+            supplier.TaxNumber = request.TaxNumber;
 
             await _context.SaveChangesAsync();
 
-            var whDTO = wh.FromModelToDto();
-            return ApiResponse<SupplierDTO>.Ok(whDTO);
+            var supplierDTO = supplier.FromModelToDto();
+            return ApiResponse<SupplierDTO>.Ok(supplierDTO);
         }
 
         public async Task<ApiResponse<List<SupplierDTO>>> GetAllAsync(RequestQueryObject requestQueryObject)

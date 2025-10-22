@@ -1,17 +1,22 @@
 "use client";
 
-import { GetEditProductData } from "@/actions/Product";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
-import ConfigTab from "@/components/company/products/view/ConfigTab";
-import EditorTab from "@/components/company/products/view/EditTab";
+import {
+  ActivateSupplier,
+  GetOneSupplierWithBatch,
+  SoftDeleteSupplier,
+} from "@/actions/Supplier";
+import { EditorTab } from "@/components/company/suppliers/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
+import ConfigTab from "@/components/global/ConfigTab";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
-import { Product, TaxCategory } from "@/types/models";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2, PenBox } from "lucide-react";
+import { Supplier } from "@/types/models";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,11 +24,30 @@ import { toast } from "sonner";
 export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();
-  const productId = String(params.productId);
+  const supplierId = String(params.supplierId);
+  const queryClient = useQueryClient();
+
+  const deleteFn = async (uuid: string): Promise<{ success: boolean }> => {
+    const res = await SoftDeleteSupplier({ uuid });
+    queryClient.invalidateQueries({
+      queryKey: ["editSupplier", supplierId, {}],
+      exact: false,
+    });
+    return { success: res.success };
+  };
+
+  const activateFn = async (uuid: string): Promise<{ success: boolean }> => {
+    const res = await ActivateSupplier({ uuid });
+    queryClient.invalidateQueries({
+      queryKey: ["editSupplier", supplierId, {}],
+      exact: false,
+    });
+    return { success: res.success };
+  };
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["editProduct", productId],
-    queryFn: () => GetEditProductData(productId),
+    queryKey: ["editSupplier", supplierId],
+    queryFn: () => GetOneSupplierWithBatch({ uuid: supplierId }),
     staleTime: FIVE_MINUTE_CACHE,
   });
 
@@ -36,20 +60,15 @@ export default function EditorPage() {
     return <NoDataContainer />;
   }
 
-  const product = data.data.product as Product;
-  const taxCategories = data.data.taxCategories as TaxCategory[];
+  const supplier = data.data as Supplier;
 
   return (
     <div>
-      <div className="">
-        <div className="flex items-center gap-2 mb-2">
-          <PenBox className="text-primary h-6 w-6" />
-          <h1 className="text-3xl font-bold">Edit Product</h1>
-        </div>
-        <p className="text-muted-foreground">
-          You are editing the product &quot;{product?.name}&quot;
-        </p>
-      </div>
+      <HeaderWithBackButton
+        title={"Edit Supplier"}
+        description={`You are editing the supplier "${supplier?.name}"`}
+      />
+
       <Tabs
         defaultValue="edit"
         className="w-full overflow-hidden relative h-screen p-4 flex flex-col"
@@ -77,10 +96,14 @@ export default function EditorPage() {
           </TabsPrimitive.Trigger>
         </TabsPrimitive.List>
         <TabsContent value="edit">
-          <EditorTab product={product} taxes={taxCategories} />
+          <EditorTab supplier={supplier} />
         </TabsContent>
         <TabsContent value="config">
-          <ConfigTab product={product} />
+          <ConfigTab
+            entity={supplier}
+            deleteFn={deleteFn}
+            activateFn={activateFn}
+          />
         </TabsContent>
       </Tabs>
     </div>

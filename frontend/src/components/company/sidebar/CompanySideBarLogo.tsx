@@ -1,6 +1,7 @@
 "use client";
 
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/UserContext";
 import { HandCoins, Wrench } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -18,7 +19,11 @@ export function CompanySidebarLogo() {
         <span className="text-sm font-semibold ">
           {companyName.toUpperCase()}
         </span>
-        <Label className="text-xs ">{user?.role}</Label>
+        <Label className="text-xs ">
+          {user?.role || (
+            <Skeleton className="h-2 my-1 w-full bg-muted-foreground/60" />
+          )}
+        </Label>
       </div>
     </div>
   );

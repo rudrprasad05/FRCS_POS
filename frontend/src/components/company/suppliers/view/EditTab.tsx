@@ -1,15 +1,12 @@
 "use client";
 
-import { EditProduct } from "@/actions/Product";
-import AddMediaDialoge from "@/components/company/products/new/AddMediaDialoge";
+import { EditSupplier } from "@/actions/Supplier";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import { RedStar } from "@/components/global/RedStart";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,129 +14,121 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Product, TaxCategory } from "@/types/models";
+import { Supplier } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-export const productSchema = z.object({
+const stripNonDigits = (v: unknown) =>
+  typeof v === "string" ? v.replace(/\D+/g, "") : v;
+
+const supplierSchema = z.object({
   name: z
     .string()
-    .min(1, "Product name is required")
-    .max(100, "Name must be less than 100 characters"),
-  sku: z
+    .min(1, "Name is required")
+    .max(200, "Name must be at most 200 characters")
+    .transform((s) => s.trim()),
+
+  code: z
     .string()
-    .min(1, "SKU is required")
-    .max(50, "SKU must be less than 50 characters"),
-  barcode: z.string().optional(),
-  price: z.string().min(0, "Price must be greater than or equal to 0"),
-  taxCategoryId: z.string().optional(),
-  isPerishable: z.boolean(),
-  image: z
-    .any()
-    .optional()
-    .refine(
-      (files: FileList | undefined) =>
-        !files || files.length === 0 || files[0]?.type.startsWith("image/"),
-      "Please select a valid image file"
-    ),
+    .transform((s) => s.trim().toUpperCase())
+    .refine((s) => /^[A-Z]{1,3}$/.test(s), {
+      message: "Code must be 1–3 letters (A–Z).",
+    }),
+
+  contactName: z
+    .string()
+    .min(1, "Contact name is required")
+    .max(200, "Contact name must be at most 200 characters")
+    .transform((s) => s.trim()),
+
+  phone: z
+    .preprocess((val) => stripNonDigits(val), z.string())
+    .refine((digits) => /^\d{7}$/.test(digits), {
+      message: "Phone must contain exactly 7 digits.",
+    })
+    .transform((digits) => digits), // keep canonical digits-only form
+
+  email: z.email("Please provide a valid email address"),
+  companyName: z.string().optional(),
+
+  address: z
+    .string()
+    .min(1, "Address is required")
+    .max(500, "Address must be at most 500 characters")
+    .transform((s) => s.trim()),
+
+  taxNumber: z
+    .preprocess((val) => stripNonDigits(val), z.string())
+    .refine((digits) => /^\d{9,10}$/.test(digits), {
+      message: "TIN must be 9 or 10 digits (digits only).",
+    })
+    .transform((digits) => digits),
 });
 
-export type ProductFormData = z.infer<typeof productSchema>;
+type SupplierInput = z.input<typeof supplierSchema>;
 
-export function EditorTab({
-  product,
-  taxes,
-}: {
-  product: Product;
-  taxes: TaxCategory[];
-}) {
-  const params = useParams();
-  const companyName = decodeURIComponent(params.companyName as string);
+export function EditorTab({ supplier }: { supplier: Supplier }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    product?.media?.url ?? null
-  );
-
-  const queryClient = useQueryClient();
-  const [file, setFile] = useState<File | undefined>(undefined);
+  const params = useParams();
+  const companyName = params.companyName;
+  const supplierId = String(params.supplierId);
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
-  const form = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
+  const form = useForm<SupplierInput>({
+    resolver: zodResolver(supplierSchema),
     defaultValues: {
-      name: product?.name,
-      sku: product?.sku,
-      barcode: product?.barcode as string,
-      price: String(product?.price),
-      taxCategoryId: String(product?.taxCategoryId),
-      isPerishable: product?.isPerishable,
+      name: supplier.name,
+      code: supplier.code,
+      contactName: supplier.contactName,
+      phone: supplier.phone,
+      email: supplier.email,
+      address: supplier.address,
+      taxNumber: supplier.taxNumber,
+      companyName: companyName as string,
     },
   });
 
-  useEffect(() => {
-    if (product?.media?.url) {
-      setPreviewUrl(product.media.url);
-    }
-  }, [product?.media?.url]);
-
-  useEffect(() => {
-    if (file && file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    } else {
-      setPreviewUrl("");
-    }
-  }, [file]);
-
-  const formValues = form.watch();
-
-  useEffect(() => {}, [formValues]);
-
-  const onSubmit = async (data: ProductFormData) => {
+  const onSubmit = async (data: SupplierInput) => {
     setIsSubmitting(true);
-    data.image = file;
+    data.companyName = companyName as string;
 
-    const formData = new FormData();
-    formData.append("ProductName", data.name);
-    formData.append("SKU", data.sku);
-    formData.append("Price", data.price.toString()); // decimal -> string
-    formData.append("Barcode", data.barcode as string);
-    formData.append("IsPerishable", data.isPerishable ? "true" : "false");
-    formData.append("TaxCategoryId", data.taxCategoryId as string);
-    formData.append("MediaId", String(product.mediaId));
-
-    if (data.image) {
-      formData.append("File", data.image); // IFormFile
-    }
-
-    const res = await EditProduct(formData, { uuid: product.uuid });
+    const res = await EditSupplier(data, supplier.uuid || supplierId);
 
     if (res.success) {
+      toast.success("Suppier created");
+
       queryClient.invalidateQueries({
-        queryKey: ["editProduct", product.uuid],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["products", companyName], // optionally include pagination
+        queryKey: ["suppliers", companyName, {}],
         exact: false,
       });
-      toast.success("Uploaded");
-      router.back();
+
+      const newUser = res.data as Supplier;
+
+      if (searchParams.get("returnUrl")) {
+        queryClient.invalidateQueries({
+          queryKey: ["NewProductData", companyName],
+          exact: false,
+        });
+        router.replace(
+          `${searchParams.get("returnUrl")}?selectedSupplier=${
+            newUser.uuid
+          }&open_create=true`
+        );
+      } else {
+        router.back();
+      }
     } else {
-      toast.error("Failed to upload");
+      toast.error("Failed to upload", { description: res.message });
     }
 
     setIsSubmitting(false);
@@ -164,10 +153,10 @@ export function EditorTab({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="">
-                        Product Name <RedStar />
+                        Supplier Name <RedStar />
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter product name" {...field} />
+                        <Input placeholder="Enter supplier name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -176,36 +165,16 @@ export function EditorTab({
 
                 <FormField
                   control={form.control}
-                  name="sku"
+                  name="code"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        SKU <RedStar />
+                        Code Name <RedStar />
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter SKU" {...field} />
+                        <Input placeholder="Enter code (XXX)" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Stock Keeping Unit - unique identifier
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="barcode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Barcode <RedStar />
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter barcode" {...field} />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -213,19 +182,89 @@ export function EditorTab({
 
                 <FormField
                   control={form.control}
-                  name="price"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Price <RedStar />
+                        Supplier Email <RedStar />
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="info@supplier.com" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Contact Person <RedStar />
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="enter contact person" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Supplier address <RedStar />
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="123 rewa street, suva" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="taxNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Supplier TIN <RedStar />
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
+                          type="text"
+                          placeholder="123-456-7890"
                           {...field}
+                          value={(field.value as string) || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Phone contact <RedStar />
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="enter phone number"
+                          {...field}
+                          value={(field.value as string) || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -234,91 +273,16 @@ export function EditorTab({
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="taxCategoryId"
-                render={({ field }) => (
-                  <FormItem className="flex items-center">
-                    <FormLabel>
-                      Tax Category <RedStar />
-                    </FormLabel>
-                    <div className="gap-2 flex items-center">
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ? field.value.toString() : ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={"Select VAT"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {taxes.map((category) => (
-                            <SelectItem
-                              key={category.id as number}
-                              value={String(category.id)}
-                            >
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <AddMediaDialoge file={file} setFile={setFile} />
-              {previewUrl && (
-                <div className="w-[200px]">
-                  <Image
-                    width={100}
-                    height={100}
-                    src={previewUrl! || "/placeholder.svg"}
-                    alt="Preview"
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-              )}
-
-              <FormField
-                control={form.control}
-                name="isPerishable"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Perishable Product <RedStar />
-                      </FormLabel>
-                      <FormDescription>
-                        Check this if the product has an expiration date
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
-
               <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {isSubmitting ? "Editing..." : "Edit Product"}
+                <Button asChild type="button" variant={"secondary"}>
+                  <Link href={`/${companyName}/suppliers`}>Cancel</Link>
                 </Button>
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
                   disabled={isSubmitting}
+                  type="submit"
+                  variant={"default"}
                 >
-                  Cancel
+                  {isSubmitting && <Loader2 className="animate-spin" />}Save
                 </Button>
               </div>
             </form>

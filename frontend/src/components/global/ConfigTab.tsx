@@ -12,18 +12,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BaseModel } from "@/types/models";
 import { Check, Trash } from "lucide-react";
+import { useParams } from "next/navigation";
+
+interface IConfigTab {
+  entity: BaseModel;
+  deleteFn: (a: string) => Promise<{ success: boolean }>;
+  activateFn: (a: string) => Promise<{ success: boolean }>;
+}
 
 export default function ConfigTab({
-  model,
-  query,
-  activateRequest,
-  deleteRequest,
-}: {
-  model: BaseModel;
-  query: Array<(string | number)[]>;
-  activateRequest: (id: string) => Promise<{ success: boolean }>;
-  deleteRequest: (id: string) => Promise<{ success: boolean }>;
-}) {
+  entity,
+  deleteFn,
+  activateFn,
+}: IConfigTab) {
+  const params = useParams();
+  const entityName = decodeURIComponent(params.entityName as string);
   const dateFormatOptions: Intl.DateTimeFormatOptions = {
     day: "2-digit",
     month: "2-digit",
@@ -62,7 +65,7 @@ export default function ConfigTab({
           <Input
             id="co"
             disabled
-            value={parseDate(dateFormatOptions, model.createdOn)}
+            value={parseDate(dateFormatOptions, entity.createdOn)}
           />
         </div>
 
@@ -71,68 +74,74 @@ export default function ConfigTab({
           <Input
             id="uo"
             disabled
-            value={parseDate(dateFormatOptions, model.updatedOn)}
+            value={parseDate(dateFormatOptions, entity.updatedOn)}
           />
         </div>
 
-        {!model.isDeleted && (
+        {!entity.isDeleted && (
           <Card className="flex flex-col border border-dashed border-rose-400 rounded-lg">
             <CardHeader>
               <CardTitle>Danger Zone</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <div>
-                <Label>Delete Product</Label>
+                <Label>Delete entity</Label>
                 <CardDescription>
                   This action is reversable but will remove the item from user
                   view
                 </CardDescription>
               </div>
               <ConfirmDialog
-                uuid={model.uuid}
-                title="Delete Product"
+                uuid={entity.uuid}
+                title="Delete entity"
                 description="This action cannot be undone."
                 confirmWord="delete"
                 actionLabel="Delete"
-                successMessage="Product Deleted"
+                successMessage="Entity Deleted"
                 errorMessage="Error Occurred"
                 buttonVariant="destructive"
                 buttonIcon={<Trash />}
-                queryKeys={query}
+                queryKeys={[
+                  ["entitys", entityName],
+                  ["editentity", entity.uuid],
+                ]}
                 onConfirm={async () => {
-                  return await deleteRequest(model.uuid);
+                  return await deleteFn(entity.uuid);
                 }}
               />
             </CardContent>
           </Card>
         )}
 
-        {model.isDeleted && (
+        {entity.isDeleted && (
           <Card className="flex flex-col border border-dashed border-green-400 rounded-lg">
             <CardHeader>
               <CardTitle>Danger Zone</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <div>
-                <Label>Activate Product</Label>
+                <Label>Activate entity</Label>
                 <CardDescription>
                   This action is reversable but will include the item to user
                   view
                 </CardDescription>
               </div>
               <ConfirmDialog
-                uuid={model.uuid}
-                title="Activate Product"
-                description="This will make the Product visible again."
+                uuid={entity.uuid}
+                title="Activate entity"
+                description="This will make the entity visible again."
                 confirmWord="activate"
                 actionLabel="Activate"
-                successMessage="Product Activated"
+                successMessage="entity Activated"
                 errorMessage="Error Occurred"
                 buttonVariant="default"
                 buttonIcon={<Check />}
-                queryKeys={query}
+                queryKeys={[
+                  ["entitys", entityName],
+                  ["editentity", entity.uuid],
+                ]}
                 onConfirm={async () => {
-                  return await activateRequest(model.uuid);
+                  return await activateFn(entity.uuid);
                 }}
               />
             </CardContent>
