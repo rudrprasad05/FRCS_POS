@@ -60,12 +60,7 @@ namespace FrcsPos.Controllers
             };
             var model = await _posSessionRepository.CreateNewPosSession(data);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("resume")]
@@ -93,12 +88,7 @@ namespace FrcsPos.Controllers
             };
             var model = await _posSessionRepository.ResumePosSession(data);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("end")]
@@ -126,12 +116,7 @@ namespace FrcsPos.Controllers
             };
             var model = await _posSessionRepository.EndPosSession(data);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-session-by-uuid")]
@@ -139,12 +124,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posSessionRepository.GetPosSessionByUUID(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-all-by-terminal-uuid")]

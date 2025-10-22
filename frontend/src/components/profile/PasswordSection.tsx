@@ -53,8 +53,8 @@ export function PasswordSection() {
                   Password Reset via Email
                 </h4>
                 <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                  For security reasons, we'll send a password reset link to your
-                  registered email address. Click the link in the email to
+                  For security reasons, we&apos;ll send a password reset link to
+                  your registered email address. Click the link in the email to
                   create a new password.
                 </p>
               </div>

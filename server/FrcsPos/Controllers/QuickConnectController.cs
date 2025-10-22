@@ -28,12 +28,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _quickConnectRepository.Generate(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("validate")]

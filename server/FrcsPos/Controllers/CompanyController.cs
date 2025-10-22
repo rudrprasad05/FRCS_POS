@@ -29,12 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.CreateCompanyAsync(data);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("add-user")]
@@ -42,12 +37,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.AddUserToCompanyAsync(request);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-all")]
@@ -55,12 +45,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetAllCompanyAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-one-by-admin-id")]
@@ -68,12 +53,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetCompanyByAdminUserIdAsync(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-one-by-associated-admin-id")]
@@ -81,12 +61,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetCompanyByAssociatedAdminUserIdAsync(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-full-by-uuid")]
@@ -94,24 +69,14 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.GetFullCompanyByUUIDAsync(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
         [HttpDelete("remove-user")]
         public async Task<IActionResult> RemoveUser([FromBody] RemoveUserFromCompany request)
         {
             var model = await _companyRepository.RemoveUserAsync(request);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpDelete("soft-delete")]
@@ -119,12 +84,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.SoftDelete(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("exists")]
@@ -132,12 +92,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _companyRepository.Exists(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
     }

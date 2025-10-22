@@ -94,6 +94,11 @@ namespace FrcsPos.Repository
             {
                 return ApiResponse<List<SupplierDTO>>.Fail();
             }
+            var company = _context.Companies.FirstOrDefault(c => c.Name == requestQueryObject.CompanyName);
+            if (company == null)
+            {
+                return ApiResponse<List<SupplierDTO>>.Unauthorised();
+            }
             var query = _context.Suppliers
                 .Include(s => s.Products)
                 .Where(s => s.Company.Name == requestQueryObject.CompanyName)

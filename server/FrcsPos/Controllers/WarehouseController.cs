@@ -55,12 +55,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.GetAllAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-full-by-uuid")]
@@ -68,12 +63,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.GetOneAsync(requestQueryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpDelete("soft-delete")]
@@ -81,12 +71,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _warehouseRepository.SoftDeleteAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpDelete("activate")]

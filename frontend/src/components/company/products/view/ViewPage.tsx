@@ -220,7 +220,7 @@ function Step4({ product }: { product: Product }) {
       </div>
 
       {product.variants.map((field, index) => (
-        <VariantCard variant={field} index={index} />
+        <VariantCard key={index} variant={field} />
       ))}
     </div>
   );
@@ -247,10 +247,9 @@ function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
 
 type VariantCardProps = {
   variant: ProductVariant;
-  index: number;
 };
 
-function VariantCard({ variant, index }: VariantCardProps) {
+function VariantCard({ variant }: VariantCardProps) {
   return (
     <div className="relative border border-solid rounded-lg p-6 flex gap-4 items-start">
       {/* Example: media dialog still external */}
@@ -258,25 +257,15 @@ function VariantCard({ variant, index }: VariantCardProps) {
 
       <div className="grid grid-cols-2 grow gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`variants.${index}.name`}>Variant Name</Label>
+          <Label>Variant Name</Label>
 
-          <Input
-            disabled
-            id={`variants.${index}.name`}
-            placeholder="variant name"
-            value={variant.name}
-          />
+          <Input disabled placeholder="variant name" value={variant.name} />
         </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor={variant.sku}>Variant SKU</Label>
 
-          <Input
-            disabled
-            id={`variants.${index}.sku`}
-            placeholder="variant sku"
-            value={variant.sku}
-          />
+          <Input disabled placeholder="variant sku" value={variant.sku} />
         </div>
 
         <div className="flex flex-col gap-2">

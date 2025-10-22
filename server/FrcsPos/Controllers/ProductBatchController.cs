@@ -57,12 +57,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productBatchRepository.GetCreationInfoAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
     }

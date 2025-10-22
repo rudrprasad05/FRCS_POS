@@ -12,11 +12,13 @@ import { EditorTab } from "@/components/company/suppliers/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import ConfigTab from "@/components/global/ConfigTab";
 import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
+import { Button } from "@/components/ui/button";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/models";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -76,12 +78,19 @@ export default function EditorPage() {
 
   return (
     <div>
-      <HeaderWithBackButton
-        title={"Edit Supplier"}
-        link="/admin/suppliers"
-        description={`You are editing the supplier "${supplier?.name}"`}
-      />
-
+      <div className="flex pr-4 justify-between items-start">
+        <HeaderWithBackButton
+          title={"Edit Supplier"}
+          link={`/${companyName}/suppliers`}
+          description={`You are editing the supplier "${supplier?.name}"`}
+        />
+        <Button variant={"secondary"} asChild>
+          <Link href={`view`}>
+            <Eye />
+            View Supplier
+          </Link>
+        </Button>
+      </div>
       <Tabs
         defaultValue="edit"
         className="w-full overflow-hidden relative h-screen p-4 flex flex-col"

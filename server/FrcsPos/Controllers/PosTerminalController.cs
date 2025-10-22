@@ -32,12 +32,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.CreatePosTerminalAsync(data);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-all")]
@@ -45,12 +40,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.GetAllPosTerminalByCompanyAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-one")]
@@ -58,12 +48,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.GetOnePosTerminalByIdAsync(requestQuery);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-sales")]
@@ -71,12 +56,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.GetPosTerminalSalesAsync(requestQuery);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-sessions")]
@@ -84,12 +64,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _posTerminalRepository.GetPosTerminalSessionAsync(requestQuery);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpDelete("soft-delete")]

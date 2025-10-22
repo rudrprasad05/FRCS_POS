@@ -29,12 +29,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _notificationRepository.GetSuperAdminNotifications(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("read")]
@@ -42,12 +37,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _notificationRepository.MarkReadAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
     }
 }

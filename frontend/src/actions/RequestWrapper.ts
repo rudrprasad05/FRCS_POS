@@ -42,7 +42,7 @@ export async function RequestWrapper<T>(
     });
 
     if (res.status === 401) {
-      //   redirect("/error/unauthorised"); // This will work in Server Components
+      redirect("/error/unauthorised"); // This will work in Server Components
     }
 
     return res.data;

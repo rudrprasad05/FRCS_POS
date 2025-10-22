@@ -78,12 +78,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.GetAllProductsVariants(queryObject, req.ForPos ?? false);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
 
@@ -92,12 +87,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.GetProductEditPageAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-new-page-info")]
@@ -105,12 +95,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.GetCreationInfoAsync(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-full-by-uuid")]
@@ -118,12 +103,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _productRepository.GetProductByUUID(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpDelete("soft-delete")]

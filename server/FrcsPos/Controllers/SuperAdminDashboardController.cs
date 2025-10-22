@@ -34,12 +34,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _superAdminDashboardRepository.GetSuperAdminDashboard();
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [Authorize(Roles = "admin")]
@@ -48,12 +43,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _superAdminDashboardRepository.GetAdminDashboard(queryObject);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
 

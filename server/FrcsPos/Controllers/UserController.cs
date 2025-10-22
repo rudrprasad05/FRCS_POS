@@ -54,36 +54,21 @@ namespace FrcsPos.Controllers
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] RequestQueryObject requestQuery)
         {
             var model = await _userRepository.GetAllUsers(requestQuery);
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-all-users-not-in-company")]
         public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
         {
             var model = await _userRepository.GetAllSuperAdminsNotInCompany(role);
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("get-user-by-company")]
         public async Task<IActionResult> GetUserByCompany([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _userRepository.GetUserByCompany(queryObject);
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("verify-email")]
@@ -95,12 +80,7 @@ namespace FrcsPos.Controllers
             }
 
             var model = await _emailRepository.VerifyLink(queryObject.UUID, queryObject.UserId);
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("request-password-reset")]
@@ -129,12 +109,7 @@ namespace FrcsPos.Controllers
             }
 
             var model = await _emailRepository.ResetPassword(request);
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("create")]

@@ -111,12 +111,7 @@ namespace FrcsPos.Controllers
         {
             var model = await _mediaRepository.SafeDelete(uuid);
 
-            if (model == null || !model.Success)
-            {
-                return BadRequest(model);
-            }
-
-            return Ok(model);
+            return StatusCode(model.StatusCode, model);
         }
 
         // [HttpGet("download")]
