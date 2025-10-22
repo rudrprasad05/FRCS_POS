@@ -89,7 +89,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
-        [HttpDelete("activate")]
+        [HttpPost("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _supplierRepository.Activate(queryObject);

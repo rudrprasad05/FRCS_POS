@@ -30,7 +30,7 @@ namespace FrcsPos.Mappers
                 Phone = request.Phone,
                 Email = request.Email,
                 Address = request.Address,
-                TaxNumber = request.TaxNumber,
+                TaxNumber = request.TaxNumber
             };
 
             return dto;

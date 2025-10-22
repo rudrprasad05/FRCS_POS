@@ -17,7 +17,7 @@ export async function CreateSupplier(
 export async function SoftDeleteSupplier(
   query: QueryObject
 ): Promise<ApiResponse<Supplier>> {
-  return RequestWrapper<Supplier>("DELETE", `supplier/delete`, { query });
+  return RequestWrapper<Supplier>("DELETE", `supplier/soft-delete`, { query });
 }
 
 export async function ActivateSupplier(
@@ -30,21 +30,6 @@ export async function GetOneSupplierWithBatch(
   query?: QueryObject
 ): Promise<ApiResponse<Supplier>> {
   return RequestWrapper<Supplier>("GET", `supplier/get-full-by-uuid`, {
-    query,
-  });
-}
-
-export async function SoftDeleteWarehouse(
-  query?: QueryObject
-): Promise<ApiResponse<Supplier>> {
-  return RequestWrapper<Supplier>("DELETE", `supplier/soft-delete`, {
-    query,
-  });
-}
-export async function ActivateWarehouse(
-  query?: QueryObject
-): Promise<ApiResponse<Supplier>> {
-  return RequestWrapper<Supplier>("DELETE", `supplier/activate`, {
     query,
   });
 }

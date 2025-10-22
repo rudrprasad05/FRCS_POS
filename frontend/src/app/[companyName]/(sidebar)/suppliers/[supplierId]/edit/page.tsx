@@ -25,12 +25,18 @@ export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();
   const supplierId = String(params.supplierId);
+  const companyName = String(params.companyName);
   const queryClient = useQueryClient();
 
   const deleteFn = async (uuid: string): Promise<{ success: boolean }> => {
     const res = await SoftDeleteSupplier({ uuid });
+
     queryClient.invalidateQueries({
-      queryKey: ["editSupplier", supplierId, {}],
+      queryKey: ["editSupplier", supplierId],
+      exact: false,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["suppliers", companyName, {}],
       exact: false,
     });
     return { success: res.success };
@@ -38,10 +44,16 @@ export default function EditorPage() {
 
   const activateFn = async (uuid: string): Promise<{ success: boolean }> => {
     const res = await ActivateSupplier({ uuid });
+
     queryClient.invalidateQueries({
-      queryKey: ["editSupplier", supplierId, {}],
+      queryKey: ["editSupplier", supplierId],
       exact: false,
     });
+    queryClient.invalidateQueries({
+      queryKey: ["suppliers", companyName, {}],
+      exact: false,
+    });
+
     return { success: res.success };
   };
 
@@ -66,6 +78,7 @@ export default function EditorPage() {
     <div>
       <HeaderWithBackButton
         title={"Edit Supplier"}
+        link="/admin/suppliers"
         description={`You are editing the supplier "${supplier?.name}"`}
       />
 

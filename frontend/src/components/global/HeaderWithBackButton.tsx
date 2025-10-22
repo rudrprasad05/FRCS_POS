@@ -13,12 +13,15 @@ export function HeaderWithBackButton({
 }) {
   return (
     <div className="flex items-center gap-4">
-      <Button asChild variant="ghost" size="icon" className="h-9 w-9">
-        <Link href={link || "/admin/users"} prefetch>
-          <ArrowLeft className="h-5 w-5" />
-          <span className="sr-only">Go back</span>
-        </Link>
-      </Button>
+      {link && (
+        <Button asChild variant="ghost" size="icon" className="h-9 w-9">
+          <Link href={link || "/admin/users"} prefetch>
+            <ArrowLeft className="h-5 w-5" />
+            <span className="sr-only">Go back</span>
+          </Link>
+        </Button>
+      )}
+
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground capitalize">
           {title}

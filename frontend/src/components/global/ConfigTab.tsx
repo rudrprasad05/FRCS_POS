@@ -25,6 +25,7 @@ export default function ConfigTab({
   deleteFn,
   activateFn,
 }: IConfigTab) {
+  console.log("conf", entity);
   const params = useParams();
   const entityName = decodeURIComponent(params.entityName as string);
   const dateFormatOptions: Intl.DateTimeFormatOptions = {
