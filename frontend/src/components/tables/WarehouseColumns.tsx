@@ -4,22 +4,22 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";
 
-import { Warehouse } from "@/types/models";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { UserRoles, Warehouse } from "@/types/models";
+import Link from "next/link";
+import { RoleWrapper } from "../wrapper/RoleWrapper";
 
 export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
   {
-    accessorKey: "isActive",
+    accessorKey: "isDeleted",
     header: "Status",
     cell: ({ row }) => {
-      const isActive = row.original.isActive; // Get the entire row data (of type companyType)
-
+      const isDeleted = row.getValue("isDeleted") as boolean;
       return (
         <div
           className={cn(
-            "rounded-full w-3 h-3 ml-4",
-            isActive ? "bg-green-500" : "bg-rose-500"
+            "rounded-full w-2 h-2 mx-auto",
+            isDeleted ? "bg-rose-500" : "bg-green-500"
           )}
         />
       );
@@ -73,27 +73,32 @@ export const WarehouseOnlyColumns: ColumnDef<Warehouse>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              prefetch
-              href={`warehouse/${company.uuid}/edit`}
-              className="w-24 flex items-center justify-between"
-            >
-              Edit
-              <Edit className="" />
-            </Link>
-          </Button>
+          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                prefetch
+                href={`warehouse/${company.uuid}/edit`}
+                className="w-24 flex items-center justify-between"
+              >
+                Edit
+                <Edit className="" />
+              </Link>
+            </Button>
 
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              prefetch
-              href={`warehouse/${company.uuid}/view`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                prefetch
+                href={`warehouse/${company.uuid}/view`}
+                className="w-24 flex items-center justify-between"
+              >
+                View
+                <Eye className="" />
+              </Link>
+            </Button>
+          </RoleWrapper>
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <div>-</div>
+          </RoleWrapper>
         </div>
       );
     },

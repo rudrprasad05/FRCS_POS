@@ -63,6 +63,8 @@ export function NotificationBell() {
   const params = useParams();
   const companyName = String(params.companyName);
 
+  const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
+
   useEffect(() => {
     setNotifications([]);
     const getData = async () => {
@@ -81,7 +83,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:5081/socket/notificationHub")
+      .withUrl(`${apiUrl}/socket/notificationHub`)
       .withAutomaticReconnect()
       .build();
 
@@ -100,7 +102,7 @@ export function NotificationBell() {
         .stop()
         .catch((err) => console.error("Error stopping connection", err));
     };
-  }, []);
+  }, [apiUrl]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

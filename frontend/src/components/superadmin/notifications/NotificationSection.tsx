@@ -10,8 +10,8 @@ import { NotificationColumns } from "@/components/tables/NotificationTables";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
-  ESortBy,
   Notification as AppNotification,
+  ESortBy,
   QueryObject,
 } from "@/types/models";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
@@ -26,7 +26,7 @@ export default function NotificationSection() {
     pageSize: 10,
     search: "",
     sortBy: ESortBy.DSC,
-    isDeleted: undefined as boolean | undefined,
+    isDeleted: false as boolean | undefined,
   });
 
   const query = useQuery<ApiResponse<AppNotification[]>, Error>({

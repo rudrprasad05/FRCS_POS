@@ -16,8 +16,9 @@ import { Input } from "@/components/ui/input";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Asterisk } from "lucide-react";
-import { useParams } from "next/navigation";
+import { Asterisk, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,9 +44,11 @@ export type EditTerminalData = z.infer<typeof productSchema>;
 export function EditorTab() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const params = useParams();
   const posId = String(params.posId);
+  const companyName = String(params.companyName);
 
   const { data } = useQuery({
     queryKey: ["editTerminal", posId],
@@ -74,6 +77,7 @@ export function EditorTab() {
         queryKey: ["editTerminal", terminal?.uuid],
       });
       toast.success("Edited successfully");
+      router.push(`/${companyName}/pos`);
     } else {
       toast.error("Failed to upload");
     }
@@ -85,10 +89,8 @@ export function EditorTab() {
     <div className="min-h-screen bg-background pt-4">
       <div className="space-y-4">
         <div>
-          <LargeText>Product Information</LargeText>
-          <MutedText>
-            Fill in the details below to create a new product
-          </MutedText>
+          <LargeText>Terminal Information</LargeText>
+          <MutedText>Fill in the details below to edit a terminal</MutedText>
         </div>
         <div>
           <Form {...form}>
@@ -99,10 +101,10 @@ export function EditorTab() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="">
-                      Product Name <RedStar />
+                      Terminal Name <RedStar />
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
+                      <Input placeholder="Enter terminal name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -140,19 +142,18 @@ export function EditorTab() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {isSubmitting ? "Editing..." : "Edit Product"}
-                </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => form.reset()}
+                  asChild
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  <Link prefetch href={`/${companyName}/pos`}>
+                    Cancel
+                  </Link>
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="animate-spin" />}Save
                 </Button>
               </div>
             </form>

@@ -2,10 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, Loader2, MailCheck, MailX } from "lucide-react";
 
+import { MarkAsRead } from "@/actions/Notifications";
 import { CompanyUser, Notification } from "@/types/models";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { GetNotificationIcon } from "../global/NotificationIcons";
 import RemoveUserFromCompanyDialoge from "../superadmin/companies/RemoveUserFromCompanyDialoge";
 import { Badge } from "../ui/badge";
@@ -78,29 +82,49 @@ export const NotificationColumns: ColumnDef<Notification>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/admin/companies/${company.uuid}/view`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/admin/companies/${company.uuid}/edit`}
-              className="w-24 flex items-center justify-between"
-            >
-              Edit
-              <Edit className="" />
-            </Link>
-          </Button>
+          <ReadBtn notification={company} />
         </div>
       );
     },
   },
 ];
+
+const ReadBtn = ({ notification }: { notification: Notification }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleRead = async () => {
+    setIsLoading(true);
+    const res = await MarkAsRead({ uuid: notification.uuid });
+    if (res.success) {
+      toast.success("Notification Status changed");
+      notification.isRead = !notification.isRead;
+    } else {
+      toast.error("An error occured", { description: res.message });
+    }
+    queryClient.invalidateQueries({
+      queryKey: ["adminNotifications", {}],
+      exact: false,
+    });
+    setIsLoading(false);
+  };
+
+  if (notification.isRead)
+    return (
+      <Button variant={"outline"} onClick={() => handleRead()}>
+        Mark As Unread
+        {!isLoading && <MailX className="" />}
+        {isLoading && <Loader2 className="animate-spin" />}
+      </Button>
+    );
+  return (
+    <Button variant={"outline"} onClick={() => handleRead()}>
+      Mark As Read
+      {!isLoading && <MailCheck className="" />}
+      {isLoading && <Loader2 className="animate-spin" />}
+    </Button>
+  );
+};
 
 export const CompanyUserColumn: ColumnDef<CompanyUser>[] = [
   {

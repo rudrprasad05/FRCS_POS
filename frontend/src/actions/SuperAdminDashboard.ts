@@ -7,11 +7,13 @@ import { RequestWrapper } from "./RequestWrapper";
 export async function GetSuperAdminDashboard(): Promise<
   ApiResponse<SuperAdminDashboardDTO>
 > {
-  return RequestWrapper<SuperAdminDashboardDTO>(
+  const res = await RequestWrapper<SuperAdminDashboardDTO>(
     "GET",
     `superadmin/get-dashboard`,
     {}
   );
+
+  return res;
 }
 
 export async function GetCompanyAdminDashboard(

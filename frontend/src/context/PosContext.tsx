@@ -125,7 +125,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
     search: "",
     sortBy: ESortBy.DSC,
     companyName: companyName,
-    isDeleted: undefined as boolean | undefined,
+    isDeleted: false as boolean | undefined,
   });
 
   const infiniteQuery = useInfiniteQuery<ApiResponse<ProductVariant[]>, Error>({

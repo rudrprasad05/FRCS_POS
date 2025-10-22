@@ -2,13 +2,32 @@
 
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit } from "lucide-react";
+import { Eye } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { User, UserRoles } from "@/types/models";
+import { cn } from "@/lib/utils";
+import { User } from "@/types/models";
 import Link from "next/link";
 
 export const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: "isDeleted",
+    header: "Active",
+    size: 10,
+    cell: ({ row }) => {
+      const isDeleted = row.getValue("isDeleted") as boolean;
+      return (
+        <div className="w-12">
+          <div
+            className={cn(
+              "rounded-full w-2 h-2 mx-auto",
+              isDeleted ? "bg-rose-500" : "bg-green-500"
+            )}
+          />
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "name",
     header: "Name",
@@ -28,15 +47,7 @@ export const columns: ColumnDef<User>[] = [
         return <>-</>;
       }
 
-      return (
-        <Badge
-          variant={
-            role.toUpperCase() == UserRoles.ADMIN ? "secondary" : "outline"
-          }
-        >
-          {role}
-        </Badge>
-      );
+      return <Badge variant={"outline"}>{role}</Badge>;
     },
   },
   {
@@ -77,16 +88,7 @@ export const columns: ColumnDef<User>[] = [
               className="w-24 flex items-center justify-between"
             >
               View
-              <Edit className="" />
-            </Link>
-          </Button>
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`users/${cake.id}/edit`}
-              className="w-24 flex items-center justify-between"
-            >
-              Edit
-              <Edit className="" />
+              <Eye className="" />
             </Link>
           </Button>
         </div>

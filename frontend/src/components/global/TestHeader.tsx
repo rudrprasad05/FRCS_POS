@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ESortBy, QueryObject } from "@/types/models";
+import { ESortBy, QueryObject, UserRoles } from "@/types/models";
 import { RefreshCcw, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -19,6 +19,7 @@ type HeaderProps = {
   newButton?: React.ReactElement;
   pagination: QueryObject;
   setPagination: React.Dispatch<React.SetStateAction<QueryObject>>;
+  showRoleFiler?: boolean;
 };
 
 export function Header({
@@ -26,6 +27,7 @@ export function Header({
   newButton,
   pagination,
   setPagination,
+  showRoleFiler,
 }: HeaderProps) {
   const [search, setSearch] = useState("");
   const router = useRouter();
@@ -136,6 +138,29 @@ export function Header({
               <SelectItem value="deleted">Deleted</SelectItem>
             </SelectContent>
           </Select>
+
+          {showRoleFiler && (
+            <Select
+              value={pagination.role ?? UserRoles.USER}
+              onValueChange={(value) => {
+                setPagination({
+                  ...pagination,
+                  role: value as UserRoles,
+                  pageNumber: 1,
+                });
+              }}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UserRoles.USER}>All</SelectItem>
+                <SelectItem value={UserRoles.SUPERADMIN}>Superadmin</SelectItem>
+                <SelectItem value={UserRoles.ADMIN}>Admins</SelectItem>
+                <SelectItem value={UserRoles.CASHIER}>Cashier</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Reset */}
           <Button

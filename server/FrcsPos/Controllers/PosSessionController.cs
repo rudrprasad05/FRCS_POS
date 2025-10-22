@@ -101,6 +101,39 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [HttpPost("end")]
+        public async Task<IActionResult> EndSession([FromBody] CreateNewPosSession request, [FromQuery][Required] string uuid)
+        {
+            // Try to find user by email
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(message: "Invalid credentials"));
+            }
+
+            // Check password
+            var validPassword = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+            if (!validPassword.Succeeded)
+            {
+                return Unauthorized(ApiResponse<string>.Fail(message: "Invalid credentials"));
+            }
+
+            var data = new ResumePosSession
+            {
+                PosTerminalUUID = request.PosTerminalUUID,
+                PosUserId = user.Id,
+                PosSessionId = uuid,
+            };
+            var model = await _posSessionRepository.EndPosSession(data);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
         [HttpGet("get-session-by-uuid")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] string uuid)
         {

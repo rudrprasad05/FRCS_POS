@@ -26,8 +26,9 @@ export default function UsersSection() {
     pageNumber: 1,
     pageSize: 10,
     search: "",
+    role: UserRoles.USER,
     sortBy: ESortBy.DSC,
-    isDeleted: undefined as boolean | undefined,
+    isDeleted: false as boolean | undefined,
   });
 
   const query = useQuery({
@@ -38,6 +39,7 @@ export default function UsersSection() {
   return (
     <>
       <Header
+        showRoleFiler
         pagination={pagination}
         setPagination={setPagination}
         newButton={

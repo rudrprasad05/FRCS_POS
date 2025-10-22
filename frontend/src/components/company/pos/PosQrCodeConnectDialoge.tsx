@@ -23,6 +23,7 @@ export default function PosQrCodeConnectDialoge() {
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [isGeneratingQr, setIsGeneratingQr] = useState(false);
   const { isScannerConnectedToServer } = usePosSession();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   const { qr, setQr } = usePosSession();
 
@@ -30,10 +31,7 @@ export default function PosQrCodeConnectDialoge() {
     setIsGeneratingQr(true);
     try {
       const res = await GenerateQr(sessionId);
-
       setIsQrGenerated(true);
-
-      const baseUrl = "https://localhost:3000"; // CHANGE ME
       setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
     } catch (error) {
       toast.error("Error generating QR Code", { description: error as string });

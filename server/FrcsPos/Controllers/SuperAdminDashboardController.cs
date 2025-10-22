@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize]
     [Route("api/superadmin")]
     [ApiController]
     public class SuperAdminDashboardController : BaseController
@@ -29,6 +28,7 @@ namespace FrcsPos.Controllers
             _superAdminDashboardRepository = superAdminDashboardRepository;
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpGet("get-dashboard")]
         public async Task<IActionResult> GetSuperAdminDashboard()
         {
@@ -42,6 +42,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("company-dashboard")]
         public async Task<IActionResult> GetAdminDashboard([FromQuery] RequestQueryObject queryObject)
         {

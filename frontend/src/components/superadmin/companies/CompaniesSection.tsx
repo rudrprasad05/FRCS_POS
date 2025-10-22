@@ -25,7 +25,7 @@ export default function CompanySection() {
     pageSize: 10,
     search: "",
     sortBy: ESortBy.DSC,
-    isDeleted: undefined as boolean | undefined,
+    isDeleted: false as boolean | undefined,
   });
 
   const query = useQuery({

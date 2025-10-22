@@ -1,4 +1,5 @@
 import axios from "axios";
+import { redirect } from "next/navigation";
 import { destroyCookie } from "nookies";
 
 export const axiosGlobal = axios.create({
@@ -31,19 +32,20 @@ axiosGlobal.interceptors.response.use(
 
     if (status === 401) {
       destroyCookie(null, "token");
+      redirect("/error/unauthorised");
 
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
+      //   if (typeof window !== "undefined") {
+      //     localStorage.removeItem("token");
 
-        // Redirect to login or home
-        window.location.href = "/error/unauthorised";
-      }
+      //     // Redirect to login or home
+      //     window.location.href = "/error/unauthorised";
+      //   }
     }
 
     return {
       data: res?.data ?? null,
       success: false,
-      statusCode: res?.status ?? 400,
+      status: res?.status ?? 400,
       message: res?.data?.message || error.message || "Unknown error",
     };
   }

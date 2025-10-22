@@ -6,7 +6,6 @@ import { Edit, Eye } from "lucide-react";
 
 import { Company, CompanyUser, User } from "@/types/models";
 import Link from "next/link";
-import RemoveUserFromCompanyDialoge from "../superadmin/companies/RemoveUserFromCompanyDialoge";
 import { Badge } from "../ui/badge";
 
 export const CompanyOnlyColumn: ColumnDef<Company>[] = [
@@ -129,21 +128,13 @@ export const CompanyUserColumn: ColumnDef<CompanyUser>[] = [
         <div className="flex gap-2">
           <Button variant={"outline"} asChild>
             <Link
-              href={`/admin/users/${company.uuid}/edit`}
-              className="flex items-center justify-between"
-            >
-              <Edit className="" />
-            </Link>
-          </Button>
-          <Button variant={"outline"} asChild>
-            <Link
               href={`/admin/users/${encodeURI(company.userId)}/view`}
               className="flex items-center justify-between"
             >
               <Eye className="" />
             </Link>
           </Button>
-          <RemoveUserFromCompanyDialoge userId={company.userId} />
+          {/* <RemoveUserFromCompanyDialoge userId={company.userId} /> */}
         </div>
       );
     },

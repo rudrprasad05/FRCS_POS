@@ -29,7 +29,7 @@ namespace FrcsPos.Mappers
         public static PosTerminalDTO FromModelToDto(this PosTerminal request)
         {
             ArgumentNullException.ThrowIfNull(request);
-            return new PosTerminalDTO
+            var dto = new PosTerminalDTO
             {
                 UUID = request.UUID,
                 Id = request.Id,
@@ -39,10 +39,24 @@ namespace FrcsPos.Mappers
                 Name = request.Name,
                 LocationDescription = request.LocationDescription ?? string.Empty,
                 SerialNumber = request.SerialNumber ?? string.Empty,
-                Sales = request.Sales.FromModelToDtoStatic(),
-                Company = request.Company.FromModelToDTOWithoutPosTerminals(),
-                Session = request.Session.FromPosSessionListToPosSessionDTOList(),
             };
+
+            if (request.Sales != null)
+            {
+                dto.Sales = request.Sales.FromModelToDtoStatic();
+                dto.TotalSales = request.Sales?.Sum(s => s.Total) ?? 0m;
+            }
+            if (request.Company != null)
+            {
+                dto.Company = request.Company.FromModelToDTOWithoutPosTerminals();
+            }
+            if (request.Session != null)
+            {
+                dto.Session = request.Session.FromPosSessionListToPosSessionDTOList();
+                dto.LastUsedBy = request.Session.OrderByDescending(s => s.CreatedOn)?.FirstOrDefault()?.PosUser.FromUserToDto();
+            }
+
+            return dto;
         }
         public static PosTerminalDTO FromModelToDtoWithoutCompany(this PosTerminal request)
         {
@@ -55,7 +69,9 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
                 LocationDescription = request.LocationDescription ?? string.Empty,
-                SerialNumber = request.SerialNumber ?? string.Empty
+                SerialNumber = request.SerialNumber ?? string.Empty,
+                IsActive = request.IsActive,
+                IsDeleted = request.IsDeleted,
             };
         }
 

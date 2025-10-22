@@ -58,6 +58,7 @@ export default function ReceiptPage() {
   const checkoutId = String(params.checkoutId);
   const sessionId = String(params.sessionId);
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   const queryClient = useQueryClient();
 
@@ -111,8 +112,8 @@ export default function ReceiptPage() {
 
     setSale(res.data as Sale);
     setState(EReceiptPageState.OK);
-    setRecieptUrl("https://localhost:3000/receipt/" + res.data?.invoiceNumber);
-  }, [checkoutId]);
+    setRecieptUrl(`${baseUrl}/receipt/` + res.data?.invoiceNumber);
+  }, [checkoutId, baseUrl]);
 
   useEffect(() => {
     queryClient.invalidateQueries({

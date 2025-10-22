@@ -36,7 +36,7 @@ export default function UserSection() {
     pageSize: 10,
     search: "",
     sortBy: ESortBy.DSC,
-    isDeleted: undefined as boolean | undefined,
+    isDeleted: false as boolean | undefined,
     companyName: companyName,
   });
 

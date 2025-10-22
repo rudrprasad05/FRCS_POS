@@ -167,5 +167,33 @@ namespace FrcsPos.Repository
 
             return ApiResponse<List<PosSessionDTO>>.Ok(dto);
         }
+
+        public async Task<ApiResponse<PosSessionDTO>> EndPosSession(ResumePosSession request)
+        {
+            var now = DateTime.UtcNow;
+            var posSession = await _context.PosSessions
+                .Include(ps => ps.PosUser)
+                .FirstOrDefaultAsync(a =>
+                    a.UUID == request.PosSessionId &&
+                    a.IsActive == true
+                );
+
+            if (posSession == null)
+            {
+                return ApiResponse<PosSessionDTO>.Fail(message: "no active sessions found");
+            }
+
+            var user = posSession.PosUser;
+            if (user.Id != request.PosUserId)
+            {
+                return ApiResponse<PosSessionDTO>.Fail(message: "user did not match");
+            }
+
+            posSession.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<PosSessionDTO>.Ok(posSession.FromModelToDTO());
+
+        }
     }
 }

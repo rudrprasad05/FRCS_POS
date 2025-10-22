@@ -1,11 +1,14 @@
 "use client";
+import { GetAllWarehouses } from "@/actions/Warehouse";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
-import { GetAllWarehouses } from "@/actions/Warehouse";
+import { Header } from "@/components/global/TestHeader";
 import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
   ESortBy,
@@ -13,17 +16,14 @@ import {
   UserRoles,
   Warehouse,
 } from "@/types/models";
-import { useParams } from "next/navigation";
-import NewWarehouseDialoge from "./NewWarehouseDialoge";
-import { useEffect, useState } from "react";
 import {
   useQuery,
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import { Header } from "@/components/global/TestHeader";
-import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import NewWarehouseDialoge from "./NewWarehouseDialoge";
 
 export const {
   Provider: WarehouseSectionProvider,
@@ -40,7 +40,7 @@ export default function WarehouseSection() {
     pageSize: 10,
     search: "",
     sortBy: ESortBy.DSC,
-    isDeleted: undefined as boolean | undefined,
+    isDeleted: false as boolean | undefined,
   });
 
   const query = useQuery({

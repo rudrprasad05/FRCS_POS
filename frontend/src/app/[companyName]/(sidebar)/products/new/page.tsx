@@ -39,6 +39,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import {
   Image as ImageIcon,
+  Loader2,
   PackagePlus,
   Plus,
   PlusCircle,
@@ -51,27 +52,23 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   Controller,
+  FieldErrors,
   useFieldArray,
   useForm,
+  useFormContext,
   UseFormReturn,
 } from "react-hook-form";
 import { toast } from "sonner";
 import { v4 as uuid } from "uuid";
 
-const steps = [
-  "Supplier",
-  "Details",
-  "Expiry",
-  "Variants",
-  "Review",
-  "Confirm",
-];
+const steps = ["Supplier", "Details", "Expiry", "Variants", "Review"];
 const customExpiryDays = [1, 2, 3, 5, 7, 10];
 const customExpiryHours = [6, 12, 24, 48, 72];
 
 export default function StepperForm() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(true);
 
   const companyName = params.companyName;
   const router = useRouter();
@@ -103,6 +100,8 @@ export default function StepperForm() {
       fieldsToValidate = ["supplierId"];
     } else if (currentStep === 1) {
       fieldsToValidate = ["name", "sku"];
+    } else if (currentStep === 3) {
+      fieldsToValidate = ["variants"];
     }
 
     const isValid = await form.trigger(fieldsToValidate);
@@ -110,6 +109,8 @@ export default function StepperForm() {
     if (isValid) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
     }
+
+    console.log(form.getValues());
   };
   const prevStep = () => {
     setCurrentStep((prev) => {
@@ -117,7 +118,28 @@ export default function StepperForm() {
     });
   };
 
+  useEffect(() => {
+    if (currentStep < steps.length - 1) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    // Cleanup the timeout on unmount or re-run
+    return () => clearTimeout(timer);
+  }, [currentStep]);
+
   const onSubmit = async (data: ProductFormData) => {
+    if (isLoading) {
+      console.log("click2");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    console.log("click");
+
     const formData = new FormData();
 
     formData.append("Product", JSON.stringify(data));
@@ -150,6 +172,7 @@ export default function StepperForm() {
     } else {
       toast.info("Failed to upload", { description: res.message });
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -193,7 +216,6 @@ export default function StepperForm() {
           {/* set var 4 */}
           {currentStep === 3 && <Step4 form={form} />}
           {currentStep === 4 && <Step5 form={form} />}
-          {currentStep === 5 && <Step6 />}
 
           <Separator className="my-4 mt-auto" />
 
@@ -207,12 +229,22 @@ export default function StepperForm() {
               Back
             </Button>
             {currentStep < steps.length - 1 ? (
-              <Button type="button" onClick={nextStep}>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextStep();
+                }}
+              >
                 Next
               </Button>
             ) : (
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                Finish
+              <Button
+                disabled={isLoading}
+                type="submit"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isLoading && <Loader2 className="animate-spin" />}Finish
               </Button>
             )}
           </div>
@@ -261,7 +293,7 @@ function Step1({
                     pathname: `/${companyName}/suppliers/new`,
                     query: {
                       open_create: "true",
-                      returnUrl: `/${companyName}/products/new-test`,
+                      returnUrl: `/${companyName}/products/new`,
                     },
                   }}
                 >
@@ -606,21 +638,23 @@ function Step5({ form }: { form: UseFormReturn<ProductFormData> }) {
       </Card>
 
       {/* Expiry Info */}
-      <Card>
-        <CardHeader>
-          <LargeText>Expiry Info</LargeText>
-        </CardHeader>
-        <CardContent className="space-y-1 text-sm">
-          <div>
-            <strong>First Warning (days):</strong>{" "}
-            {values.firstWarningInDays ?? "—"}
-          </div>
-          <div>
-            <strong>Critical Warning (hours):</strong>{" "}
-            {values.criticalWarningInHours ?? "—"}
-          </div>
-        </CardContent>
-      </Card>
+      {values.isPerishable && (
+        <Card>
+          <CardHeader>
+            <LargeText>Expiry Info</LargeText>
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm">
+            <div>
+              <strong>First Warning (days):</strong>{" "}
+              {values.firstWarningInDays ?? "—"}
+            </div>
+            <div>
+              <strong>Critical Warning (hours):</strong>{" "}
+              {values.criticalWarningInHours ?? "—"}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Variants */}
       <Card>
@@ -654,17 +688,6 @@ function Step5({ form }: { form: UseFormReturn<ProductFormData> }) {
   );
 }
 
-function Step6() {
-  return (
-    <div className="grid grid-cols-1 gap-4">
-      <div>
-        <LargeText>Confirm Submission</LargeText>
-        <MutedText>Are you sure you want to proceed?</MutedText>
-      </div>
-    </div>
-  );
-}
-
 function AddMediaDialoge({
   index,
   form,
@@ -677,6 +700,16 @@ function AddMediaDialoge({
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File>();
+
+  useEffect(() => {
+    const f = form.getValues(`variants.${index}.mediaFile`);
+    if (f && f.type.startsWith("image/")) {
+      setFile(f);
+
+      const url = URL.createObjectURL(f);
+      setPreviewUrl(url);
+    }
+  }, [form, index]);
 
   const handleFileSelect = (f: File) => {
     if (f && f.type.startsWith("image/")) {
@@ -814,11 +847,19 @@ type VariantCardProps = {
 };
 
 function VariantCard({ form, index, remove }: VariantCardProps) {
-  const { control } = form;
+  const { control, formState } = useFormContext();
+  const errors = formState.errors as FieldErrors<ProductFormData>;
+
+  const getFieldError = (fieldName: string) => {
+    const variantErrors = errors.variants?.[index] as
+      | Record<string, { message?: string }>
+      | undefined;
+    return variantErrors?.[fieldName]?.message as string | undefined;
+  };
 
   return (
     <div className="relative border border-solid rounded-lg p-6 flex gap-4 items-start">
-      {/* Example: media dialog still external */}
+      {/* Media dialog remains external */}
       <AddMediaDialoge index={index} form={form} />
 
       <div className="grid grid-cols-2 grow gap-4">
@@ -826,66 +867,103 @@ function VariantCard({ form, index, remove }: VariantCardProps) {
           <Label htmlFor={`variants.${index}.name`}>Variant Name</Label>
           <Controller
             control={control}
-            name={`variants.${index}.name`}
-            render={({ field }) => (
+            name={`variants.${index}.name` as const}
+            render={({ field, fieldState }) => (
               <Input
                 id={`variants.${index}.name`}
-                placeholder="variant name"
+                placeholder="Variant name"
                 {...field}
+                value={field.value || ""} // Ensure value is defined
+                className={cn(
+                  "w-full",
+                  fieldState.error && "border-red-500 focus:border-red-500"
+                )}
               />
             )}
           />
+          {getFieldError("name") && (
+            <span className="text-red-500 text-sm">
+              {getFieldError("name")}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor={`variants.${index}.sku`}>Variant SKU</Label>
           <Controller
             control={control}
-            name={`variants.${index}.sku`}
-            render={({ field }) => (
+            name={`variants.${index}.sku` as const}
+            render={({ field, fieldState }) => (
               <Input
                 id={`variants.${index}.sku`}
-                placeholder="variant sku"
+                placeholder="Variant sku"
                 {...field}
+                value={field.value || ""} // Ensure value is defined
+                className={cn(
+                  "w-full",
+                  fieldState.error && "border-red-500 focus:border-red-500"
+                )}
               />
             )}
           />
+          {getFieldError("sku") && (
+            <span className="text-red-500 text-sm">{getFieldError("sku")}</span>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor={`variants.${index}.barcode`}>Barcode</Label>
           <Controller
             control={control}
-            name={`variants.${index}.barcode`}
-            render={({ field }) => (
+            name={`variants.${index}.barcode` as const}
+            render={({ field, fieldState }) => (
               <Input
                 id={`variants.${index}.barcode`}
                 placeholder="Barcode"
                 {...field}
+                value={field.value || ""} // Ensure value is defined
+                className={cn(
+                  "w-full",
+                  fieldState.error && "border-red-500 focus:border-red-500"
+                )}
               />
             )}
           />
+          {getFieldError("barcode") && (
+            <span className="text-red-500 text-sm">
+              {getFieldError("barcode")}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor={`variants.${index}.price`}>Price</Label>
           <Controller
             control={control}
-            name={`variants.${index}.price`}
-            render={({ field }) => (
+            name={`variants.${index}.price` as const}
+            render={({ field, fieldState }) => (
               <Input
                 id={`variants.${index}.price`}
                 type="number"
                 step="0.01"
                 placeholder="Price"
                 {...field}
-                value={field.value ?? ""}
+                value={field.value ?? ""} // Handle undefined/null
                 onChange={(e) =>
                   field.onChange(parseFloat(e.target.value) || 0)
-                }
+                } // Ensure valid number
+                className={cn(
+                  "w-full",
+                  fieldState.error && "border-red-500 focus:border-red-500"
+                )}
               />
             )}
           />
+          {getFieldError("price") && (
+            <span className="text-red-500 text-sm">
+              {getFieldError("price")}
+            </span>
+          )}
         </div>
       </div>
 
@@ -895,7 +973,7 @@ function VariantCard({ form, index, remove }: VariantCardProps) {
           remove(index);
         }}
         className={cn(
-          "bg-muted p-1 rounded-full absolute top-0 right-0 translate-x-[50%] -translate-y-[50%]",
+          "bg-muted p-1 rounded-full absolute top-0 right-0 translate-x-[50%] -translate-y-[50%] cursor-pointer",
           index === 0 && "hidden"
         )}
       >

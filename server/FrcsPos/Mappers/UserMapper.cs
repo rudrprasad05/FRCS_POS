@@ -106,10 +106,10 @@ namespace FrcsPos.Mappers
                 return new UserDTO
                 {
                     Id = "id",
-                    Username = "null",
-                    Email = "null",
-                    Token = "null",
-                    Role = "null"
+                    Username = "N/A",
+                    Email = "N/A",
+                    Token = "N/A",
+                    Role = "N/A"
                 };
             }
 

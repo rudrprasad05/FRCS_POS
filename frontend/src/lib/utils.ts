@@ -5,8 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const WebSocketUrl = "https://localhost:5081";
-
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();

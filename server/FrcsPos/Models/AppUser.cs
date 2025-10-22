@@ -16,6 +16,8 @@ namespace FrcsPos.Models
         [Required] public DateTime UpdatedOn { get; set; } = DateTime.Now;
         [Required] public bool IsDeleted { get; set; } = false;
         public ICollection<EmailVerification> EmailVerifications { get; set; } = null!;
+        public Media? ProfilePicture { get; set; } = null;
+        public int? ProfilePictureId { get; set; } = null;
     }
 
 }

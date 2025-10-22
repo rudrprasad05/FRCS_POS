@@ -36,5 +36,18 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+
+        [HttpPost("read")]
+        public async Task<IActionResult> MarkReadUnread([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _notificationRepository.MarkReadAsync(queryObject);
+
+            if (model == null || !model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
     }
 }

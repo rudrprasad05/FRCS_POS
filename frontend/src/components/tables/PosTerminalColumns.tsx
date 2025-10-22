@@ -11,16 +11,28 @@ import { RoleWrapper } from "../wrapper/RoleWrapper";
 
 export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
     accessorKey: "isActive",
     header: "Active",
+    size: 10,
     cell: ({ row }) => {
-      const company = row.original; // Get the entire row data (of type companyType)
-
-      return <div>{company.isActive}</div>;
+      const isActive = row.getValue("isActive") as boolean;
+      return (
+        <div className="w-12">
+          <div
+            className={cn(
+              "rounded-full w-2 h-2 mx-auto",
+              isActive ? "bg-rose-500" : "bg-green-500"
+            )}
+          />
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => {
+      return <div>{row.original.name}</div>;
     },
   },
   {
@@ -28,6 +40,19 @@ export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
     header: "Created On",
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdOn"));
+      return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+  },
+
+  {
+    accessorKey: "updatedOn",
+    header: "Updated On",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("updatedOn"));
       return date.toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
@@ -55,14 +80,17 @@ export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
                 <Edit className="" />
               </Link>
             </Button>
-          </RoleWrapper>
 
-          <Button variant={"outline"} asChild className="w-24">
-            <Link href={`/admin/companies/${company.uuid}`}>
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link href={`/admin/companies/${company.uuid}`}>
+                View
+                <Eye className="" />
+              </Link>
+            </Button>
+          </RoleWrapper>
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <div>-</div>
+          </RoleWrapper>
         </div>
       );
     },

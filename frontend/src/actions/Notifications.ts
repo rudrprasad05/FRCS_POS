@@ -20,18 +20,11 @@ export async function GetAllNotificationsSuperAdmin(
 }
 
 export async function MarkAsRead(
-  uuid?: string
+  query?: QueryObject
 ): Promise<ApiResponse<AppNotification>> {
-  const token = await GetToken();
-
-  const res = await axiosGlobal.get<ApiResponse<AppNotification>>(
-    `notification/mark-read?uuid=${uuid}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
-  return res.data;
+  return RequestWrapper<AppNotification>("POST", `notification/read`, {
+    query,
+  });
 }
 
 export async function SafeDeleteNotification(

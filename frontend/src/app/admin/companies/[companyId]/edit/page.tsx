@@ -2,6 +2,7 @@
 
 import { GetFullCompanyByUUID } from "@/actions/Product";
 import NoDataContainer from "@/components/containers/NoDataContainer";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import ConfigTab from "@/components/superadmin/companies/ConfigTab";
 import { EditorTab } from "@/components/superadmin/companies/EditTab";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -10,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { Company } from "@/types/models";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, PenBox } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -38,15 +39,11 @@ export default function EditorPage() {
 
   return (
     <div>
-      <div className="">
-        <div className="flex items-center gap-2 mb-2">
-          <PenBox className="text-primary h-6 w-6" />
-          <h1 className="text-3xl font-bold">Edit Company</h1>
-        </div>
-        <p className="text-muted-foreground">
-          You are editing the company &quot;{company?.name}&quot;
-        </p>
-      </div>
+      <HeaderWithBackButton
+        title="Edit Company"
+        description={`You are editing the company "${company?.name}"`}
+      />
+
       <Tabs
         defaultValue="edit"
         className="w-full overflow-hidden relative h-screen p-4 flex flex-col"

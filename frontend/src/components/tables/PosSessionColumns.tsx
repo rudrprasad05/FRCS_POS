@@ -2,10 +2,9 @@
 import { Badge } from "@/components/ui/badge";
 import type { PosSession, User } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pause } from "lucide-react";
 import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
+import StopPosSessionDialoge from "../company/pos/StopPosSessionDialoge";
 import { P } from "../font/HeaderFonts";
-import { Button } from "../ui/button";
 
 export const PosSessionColumns: ColumnDef<PosSession>[] = [
   {
@@ -61,15 +60,7 @@ export const PosSessionColumns: ColumnDef<PosSession>[] = [
         <div className="flex gap-2">
           {isActive && (
             <div className="flex items-center gap-2">
-              <Button
-                variant={"destructive"}
-                className=""
-                onClick={() => {
-                  // call your stop session logic here
-                }}
-              >
-                <Pause />
-              </Button>
+              <StopPosSessionDialoge uuid={row.original.uuid} />
               <ResumeSessionDialoge uuid={row.original.uuid} />
             </div>
           )}

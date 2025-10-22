@@ -15,6 +15,8 @@ namespace FrcsPos.Response.DTO
         public string SerialNumber { get; set; } = string.Empty;
         public ICollection<PosSessionDTO> Session { get; set; } = [];
         public ICollection<SaleDTO> Sales { get; set; } = [];
+        public UserDTO? LastUsedBy { get; set; } = null;
+        public decimal? TotalSales { get; set; } = null;
 
     }
 

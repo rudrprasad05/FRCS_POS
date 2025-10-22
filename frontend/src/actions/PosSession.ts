@@ -40,6 +40,16 @@ export async function ResumeSession(
   });
 }
 
+export async function EndSession(
+  data: ICreateNewPosSession,
+  uuid: string
+): Promise<ApiResponse<PosSession>> {
+  return RequestWrapper<PosSession>("POST", `pos-session/end`, {
+    data,
+    query: { uuid },
+  });
+}
+
 export async function GetPosSession(
   uuid: string
 ): Promise<ApiResponse<PosSessionWithProducts>> {

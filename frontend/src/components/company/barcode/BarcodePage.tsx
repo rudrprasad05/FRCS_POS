@@ -46,16 +46,16 @@ export default function BarcodeScanner() {
   const scannerRef = useRef<HTMLDivElement>(null);
   const beep = useMemo(() => new Audio("/scanner-beep.mp3"), []);
   const [connection, setConnection] = useState<any>(null);
+  const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
 
-  function createConnection(terminalId: string) {
+  const createConnection = useCallback(() => {
     return new signalR.HubConnectionBuilder()
-      .withUrl(
-        `${"https://localhost:5081"}/socket/posHub?terminalId=${terminalId}`,
-        { withCredentials: true }
-      )
+      .withUrl(`${apiUrl}/socket/posHub?terminalId=${id}`, {
+        withCredentials: true,
+      })
       .withAutomaticReconnect()
       .build();
-  }
+  }, [apiUrl, id]);
 
   const validateUUID = useCallback(async () => {
     setInitialLoad(true);
@@ -65,7 +65,7 @@ export default function BarcodeScanner() {
         setIsUUIDValidated(true);
 
         // setup signalR once validated
-        const conn = createConnection(id);
+        const conn = createConnection();
         conn
           .start()
           .then(() => {
@@ -86,7 +86,7 @@ export default function BarcodeScanner() {
     } finally {
       setInitialLoad(false);
     }
-  }, [setIsUUIDValidated, id]);
+  }, [setIsUUIDValidated, id, createConnection]);
 
   const startScanning = useCallback(async () => {
     try {

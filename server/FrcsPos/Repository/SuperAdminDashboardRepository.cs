@@ -55,7 +55,7 @@ namespace FrcsPos.Repository
             }
 
             var userCount = company.Users.Count + (company.AdminUser != null ? 1 : 0);
-            var productCount = company.Products.Count;
+            var productCount = company.Products.Select(x => x.Variants.Count).Sum();
             var warehouseCount = company.Warehouses.Count;
             var posTerminalCount = company.PosTerminals.Count;
             var totalSalesAmount = company.PosTerminals

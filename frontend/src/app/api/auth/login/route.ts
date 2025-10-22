@@ -5,18 +5,18 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
-    // Proxy the request to the backend
-    const response = await fetch(
-      "https://frcs-api.procyonfiji.com/api/auth/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      }
-    );
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://frcs-api.procyonfiji.com/api/";
+    console.log("33", apiBaseUrl);
+    const response = await fetch(`${apiBaseUrl}auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
 
     console.log("be1", response);
 

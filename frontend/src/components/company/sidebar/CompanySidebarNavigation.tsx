@@ -17,6 +17,7 @@ import {
   File,
   Info,
   LayoutDashboard,
+  Loader2,
   LucideIcon,
   User,
   Warehouse,
@@ -97,6 +98,14 @@ export function CompanySidebarNavigation() {
       icon: Info,
     },
   ];
+
+  if (!user) {
+    return (
+      <div className="p-2">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
 
   const navArr =
     user?.role?.toUpperCase() === UserRoles.ADMIN

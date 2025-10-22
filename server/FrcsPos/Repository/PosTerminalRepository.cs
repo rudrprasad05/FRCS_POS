@@ -122,6 +122,9 @@ namespace FrcsPos.Repository
         {
             // Query terminals directly, but scoped to the company
             var terminalQuery = _context.PosTerminals
+                .Include(t => t.Sales) // Include Sales for TotalSales calculation
+                .Include(t => t.Session) // Include Sessions for LastUsedBy
+                    .ThenInclude(s => s.PosUser)
                 .Where(t => t.Company.Name == queryObject.CompanyName);
 
             // Company deleted filter (through navigation)
@@ -154,7 +157,7 @@ namespace FrcsPos.Repository
                 .Take(queryObject.PageSize)
                 .ToListAsync();
 
-            // Map to DTO
+
             var result = terminals.Select(t => t.FromModelToDto()).ToList();
 
             return new ApiResponse<List<PosTerminalDTO>>
@@ -221,6 +224,7 @@ namespace FrcsPos.Repository
             if (queryObject.IsDeleted.HasValue)
             {
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+                query = query.Where(c => c.IsActive != queryObject.IsDeleted.Value);
             }
 
             // Sorting
@@ -348,6 +352,7 @@ namespace FrcsPos.Repository
             // verify and get pos terminal to be edited
             var posTerminal = await _context.PosTerminals
                 .Include(x => x.Company)
+                    .ThenInclude(x => x.AdminUser)
                 .FirstOrDefaultAsync(w => w.UUID == queryObject.UUID);
             if (posTerminal == null)
             {
@@ -370,7 +375,7 @@ namespace FrcsPos.Repository
 
             // verify that user is part of current company
             var companyUser = await _context.CompanyUsers.FirstOrDefaultAsync(x => x.CompanyId == posTerminal.Company.Id && x.UserId == user.Id);
-            if (companyUser == null)
+            if (posTerminal.Company.AdminUser.Id != user.Id && companyUser == null)
             {
                 return ApiResponse<PosTerminalDTO>.Fail(message: "not associated with current company");
             }

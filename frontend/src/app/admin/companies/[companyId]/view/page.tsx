@@ -4,6 +4,7 @@ import { GetFullCompanyByUUID } from "@/actions/Company";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { H3, MutedText } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import AddUsersToCompanyDialoge from "@/components/superadmin/companies/AddUsersToCompanyDialoge";
 import { CompanyUserColumn } from "@/components/tables/CompaniesColumns";
 import { PosTerminalOnlyColumns } from "@/components/tables/PosTerminalColumns";
@@ -54,7 +55,10 @@ export default function SuperAdminCompanyPageContainer({ params }: PageProps) {
 function DataSection({ data }: { data: Company }) {
   return (
     <div className="space-y-4">
-      <Header data={data} />
+      <HeaderWithBackButton
+        title={data.name}
+        description={`ID: ${data.uuid}`}
+      />
       <CompanyInfo data={data} />
 
       <GenericSection
@@ -92,18 +96,6 @@ function DataSection({ data }: { data: Company }) {
           columns: ProductsOnlyColumns,
         }}
       />
-    </div>
-  );
-}
-
-function Header({ data }: { data: Company }) {
-  return (
-    <div className="flex items-center gap-3">
-      <Building2 className="h-8 w-8 text-primary" />
-      <div>
-        <h1 className="text-3xl font-bold capitalize">{data.name}</h1>
-        <p className="text-muted-foreground">ID: {data.uuid}</p>
-      </div>
     </div>
   );
 }

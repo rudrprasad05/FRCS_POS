@@ -129,19 +129,25 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(RequestQueryObject requestQuery)
         {
             var userDtos = new List<UserDTO>();
-            IQueryable<User> query;
+            IQueryable<User> query = _userManager.Users;
 
-            if (!string.IsNullOrWhiteSpace(requestQuery.Role))
+            if (!string.IsNullOrWhiteSpace(requestQuery.Role) && requestQuery.Role.ToLower() != "user")
             {
-                // Filter users by role
                 string normalizedRole = requestQuery.Role.Trim().ToUpperInvariant();
-                var usersInRole = await _userManager.GetUsersInRoleAsync(normalizedRole);
-                query = usersInRole.AsQueryable();
-            }
-            else
-            {
-                // All users
-                query = _userManager.Users;
+
+                // Get users in the specified role
+                var usersInRole = await _userManager.GetUsersInRoleAsync(requestQuery.Role);
+                var userIds = usersInRole.Select(u => u.Id).ToList();
+
+                if (userIds.Any())
+                {
+                    query = query.Where(u => userIds.Contains(u.Id));
+                }
+                else
+                {
+                    // No users found in this role
+                    query = query.Where(u => false);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(requestQuery.Search))
@@ -160,6 +166,12 @@ namespace FrcsPos.Repository
                 ESortBy.DSC => query.OrderByDescending(u => u.CreatedOn),
                 _ => query.OrderByDescending(u => u.CreatedOn)
             };
+
+            if (requestQuery.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == requestQuery.IsDeleted.Value);
+            }
+
 
             var totalCount = await query.CountAsync();
 

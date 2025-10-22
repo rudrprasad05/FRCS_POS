@@ -198,6 +198,7 @@ export enum UserRoles {
   SUPERADMIN = "SUPERADMIN",
   ADMIN = "ADMIN",
   CASHIER = "CASHIER",
+  USER = "USER",
 }
 
 export interface User {
@@ -210,6 +211,7 @@ export interface User {
   salesAsCashier?: Sale[];
   createdOn: string;
   updatedOn: string;
+  isDeleted: boolean;
 }
 
 export interface CompanyUser extends BaseModel {
@@ -233,6 +235,8 @@ export interface PosTerminal extends BaseModel {
 
   session?: PosSession[];
   sales?: Sale[];
+  totalSales?: number;
+  lastUsedBy?: User;
 }
 
 export interface Sale extends BaseModel {

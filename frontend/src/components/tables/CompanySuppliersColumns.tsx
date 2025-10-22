@@ -16,15 +16,18 @@ export const CompanySuppliersColumns: ColumnDef<Supplier>[] = [
   {
     accessorKey: "isDeleted",
     header: "Active",
+    size: 10,
     cell: ({ row }) => {
       const isDeleted = row.getValue("isDeleted") as boolean;
       return (
-        <div
-          className={cn(
-            "rounded-full w-2 h-2 mx-auto",
-            isDeleted ? "bg-rose-500" : "bg-green-500"
-          )}
-        />
+        <div className="w-12">
+          <div
+            className={cn(
+              "rounded-full w-2 h-2 mx-auto",
+              isDeleted ? "bg-rose-500" : "bg-green-500"
+            )}
+          />
+        </div>
       );
     },
   },
@@ -80,7 +83,7 @@ export const CompanySuppliersColumns: ColumnDef<Supplier>[] = [
         <div className="flex gap-2">
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`products/${company.uuid}/edit`}
+              href={`suppliers/${company.uuid}/edit`}
               className="w-24 flex items-center justify-between"
             >
               Edit
@@ -90,7 +93,7 @@ export const CompanySuppliersColumns: ColumnDef<Supplier>[] = [
 
           <Button variant={"outline"} asChild className="w-24">
             <Link
-              href={`products/${company.uuid}/view`}
+              href={`suppliers/${company.uuid}/view`}
               className="w-24 flex items-center justify-between"
             >
               View

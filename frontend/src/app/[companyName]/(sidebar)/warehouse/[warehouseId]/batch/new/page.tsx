@@ -139,7 +139,13 @@ export default function StepperForm() {
               Back
             </Button>
             {currentStep < steps.length - 1 ? (
-              <Button type="button" onClick={nextStep}>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextStep();
+                }}
+              >
                 Next
               </Button>
             ) : (

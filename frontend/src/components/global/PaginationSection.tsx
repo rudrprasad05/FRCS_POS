@@ -1,9 +1,8 @@
 "use client";
-
-import React, { Dispatch, SetStateAction } from "react";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { MetaData } from "@/types/models";
+import { Dispatch, SetStateAction } from "react";
 
 interface IPagination {
   pagination: MetaData;
@@ -55,7 +55,45 @@ export default function PaginationSection({
     }
   };
 
+  // Generate page numbers to display
+  const getPaginationNumbers = (): (number | string)[] => {
+    const totalPages = pagination.totalPages;
+    const currentPage = pagination.pageNumber;
+    const delta = 2; // pages to show on each side of current page
+    const left = currentPage - delta;
+    const right = currentPage + delta;
+
+    const pages: (number | string)[] = [];
+
+    // Always show first page
+    pages.push(1);
+
+    // Add ellipsis if there's a gap after page 1
+    if (left > 2) {
+      pages.push("...");
+    }
+
+    // Add pages around current page
+    for (let i = Math.max(2, left); i <= Math.min(totalPages - 1, right); i++) {
+      pages.push(i);
+    }
+
+    // Add ellipsis if there's a gap before last page
+    if (right < totalPages - 1) {
+      pages.push("...");
+    }
+
+    // Always show last page (if more than 1 page exists)
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
   if (pagination.totalCount === 0) return null;
+
+  const pageNumbers = getPaginationNumbers();
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -71,15 +109,19 @@ export default function PaginationSection({
             />
           </PaginationItem>
 
-          {Array.from({ length: pagination.totalPages }, (_, i) => (
+          {pageNumbers.map((page, i) => (
             <PaginationItem key={i}>
-              <PaginationLink
-                className="cursor-pointer"
-                isActive={pagination.pageNumber === i + 1}
-                onClick={() => handleChangePage(i + 1)}
-              >
-                {i + 1}
-              </PaginationLink>
+              {page === "..." ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  className="cursor-pointer"
+                  isActive={pagination.pageNumber === page}
+                  onClick={() => handleChangePage(page as number)}
+                >
+                  {page}
+                </PaginationLink>
+              )}
             </PaginationItem>
           ))}
 
@@ -104,7 +146,7 @@ export default function PaginationSection({
             setPagination((prev) => ({
               ...prev,
               pageSize: Number(val),
-              pageNumber: 1, // reset to first page when page size changes
+              pageNumber: 1,
             }))
           }
         >

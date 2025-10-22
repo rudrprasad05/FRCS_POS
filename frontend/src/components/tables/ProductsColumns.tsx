@@ -12,26 +12,30 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Product, ProductVariant } from "@/types/models";
+import { Product, ProductVariant, UserRoles } from "@/types/models";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Barcode from "react-barcode";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { RoleWrapper } from "../wrapper/RoleWrapper";
 
 export const ProductsOnlyColumns: ColumnDef<Product>[] = [
   {
     accessorKey: "isDeleted",
     header: "Active",
+    size: 10,
     cell: ({ row }) => {
       const isDeleted = row.getValue("isDeleted") as boolean;
       return (
-        <div
-          className={cn(
-            "rounded-full w-2 h-2 mx-auto",
-            isDeleted ? "bg-rose-500" : "bg-green-500"
-          )}
-        />
+        <div className="w-12">
+          <div
+            className={cn(
+              "rounded-full w-2 h-2 mx-auto",
+              isDeleted ? "bg-rose-500" : "bg-green-500"
+            )}
+          />
+        </div>
       );
     },
   },
@@ -77,25 +81,30 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="">
-            <Link
-              href={`products/${company.uuid}/edit`}
-              className="w-24 flex items-center justify-between"
-            >
-              Edit
-              <Edit className="" />
-            </Link>
-          </Button>
+          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+            <Button variant={"outline"} asChild className="">
+              <Link
+                href={`products/${company.uuid}/edit`}
+                className="w-24 flex items-center justify-between"
+              >
+                Edit
+                <Edit className="" />
+              </Link>
+            </Button>
 
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`products/${company.uuid}/view`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                href={`products/${company.uuid}/view`}
+                className="w-24 flex items-center justify-between"
+              >
+                View
+                <Eye className="" />
+              </Link>
+            </Button>
+          </RoleWrapper>
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <div>-</div>
+          </RoleWrapper>
         </div>
       );
     },

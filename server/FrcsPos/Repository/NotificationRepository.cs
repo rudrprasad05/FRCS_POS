@@ -196,5 +196,20 @@ namespace FrcsPos.Repository
                 }
             };
         }
+
+        public async Task<ApiResponse<NotificationDTO>> MarkReadAsync(RequestQueryObject queryObject)
+        {
+            var notification = await _context.Notifications.FirstOrDefaultAsync(x => x.UUID == queryObject.UUID);
+            if (notification == null)
+            {
+                return ApiResponse<NotificationDTO>.NotFound();
+            }
+
+            notification.IsRead = !notification.IsRead;
+
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<NotificationDTO>.Ok(notification.FromModelToDto());
+        }
     }
 }

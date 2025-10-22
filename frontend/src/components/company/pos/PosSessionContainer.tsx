@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { usePosSession } from "@/context/PosContext";
-import { WebSocketUrl } from "@/lib/utils";
 import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import * as signalR from "@microsoft/signalr";
 import { Loader2 } from "lucide-react";
@@ -37,6 +36,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const productsRef = useRef<ProductVariant[]>([]);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const router = useRouter();
+  const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
 
   const handleProductAdd = useCallback(
     async (scan: string) => {
@@ -76,7 +76,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     }
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${WebSocketUrl}/socket/posHub?terminalId=${uuid}`)
+      .withUrl(`${apiUrl}/socket/posHub?terminalId=${uuid}`)
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) =>
           retryContext.previousRetryCount < 3 ? 1000 : null, // Retry 3 times

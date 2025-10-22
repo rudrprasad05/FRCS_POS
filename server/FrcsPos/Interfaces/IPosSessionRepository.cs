@@ -12,6 +12,7 @@ namespace FrcsPos.Interfaces
     {
         public Task<ApiResponse<PosSessionDTO>> CreateNewPosSession(NewPosSession request);
         public Task<ApiResponse<PosSessionDTO>> ResumePosSession(ResumePosSession request);
+        public Task<ApiResponse<PosSessionDTO>> EndPosSession(ResumePosSession request);
         public Task<ApiResponse<PosSessionWithProducts>> GetPosSessionByUUID(string uuid);
         public Task<ApiResponse<List<PosSessionDTO>>> GetAllSessionsForOneTerminal(string terminalUUID);
 

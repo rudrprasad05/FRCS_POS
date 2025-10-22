@@ -17,8 +17,10 @@ import { Input } from "@/components/ui/input";
 import { Warehouse } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -51,8 +53,7 @@ export function EditorTab({ product }: { product: Warehouse }) {
   });
 
   const formValues = form.watch();
-
-  useEffect(() => {}, [formValues]);
+  const router = useRouter();
 
   const onSubmit = async (data: WarehouseEditData) => {
     setIsSubmitting(true);
@@ -67,7 +68,8 @@ export function EditorTab({ product }: { product: Warehouse }) {
         queryKey: ["warehouse", companyName],
         exact: false,
       });
-      toast.success("Uploaded");
+      router.push(`/${companyName}/warehouse`);
+      toast.success("Changes Saved");
     } else {
       toast.error("Failed to upload");
     }
@@ -122,20 +124,18 @@ export function EditorTab({ product }: { product: Warehouse }) {
                 />
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {isSubmitting ? "Editing..." : "Edit location"}
+              <div className="flex gap-4 pt-4 ">
+                <Button asChild type="button" variant={"secondary"}>
+                  <Link href={`/${companyName}/warehouse`} prefetch>
+                    Cancel
+                  </Link>
                 </Button>
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
                   disabled={isSubmitting}
+                  type="submit"
+                  variant={"default"}
                 >
-                  Cancel
+                  {isSubmitting && <Loader2 className="animate-spin" />}Save
                 </Button>
               </div>
             </form>
