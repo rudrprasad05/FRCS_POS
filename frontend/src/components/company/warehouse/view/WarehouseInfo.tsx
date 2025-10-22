@@ -1,27 +1,28 @@
+"use client";
+
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H1 } from "@/components/font/HeaderFonts";
-import { Badge } from "@/components/ui/badge";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Warehouse } from "@/types/models";
-import { Edit, Building, MapPin, Box } from "lucide-react";
+import { Box, Building, Edit, MapPin } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export default function WarehouseInfo({ wh }: { wh: Warehouse | null }) {
+  const params = useParams();
+  const companyName = String(params.companyName);
   if (!wh) {
     return <NoDataContainer />;
   }
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <H1>{wh.name}</H1>
-            <Badge variant={wh.isActive ? "default" : "secondary"}>
-              {wh.isActive ? "Active" : "Inactive"}
-            </Badge>
-          </div>
-        </div>
+        <HeaderWithBackButton
+          link={`/${companyName}/warehouse`}
+          title={wh.name}
+          description={wh.isActive ? "Active" : "Inactive"}
+        />
 
         <Button asChild className="w-24">
           <Link

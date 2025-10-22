@@ -56,7 +56,7 @@ namespace FrcsPos.Mappers
             if (request == null)
                 return new ProductVariantDTO();
 
-            return new ProductVariantDTO
+            var dto = new ProductVariantDTO
             {
                 UUID = request.UUID,
                 Id = request.Id,
@@ -70,6 +70,13 @@ namespace FrcsPos.Mappers
                 FirstWarningInDays = request.FirstWarningInDays,
                 CriticalWarningInHours = request.CriticalWarningInHours,
             };
+
+            if (request.Product != null)
+            {
+                dto.Product = request.Product.FromModelToDtoStatic();
+            }
+
+            return dto;
         }
 
         public static List<ProductVariantDTO> FromModelToDtoStatic(this ICollection<ProductVariant> request)

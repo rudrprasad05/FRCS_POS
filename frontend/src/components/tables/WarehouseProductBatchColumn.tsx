@@ -1,10 +1,10 @@
 "use client";
 import type { ProductBatch, ProductVariant } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Pause } from "lucide-react";
-import ResumeSessionDialoge from "../company/pos/ResumePosSessionDialoge";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { P } from "../font/HeaderFonts";
-import { Button } from "../ui/button";
 
 export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
   {
@@ -147,26 +147,25 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
     accessorKey: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive") as boolean;
+      const pb = row.original;
 
-      return (
-        <div className="flex gap-2">
-          {isActive && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant={"destructive"}
-                className=""
-                onClick={() => {
-                  // call your stop session logic here
-                }}
-              >
-                <Pause />
-              </Button>
-              <ResumeSessionDialoge uuid={row.original.uuid} />
-            </div>
-          )}
-        </div>
-      );
+      return <ProductLink pb={pb} />;
     },
   },
 ];
+
+const ProductLink = ({ pb }: { pb: ProductBatch }) => {
+  const params = useParams();
+  const companyName = String(params.companyName);
+  return (
+    <div className="flex gap-2">
+      <div className="flex items-center gap-2">
+        <Link
+          href={`/${companyName}/products/${pb.product?.product?.uuid}/view`}
+        >
+          <ExternalLink className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+  );
+};

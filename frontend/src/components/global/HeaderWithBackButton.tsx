@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { H1, P } from "../font/HeaderFonts";
 
 export function HeaderWithBackButton({
   link,
@@ -23,10 +24,8 @@ export function HeaderWithBackButton({
       )}
 
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground capitalize">
-          {title}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <H1 className="capitalize">{title}</H1>
+        <P className="mt-1 text-sm text-muted-foreground">{description}</P>
       </div>
     </div>
   );

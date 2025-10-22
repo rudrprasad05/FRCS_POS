@@ -43,6 +43,8 @@ export interface Product extends BaseModel {
   batches?: ProductBatch[];
   variants: ProductVariant[];
   saleItems?: SaleItem[];
+  firstWarningInDays?: number | null;
+  criticalWarningInHours?: number | null;
 
   maxStock?: number;
 }

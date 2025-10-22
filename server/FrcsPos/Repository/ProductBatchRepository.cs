@@ -101,6 +101,9 @@ namespace FrcsPos.Repository
         {
             var query = _context.ProductBatches
                 .Include(p => p.ProductVariant)
+                    .ThenInclude(x => x.Media)
+                .Include(p => p.ProductVariant)
+                    .ThenInclude(x => x.Product)
                 .Where(p => p.Warehouse.UUID == queryObject.UUID)
                 .AsQueryable();
 

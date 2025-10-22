@@ -3,20 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  Edit,
-  Eye,
-  ImageIcon,
-  SquareArrowUpRight,
-  TriangleAlert,
-} from "lucide-react";
+import { Edit, Eye, SquareArrowUpRight, TriangleAlert } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Product, ProductVariant, UserRoles } from "@/types/models";
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import Barcode from "react-barcode";
+import { TableImageCell } from "../global/TableImageCell";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { RoleWrapper } from "../wrapper/RoleWrapper";
 
@@ -131,8 +124,8 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     accessorKey: "image",
     header: "Image",
     cell: ({ row }) => {
-      const company = row.original;
-      return <CompanyCell company={company} />;
+      const pv = row.original;
+      return <TableImageCell media={pv.media ?? undefined} />;
     },
   },
   {
@@ -301,39 +294,3 @@ export function HandleBarcode({ barcode }: { barcode: string }) {
     </Dialog>
   );
 }
-
-const CompanyCell = ({ company }: { company: any }) => {
-  const [isImageValid, setIsImageValid] = useState(true);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-  return (
-    <div className="relative object-cover aspect-square h-16 w-full rounded-md overflow-hidden">
-      {isImageValid ? (
-        <>
-          <Image
-            width={100}
-            height={100}
-            src={company.media?.url as string}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              setIsImageValid(false);
-            }}
-            onLoad={() => setIsImageLoaded(true)}
-            alt="image"
-            className={cn(
-              "w-full h-full object-cover",
-              isImageLoaded ? "opacity-100" : "opacity-0"
-            )}
-          />
-          {!isImageLoaded && (
-            <div className="absolute top-0 left-0 w-full h-full object-cover animate-pulse"></div>
-          )}
-        </>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center ">
-          <ImageIcon className="h-4 w-4" />
-        </div>
-      )}
-    </div>
-  );
-};

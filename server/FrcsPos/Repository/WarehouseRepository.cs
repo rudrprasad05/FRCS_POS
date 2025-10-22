@@ -159,6 +159,12 @@ namespace FrcsPos.Repository
 
             var wh = await _context.Warehouses
                 .Include(wh => wh.ProductBatches)
+                    .ThenInclude(x => x.ProductVariant)
+                        .ThenInclude(x => x.Media)
+                .Include(wh => wh.ProductBatches)
+                    .ThenInclude(x => x.ProductVariant)
+                        .ThenInclude(x => x.Product)
+
                 .FirstOrDefaultAsync(wh => wh.UUID == requestQueryObject.UUID);
 
             if (wh == null)

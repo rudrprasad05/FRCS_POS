@@ -257,13 +257,13 @@ namespace FrcsPos.Repository
                 return ApiResponse<ProductEditInfo>.Ok(cached);
             }
 
-
             var product = await _context.Products
                 .Include(p => p.Variants)
                     .ThenInclude(x => x.Media)
                 .Include(p => p.Supplier)
                 .Include(p => p.TaxCategory)
                 .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+
             if (product == null)
             {
                 return ApiResponse<ProductEditInfo>.NotFound();

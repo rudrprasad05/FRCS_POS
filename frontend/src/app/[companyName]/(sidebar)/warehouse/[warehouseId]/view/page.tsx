@@ -3,8 +3,8 @@ import { GetAllBatchesByWarehouse } from "@/actions/ProductBatch";
 import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
 import WarehouseInfo from "@/components/company/warehouse/view/WarehouseInfo";
 import NoDataContainer from "@/components/containers/NoDataContainer";
-import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
@@ -112,8 +112,10 @@ function BatchesSection() {
           </RoleWrapper>
         }
       >
-        <H1>Product Batches</H1>
-        <P className="text-muted-foreground">Create and manage your batches</P>
+        <HeaderWithBackButton
+          title={"Product Batches"}
+          description="Create and manage your batches"
+        />
       </Header>
 
       <HandleDataSection

@@ -16,6 +16,7 @@ namespace FrcsPos.Services
     public class RedisCacheService : IRedisCacheService
     {
         private readonly IConnectionMultiplexer _redis;
+
         public RedisCacheService(IConnectionMultiplexer redis)
         {
             _redis = redis;
@@ -36,11 +37,12 @@ namespace FrcsPos.Services
                 if (value.IsNullOrEmpty)
                     return default;
 
+
+
                 return System.Text.Json.JsonSerializer.Deserialize<T>(value!);
             }
             catch (Exception ex)
             {
-                // Optional: log, but don’t crash
                 Console.WriteLine($"Redis unavailable: {ex.Message}");
                 return default;
             }
@@ -52,7 +54,6 @@ namespace FrcsPos.Services
             {
                 if (_redis == null || !_redis.IsConnected)
                 {
-                    // Redis not configured or offline → just skip
                     return;
                 }
 
@@ -62,7 +63,6 @@ namespace FrcsPos.Services
             }
             catch (Exception ex)
             {
-                // Optional: log instead of throw
                 Console.WriteLine($"Redis unavailable (Set): {ex.Message}");
             }
         }

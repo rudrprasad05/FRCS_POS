@@ -8,11 +8,14 @@ import ConfigTab from "@/components/company/products/view/ConfigTab";
 
 import EditorTab from "@/components/company/products/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
+import { Button } from "@/components/ui/button";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Product, TaxCategory } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, PenBox } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +24,7 @@ export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();
   const productId = String(params.productId);
+  const companyName = String(params.companyName);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["editProduct", productId],
@@ -42,14 +46,18 @@ export default function EditorPage() {
 
   return (
     <div>
-      <div className="">
-        <div className="flex items-center gap-2 mb-2">
-          <PenBox className="text-primary h-6 w-6" />
-          <h1 className="text-3xl font-bold">Edit Product</h1>
-        </div>
-        <p className="text-muted-foreground">
-          You are editing the product &quot;{product?.name}&quot;
-        </p>
+      <div className="flex pr-4 justify-between items-start">
+        <HeaderWithBackButton
+          title={"Edit Product"}
+          description={`You are editing the product "${product.name}"`}
+          link={`/${companyName}/products`}
+        />
+        <Button variant={"secondary"} asChild>
+          <Link href={`view`}>
+            <Eye />
+            View Product
+          </Link>
+        </Button>
       </div>
       <Tabs defaultValue="edit" className="w-full relative  p-4 flex flex-col">
         <TabsPrimitive.List className="w-full border-solid border-b flex flex-row">
