@@ -20,7 +20,7 @@ export const columns: ColumnDef<PosTerminal>[] = [
           <div
             className={cn(
               "rounded-full w-2 h-2 mx-auto",
-              isActive ? "bg-rose-500" : "bg-green-500"
+              !isActive ? "bg-rose-500" : "bg-green-500"
             )}
           />
         </div>

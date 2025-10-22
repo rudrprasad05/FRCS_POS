@@ -84,6 +84,8 @@ function HandleDataSection({
   const data = query.data?.data ?? [];
   const meta = query.data?.meta;
 
+  console.log("333", data);
+
   return (
     <>
       <DataTable columns={columns} data={data} />
