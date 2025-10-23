@@ -49,7 +49,7 @@ namespace FrcsPos.Mappers
 
             if (request.Cashier != null)
             {
-                dto.Cashier = request.Cashier.FromUserToDto();
+                dto.Cashier = request.Cashier.FromUserToDtoStatic();
             }
 
             if (request.Company != null)

@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/UserContext";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { ExternalLink, Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -143,13 +143,22 @@ export default function LoginPage() {
                     "Sign in"
                   )}
                 </Button>
-                <Link
-                  className="underline text-blue-400 text-sm ml-0 mr-auto"
-                  href={"/auth/forgot-password"}
-                  prefetch
-                >
-                  Forgot password?
-                </Link>
+                <div className="flex items-start justify-between w-full">
+                  <Link
+                    className="underline text-blue-400 text-sm "
+                    href={"/auth/forgot-password"}
+                    prefetch
+                  >
+                    Forgot password?
+                  </Link>
+                  <Link
+                    className="underline text-muted-foreground items-center gap-2 text-sm  flex"
+                    href={"/auth/forgot-password"}
+                    prefetch
+                  >
+                    Verify Account <ExternalLink className="stroke-1 w-4 h-4" />
+                  </Link>
+                </div>
               </CardFooter>
             </form>
           </Form>

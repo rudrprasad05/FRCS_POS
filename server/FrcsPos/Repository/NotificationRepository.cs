@@ -211,5 +211,73 @@ namespace FrcsPos.Repository
 
             return ApiResponse<NotificationDTO>.Ok(notification.FromModelToDto());
         }
+
+        public async Task<ApiResponse<List<NotificationDTO>>> GetAllAsync(RequestQueryObject queryObject)
+        {
+            var query = _context.Notifications.AsQueryable();
+
+            // filtering
+            if (queryObject.IsDeleted.HasValue)
+            {
+                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrEmpty(queryObject.UUID))
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == queryObject.UUID);
+                if (user == null)
+                {
+                    return ApiResponse<List<NotificationDTO>>.Forbidden();
+                }
+                query = query.Where(c => c.UserId == user.Id);
+            }
+
+            if (!string.IsNullOrEmpty(queryObject.Role) && queryObject.Role.Equals("superadmin"))
+            {
+                query = query.Where(c => c.IsSuperAdmin == true);
+            }
+            else
+            {
+                query = query.Where(c => c.IsSuperAdmin == false);
+            }
+
+            // Sorting
+            query = queryObject.SortBy switch
+            {
+                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
+                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
+                _ => query.OrderByDescending(c => c.CreatedOn)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            // Pagination
+            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            var notifications = await query
+                .Skip(skip)
+                .Take(queryObject.PageSize)
+                .ToListAsync();
+
+            // Mapping to DTOs
+            var result = new List<NotificationDTO>();
+            foreach (var notification in notifications)
+            {
+                var dto = notification.FromModelToDto();
+                result.Add(dto);
+            }
+
+            return new ApiResponse<List<NotificationDTO>>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = result,
+                Meta = new MetaData
+                {
+                    TotalCount = totalCount,
+                    PageNumber = queryObject.PageNumber,
+                    PageSize = queryObject.PageSize
+                }
+            };
+        }
     }
 }

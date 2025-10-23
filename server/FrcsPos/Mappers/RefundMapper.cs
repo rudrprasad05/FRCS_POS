@@ -36,12 +36,12 @@ namespace FrcsPos.Mappers
             // Map Variants (with signed media URLs)
             if (request.ApprovedBy != null)
             {
-                dto.ApprovedBy = request.ApprovedBy.FromUserToDto();
+                dto.ApprovedBy = request.ApprovedBy.FromUserToDtoStatic();
             }
 
             if (request.RequestedBy != null)
             {
-                dto.RequestedBy = request.RequestedBy.FromUserToDto();
+                dto.RequestedBy = request.RequestedBy.FromUserToDtoStatic();
             }
 
             // // Map Tax Category

@@ -33,8 +33,13 @@ export default function Redirect() {
     if (res.success) {
       const name = res.data?.name;
 
-      router.push(`/${name}`);
-      return;
+      if (user.role?.toUpperCase() == UserRoles.ADMIN) {
+        router.push(`/${name}/dashboard`);
+        return;
+      } else {
+        router.push(`/${name}/pos`);
+        return;
+      }
     } else {
       router.push(`/error/unassigned`);
       toast.error("An error occured", { description: res.message });

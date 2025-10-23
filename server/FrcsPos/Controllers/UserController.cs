@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    // [Authorize]
     [Route("api/user")]
     [ApiController]
     public class UserController : BaseController
@@ -50,6 +49,7 @@ namespace FrcsPos.Controllers
             _emailRepository = emailRepository;
         }
 
+        [Authorize(Roles = "admin, superadmin")]
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] RequestQueryObject requestQuery)
         {
@@ -57,6 +57,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "admin, superadmin")]
         [HttpGet("get-all-users-not-in-company")]
         public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
         {
@@ -64,10 +65,18 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "admin, superadmin")]
         [HttpGet("get-user-by-company")]
         public async Task<IActionResult> GetUserByCompany([FromQuery] RequestQueryObject queryObject)
         {
             var model = await _userRepository.GetUserByCompany(queryObject);
+            return StatusCode(model.StatusCode, model);
+        }
+        [Authorize]
+        [HttpGet("get-user-by-uuid")]
+        public async Task<IActionResult> GetUserByUUID([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _userRepository.GetOne(queryObject.UUID ?? "");
             return StatusCode(model.StatusCode, model);
         }
 
@@ -80,6 +89,31 @@ namespace FrcsPos.Controllers
             }
 
             var model = await _emailRepository.VerifyLink(queryObject.UUID, queryObject.UserId);
+            return StatusCode(model.StatusCode, model);
+        }
+
+        [Authorize]
+        [HttpPost("profile-picture")]
+        public async Task<IActionResult> ChangePfp([FromQuery] RequestQueryObject queryObject, IFormFile? formFile)
+        {
+            if (formFile == null || string.IsNullOrEmpty(queryObject.UserId))
+            {
+                return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
+            }
+
+            var model = await _userRepository.ChangePfp(queryObject, formFile);
+            return StatusCode(model.StatusCode, model);
+        }
+        [Authorize]
+        [HttpPost("change-username")]
+        public async Task<IActionResult> ChangeUname([FromQuery] RequestQueryObject queryObject, ChangeUsernameRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(queryObject.UserId))
+            {
+                return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
+            }
+
+            var model = await _userRepository.ChangeUsernameAsync(queryObject, request);
             return StatusCode(model.StatusCode, model);
         }
 
@@ -100,6 +134,24 @@ namespace FrcsPos.Controllers
             return Ok(ApiResponse<bool>.Ok(true, message: "email sent"));
         }
 
+        [HttpPost("request-email-verification-resend")]
+        public async Task<IActionResult> ReRequestEmailVerification([FromBody] RequestPasswordReset requestPasswordReset)
+        {
+            if (string.IsNullOrEmpty(requestPasswordReset.Email))
+            {
+                return BadRequest(ApiResponse<string>.Fail(message: "Invalid options"));
+            }
+
+            var user = await _userManager.FindByEmailAsync(requestPasswordReset.Email);
+            if (user == null)
+            {
+                return BadRequest(ApiResponse<bool>.Fail(message: "email not sent"));
+            }
+
+            var model = await _emailRepository.CreateNewLink(user);
+            return StatusCode(model.StatusCode, model);
+        }
+
         [HttpPost("handle-password-reset")]
         public async Task<IActionResult> HandlePasswordReset([FromBody] PasswordResetRequest request)
         {
@@ -112,6 +164,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpPost("create")]
         public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] RequestQueryObject queryObject)
         {
@@ -186,7 +239,7 @@ namespace FrcsPos.Controllers
 
                 // Include role(s) in JWT
                 var roles = await _userManager.GetRolesAsync(user);
-                var dto = user.FromUserToDto();
+                var dto = user.FromUserToDtoStatic();
                 var isSuperAdmin = true;
 
                 if (!string.IsNullOrEmpty(queryObject.CompanyName))
@@ -225,7 +278,8 @@ namespace FrcsPos.Controllers
 
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
-                FireAndForget.Run(_emailRepository.CreateNewLink(user));
+
+                await _emailRepository.CreateNewLink(user);
 
                 return Ok(ApiResponse<UserDTO>.Ok(
                     data: dto,

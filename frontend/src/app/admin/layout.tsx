@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/sidebar/AdminHeader";
-import { AdminSidebar } from "@/components/sidebar/AdminSidebar";
+import { Header } from "@/components/navigation/sidebar/Header";
+import { SideBar } from "@/components/navigation/sidebar/SideBar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type React from "react";
 
@@ -11,9 +11,9 @@ export default function AdminLayout({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <AdminSidebar />
+        <SideBar />
         <div className="flex-1 flex flex-col relative">
-          <AdminHeader />
+          <Header />
           <main className="flex-1 p-6">{children}</main>
         </div>
       </div>

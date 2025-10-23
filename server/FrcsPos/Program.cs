@@ -72,6 +72,7 @@ builder.Services.AddScoped<ISaleItemMapper, SaleItemMapper>();
 builder.Services.AddScoped<ISaleMapper, SaleMapper>();
 builder.Services.AddScoped<IRefundMapper, RefundMapper>();
 builder.Services.AddScoped<IRefundItemMapper, RefundItemMapper>();
+builder.Services.AddScoped<IUserMapper, UserMapper>();
 
 builder.Services.AddSingleton<IAmazonS3Service, AmazonS3Service>();
 builder.Services.AddSingleton<IEmailService, EmailService>();

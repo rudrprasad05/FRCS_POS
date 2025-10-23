@@ -214,6 +214,8 @@ export interface User {
   createdOn: string;
   updatedOn: string;
   isDeleted: boolean;
+  profilePicture?: Media;
+  profilePictureLink?: string;
 }
 
 export interface CompanyUser extends BaseModel {

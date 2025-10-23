@@ -21,7 +21,12 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
+import {
+  GetAllNotificationsAdmin,
+  GetAllNotificationsCashier,
+  GetAllNotificationsSuperadmin,
+} from "@/actions/Notifications";
+import { useAuth } from "@/context/UserContext";
 import { ESortBy, Notification, NotificationTypes } from "@/types/models";
 import { useParams } from "next/navigation";
 
@@ -61,6 +66,7 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const params = useParams();
+  const { user } = useAuth();
   const companyName = String(params.companyName);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
@@ -68,18 +74,38 @@ export function NotificationBell() {
   useEffect(() => {
     setNotifications([]);
     const getData = async () => {
-      const data = await GetAllNotificationsSuperAdmin({
+      let data;
+      let pagination = {
         pageNumber: 1,
         pageSize: 10,
         sortBy: ESortBy.DSC,
         companyName,
-      });
+        role: user?.role,
+        uuid: user?.id,
+      };
+      if (!user || !user.role) return;
+
+      console.log("3eef", user.role);
+
+      if (user.role.toLowerCase() == "superadmin") {
+        console.log("5543", user.role);
+
+        data = await GetAllNotificationsSuperadmin(pagination);
+      } else if (user.role.toLowerCase() == "admin") {
+        console.log("554334", user.role);
+
+        data = await GetAllNotificationsAdmin(pagination);
+      } else {
+        console.log("644", user.role);
+
+        data = await GetAllNotificationsCashier(pagination);
+      }
 
       setNotifications(data.data as unknown as Notification[]);
       setUnreadCount(data.meta?.totalCount as number);
     };
     getData();
-  }, [companyName]);
+  }, [companyName, user]);
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
@@ -126,43 +152,39 @@ export function NotificationBell() {
             {notifications &&
               notifications.map((notification, index) => (
                 <div key={notification.id}>
-                  <Link
-                    href={`/admin/notifications/${notification.id}`}
-                    onClick={() => setOpen(false)}
+                  <div
+                    className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                      !notification.isRead
+                        ? "bg-green-950/40"
+                        : "bg-transparent"
+                    }`}
                   >
-                    <div
-                      className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                        !notification.isRead
-                          ? "bg-green-950/40"
-                          : "bg-transparent"
-                      }`}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {getNotificationIcon(
-                          notification.type as NotificationTypes
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getNotificationIcon(
+                        notification.type as NotificationTypes
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">
+                          {notification.title}
+                        </p>
+                        {!notification.isRead && (
+                          <div className="w-2 h-2  rounded-full flex-shrink-0" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium truncate">
-                            {notification.title}
-                          </p>
-                          {!notification.isRead && (
-                            <div className="w-2 h-2  rounded-full flex-shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-xs  mt-1 line-clamp-2">
-                          {notification.message}
-                        </p>
-                        <div className="flex items-center gap-1 mt-2">
-                          <Clock className="h-3 w-3 " />
-                          <span className="text-xs ">
-                            {formatTimeAgo(notification.createdOn as string)}
-                          </span>
-                        </div>
+                      <p className="text-xs  mt-1 line-clamp-2">
+                        {notification.message}
+                      </p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <Clock className="h-3 w-3 " />
+                        <span className="text-xs ">
+                          {formatTimeAgo(notification.createdOn as string)}
+                        </span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
+
                   {index < notifications.length - 1 && (
                     <Separator className="my-1" />
                   )}

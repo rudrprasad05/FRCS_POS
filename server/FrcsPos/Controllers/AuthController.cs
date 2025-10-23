@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using FrcsPos.DTO;
 using FrcsPos.Interfaces;
+using FrcsPos.Mappers;
 using FrcsPos.Models;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
@@ -11,6 +13,7 @@ using FrcsPos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using static FrcsPos.Models.Requests.AuthRequestObject;
 
 namespace FrcsPos.Controllers
@@ -21,23 +24,20 @@ namespace FrcsPos.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IUserContext _userContext;
+        private readonly IMediaMapper _mediaMapper;
 
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<AuthController> logger,
-            IUserContext userContext
+            IMediaMapper mediaMapper
         ) : base(configuration, tokenService, logger)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _signInManager = signInManager;
-            _userContext = userContext;
+            _mediaMapper = mediaMapper;
         }
 
         [Authorize]
@@ -65,7 +65,9 @@ namespace FrcsPos.Controllers
             }
             try
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                var user = await _userManager.Users
+                    .Include(u => u.ProfilePicture)
+                    .FirstOrDefaultAsync(u => u.Email == model.Email);
                 if (user == null)
                 {
                     return BadRequest(ApiResponse<LoginDTO>.Fail(message: "invalid username or password"));
@@ -113,17 +115,24 @@ namespace FrcsPos.Controllers
                 var userRole = roles.FirstOrDefault() ?? "user";
                 await _userManager.UpdateAsync(user);
 
-                return Ok(
-                    ApiResponse<LoginDTO>.Ok(
-                        data: new LoginDTO
-                        {
-                            Username = user.UserName ?? string.Empty,
-                            Email = user.Email ?? string.Empty,
-                            Id = user.Id,
-                            Token = tokenString,
-                            Role = userRole
-                        }
-                    )
+                var pfp = new MediaDto();
+
+                if (user.ProfilePicture != null)
+                {
+                    pfp = await _mediaMapper.ToDtoAsync(user.ProfilePicture);
+                }
+
+                var resDTO = new LoginDTO
+                {
+                    Username = user.UserName ?? string.Empty,
+                    Email = user.Email ?? string.Empty,
+                    Id = user.Id,
+                    Token = tokenString,
+                    Role = userRole,
+                    ProfilePictureLink = pfp.Url,
+                };
+
+                return Ok(ApiResponse<LoginDTO>.Ok(resDTO)
 
                 );
 
@@ -132,15 +141,6 @@ namespace FrcsPos.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }
-
-        [HttpGet("status")]
-        public IActionResult GetMyOrders()
-        {
-            if (!_userContext.IsAuthenticated)
-                return Unauthorized(ApiResponse<string>.Unauthorised(message: "bruh"));
-
-            return Ok(ApiResponse<string>.Ok(data: null, message: "set"));
         }
 
         [Authorize]

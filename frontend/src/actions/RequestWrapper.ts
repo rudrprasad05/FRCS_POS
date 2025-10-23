@@ -42,16 +42,21 @@ export async function RequestWrapper<T>(
     });
 
     if (res.status === 401) {
-      redirect("/error/unauthorised"); // This will work in Server Components
+      console.log("401", res);
+      redirect("/error/unauthorised");
     }
 
     return res.data;
   } catch (error: any) {
     if (isRedirectError(error)) {
+      console.log("401", error);
+      console.dir(error);
       throw error;
     }
 
     if (error.response?.status === 401) {
+      console.log("401", error);
+
       redirect("/error/unauthorised");
     }
     console.dir(error);

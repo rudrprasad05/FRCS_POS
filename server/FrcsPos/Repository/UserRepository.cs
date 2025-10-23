@@ -9,6 +9,7 @@ using FrcsPos.Models;
 using FrcsPos.Request;
 using FrcsPos.Response;
 using FrcsPos.Response.DTO;
+using FrcsPos.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,18 +21,31 @@ namespace FrcsPos.Repository
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ITokenService _tokenService;
         private readonly ApplicationDbContext _context;
+        private readonly IMediaRepository _mediaRepository;
+        private readonly IUserMapper _userMapper;
+        private readonly ILogger<UserRepository> _logger;
 
+        private readonly IRedisCacheService _redisCacheService;
         public UserRepository(
             UserManager<User> userManager,
+            ILogger<UserRepository> logger,
+            IMediaRepository mediaRepository,
             RoleManager<IdentityRole> roleManager,
             ITokenService tokenService,
-            ApplicationDbContext context
+            ApplicationDbContext context,
+            IUserMapper userMapper,
+            IRedisCacheService redisCacheService
         )
         {
+            _logger = logger;
             _userManager = userManager;
+            _redisCacheService = redisCacheService;
             _context = context;
+            _mediaRepository = mediaRepository;
             _roleManager = roleManager;
             _tokenService = tokenService;
+            _userMapper = userMapper;
+
 
         }
 
@@ -181,7 +195,8 @@ namespace FrcsPos.Repository
 
             foreach (var user in users)
             {
-                userDtos.Add(await user.FromUserToDtoAsync(_userManager));
+                var dto = await _userMapper.FromModelToDtoAsync(user);
+                userDtos.Add(dto);
             }
 
             return new ApiResponse<List<UserDTO>>
@@ -262,7 +277,7 @@ namespace FrcsPos.Repository
 
             foreach (var user in pagedUsers)
             {
-                var dto = user.FromUserToDto();
+                var dto = user.FromUserToDtoStatic();
 
                 var roles = await _userManager.GetRolesAsync(user);
                 dto.Role = roles.FirstOrDefault() ?? "USER";
@@ -285,9 +300,29 @@ namespace FrcsPos.Repository
         }
 
 
-        public Task<ApiResponse<UserDTO>> GetOne(string uuid)
+        public async Task<ApiResponse<UserDTO>> GetOne(string uuid)
         {
-            throw new NotImplementedException();
+            string cacheKey = $"user:{uuid}";
+            var cachedUser = await _redisCacheService.GetAsync<User>(cacheKey);
+
+            if (cachedUser != null)
+            {
+                var cachedDTO = await _userMapper.FromModelToDtoAsync(cachedUser);
+                return ApiResponse<UserDTO>.Ok(cachedDTO);
+            }
+            var user = await _context.Users
+                .Include(x => x.ProfilePicture)
+                .FirstOrDefaultAsync(x => x.Id == uuid);
+            if (user == null)
+            {
+                return ApiResponse<UserDTO>.NotFound(message: "user not found");
+            }
+
+            await _redisCacheService.SetAsync(cacheKey, cachedUser, TimeSpan.FromMinutes(30));
+
+            var dto = await _userMapper.FromModelToDtoAsync(user);
+
+            return ApiResponse<UserDTO>.Ok(dto);
         }
 
         public Task<ApiResponse<UserDTO>> SafeDelete(string uuid)
@@ -303,6 +338,56 @@ namespace FrcsPos.Repository
         public Task<ApiResponse<UserDTO>> UpdateAsync(string uuid, User User, IFormFile? file)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<ApiResponse<UserDTO>> ChangePfp(RequestQueryObject requestQuery, IFormFile formFile)
+        {
+            string cacheKey = $"user:{requestQuery.UserId}";
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(x => x.Id == requestQuery.UserId);
+
+            if (user == null)
+                return ApiResponse<UserDTO>.NotFound(message: "user not found");
+
+            var media = new Media
+            {
+                AltText = formFile.FileName,
+                FileName = formFile.FileName,
+                ShowInGallery = true,
+                SizeInBytes = formFile?.Length ?? 0,
+            };
+
+            var createdMedia = await _mediaRepository.CreateAsync(media, file: formFile);
+            if (createdMedia.Data?.Id == null)
+                return ApiResponse<UserDTO>.Fail(message: "Failed to upload profile picture.");
+
+            user.ProfilePictureId = createdMedia.Data.Id;
+            user.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            await _redisCacheService.SetAsync(cacheKey, user, TimeSpan.FromMinutes(30));
+
+            var resultDto = await _userMapper.FromModelToDtoAsync(user);
+            return ApiResponse<UserDTO>.Ok(resultDto);
+        }
+
+        public async Task<ApiResponse<UserDTO>> ChangeUsernameAsync(RequestQueryObject requestQuery, ChangeUsernameRequest request)
+        {
+            string cacheKey = $"user:{requestQuery.UserId}";
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == requestQuery.UserId);
+            if (user == null)
+            {
+                return ApiResponse<UserDTO>.NotFound(message: "user not found");
+            }
+
+            user.UserName = request.NewUsername;
+            user.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<UserDTO>.Ok(user.FromUserToDtoStatic());
         }
     }
 }

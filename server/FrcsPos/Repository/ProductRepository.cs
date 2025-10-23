@@ -67,9 +67,11 @@ namespace FrcsPos.Repository
             {
                 // get products only with batches arrived, non-expired
                 query = query.Where(p => p.Batches.Any(b =>
-                    b.Quantity > 0 &&
+                    (b.Quantity > 0) &&
+                    (b.Warehouse.IsDeleted == false) &&
                     (b.RecievedDate < now) &&
-                    (b.ExpiryDate == null || b.ExpiryDate > now)));
+                    (b.ExpiryDate == null || b.ExpiryDate > now)
+                ));
                 query = query.Where(p => p.IsDeleted != true);
 
             }

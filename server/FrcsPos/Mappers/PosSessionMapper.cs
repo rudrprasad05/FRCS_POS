@@ -32,7 +32,7 @@ namespace FrcsPos.Mappers
             result.UUID = session.UUID;
             result.CreatedOn = session.CreatedOn;
             result.UpdatedOn = session.UpdatedOn;
-            result.PosUser = session.PosUser.FromUserToDto();
+            result.PosUser = session.PosUser.FromUserToDtoStatic();
             result.PosUserId = session.PosUserId;
             result.IsActive = session.IsActive;
 

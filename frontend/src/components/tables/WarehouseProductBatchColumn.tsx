@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import type { ProductBatch, ProductVariant } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ExternalLink } from "lucide-react";
@@ -7,6 +8,21 @@ import { useParams } from "next/navigation";
 import { P } from "../font/HeaderFonts";
 
 export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
+  {
+    accessorKey: "isDeleted",
+    header: "Status",
+    cell: ({ row }) => {
+      const isDeleted = row.getValue("isDeleted") as boolean;
+      return (
+        <div
+          className={cn(
+            "rounded-full w-2 h-2 mx-auto",
+            isDeleted ? "bg-rose-500" : "bg-green-500"
+          )}
+        />
+      );
+    },
+  },
   {
     accessorKey: "product",
     header: "Product",
@@ -29,7 +45,7 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
 
   {
     accessorKey: "expiryDate",
-    header: "Expiry Date",
+    header: "Expire Date",
     cell: ({ row }) => {
       const expiry = row.getValue("expiryDate") as string | null | undefined;
       if (!expiry) return <P>N/A</P>;
@@ -47,6 +63,7 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
       return <P>{formatted}</P>;
     },
   },
+
   {
     accessorKey: "expiryDate",
     header: "Expires In",
@@ -157,11 +174,12 @@ export const WarehouseProductBatchColumn: ColumnDef<ProductBatch>[] = [
 const ProductLink = ({ pb }: { pb: ProductBatch }) => {
   const params = useParams();
   const companyName = String(params.companyName);
+  const warehouseId = String(params.warehouseId);
   return (
     <div className="flex gap-2">
       <div className="flex items-center gap-2">
         <Link
-          href={`/${companyName}/products/${pb.product?.product?.uuid}/view`}
+          href={`/${companyName}/warehouse/${warehouseId}/batch/${pb.uuid}/view`}
         >
           <ExternalLink className="w-4 h-4" />
         </Link>

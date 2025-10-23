@@ -7,16 +7,50 @@ import {
 import { RequestWrapper } from "./RequestWrapper";
 import { GetToken } from "./User";
 
-export async function GetAllNotificationsSuperAdmin(
+// export async function GetAllNotificationsSuperAdmin(
+//   query?: QueryObject
+// ): Promise<ApiResponse<AppNotification[]>> {
+//   return RequestWrapper<AppNotification[]>(
+//     "GET",
+//     `notification/get-all-superadmin`,
+//     {
+//       query,
+//     }
+//   );
+// }
+
+export async function GetAllNotifications(
+  query?: QueryObject
+): Promise<ApiResponse<AppNotification[]>> {
+  return RequestWrapper<AppNotification[]>("GET", `notification/get`, {
+    query,
+  });
+}
+
+export async function GetAllNotificationsSuperadmin(
   query?: QueryObject
 ): Promise<ApiResponse<AppNotification[]>> {
   return RequestWrapper<AppNotification[]>(
     "GET",
-    `notification/get-all-superadmin`,
+    `notification/get-superadmin`,
     {
       query,
     }
   );
+}
+export async function GetAllNotificationsAdmin(
+  query?: QueryObject
+): Promise<ApiResponse<AppNotification[]>> {
+  return RequestWrapper<AppNotification[]>("GET", `notification/get-admin`, {
+    query,
+  });
+}
+export async function GetAllNotificationsCashier(
+  query?: QueryObject
+): Promise<ApiResponse<AppNotification[]>> {
+  return RequestWrapper<AppNotification[]>("GET", `notification/get-cashier`, {
+    query,
+  });
 }
 
 export async function MarkAsRead(

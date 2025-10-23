@@ -5,23 +5,23 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { CompanySidebarLogo } from "./CompanySideBarLogo";
-import { CompanySidebarNavigation } from "./CompanySidebarNavigation";
-import { CompanySidebarUserMenu } from "./CompanySidebarUserMenu";
+import { SideBarLogo } from "./SideBarLogo";
+import { SideBarNavigation } from "./SideBarNavigation";
+import { SideBarUserMenu } from "./SideBarUserMenu";
 
-export function CompanySidebar() {
+export function SideBar() {
   return (
     <Sidebar className="border-r bg-background">
       <SidebarHeader className="border-b border-solid p-4">
-        <CompanySidebarLogo />
+        <SideBarLogo />
       </SidebarHeader>
 
       <SidebarContent className="p-2">
-        <CompanySidebarNavigation />
+        <SideBarNavigation />
       </SidebarContent>
 
       <SidebarFooter className="border-t border-solid p-2">
-        <CompanySidebarUserMenu />
+        <SideBarUserMenu />
       </SidebarFooter>
 
       <SidebarRail />

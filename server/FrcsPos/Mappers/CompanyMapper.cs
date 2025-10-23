@@ -34,7 +34,7 @@ namespace FrcsPos.Mappers
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
-                AdminUser = request.AdminUser.FromUserToDto(),
+                AdminUser = request.AdminUser.FromUserToDtoStatic(),
                 AdminUserId = request.AdminUserId,
                 PosTerminals = request.PosTerminals.FromModelToDtoWithoutCompany(),
                 Warehouses = request.Warehouses.FromModelToDto(),
@@ -77,7 +77,7 @@ namespace FrcsPos.Mappers
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
-                AdminUser = request.AdminUser.FromUserToDto(),
+                AdminUser = request.AdminUser.FromUserToDtoStatic(),
             };
 
             return dto;

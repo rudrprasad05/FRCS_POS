@@ -28,7 +28,7 @@ namespace FrcsPos.Mappers
                 Type = request.Type,
                 IsSuperAdmin = request.IsSuperAdmin,
                 ActionUrl = request.ActionUrl,
-                User = request.User?.FromUserToDto(),
+                User = request.User?.FromUserToDtoStatic(),
                 Company = request.Company?.FromModelToDto(),
             };
 

@@ -72,39 +72,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Parse JSON response
-      const data = await res.json();
+      const resp: ApiResponse<User> = await res.json();
+      const data = resp.data;
 
       console.log("d123", data);
       // Validate response data
       if (!data || !data.token) {
-        toast.error("An error occurred", { description: "No token received" });
+        toast.error("An error occurred", { description: resp.message });
         return;
       }
 
-      // Construct user object (adjust based on API response structure)
       tempUser = {
-        id: data.id || "", // Adjust fields based on your API response
+        id: data.id || "",
         username: data.username || "",
         email: data.email || "",
         token: data.token,
         role: data.role || "",
+        profilePicture: data.profilePicture,
+        profilePictureLink: data.profilePictureLink,
       } as User;
 
-      // Store user and token
-      setUser(tempUser); // Assuming setUser is a state setter from a context or hook
+      setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));
       localStorage.setItem("token", data.token);
 
       // Handle redirect
       console.log("1wwwq hit", user);
 
-      if (user?.role?.toUpperCase() == "SUPERADMIN") {
-        console.log("1wwwq hit", user);
-        router.push(`/admin`);
-        return;
-      } else {
-        helperHandleRedirectAfterLogin(tempUser);
-      }
+      helperHandleRedirectAfterLogin(tempUser);
+      //   }
     } catch (error) {
       console.error("Login failed:", error);
       toast.error("Login failed", {
@@ -132,6 +128,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: res.data.email,
         token: res.data.token,
         role: res.data.role,
+        profilePicture: res.data.profilePicture,
+        profilePictureLink: res.data.profilePictureLink,
       } as User;
       setUser(tempUser);
       localStorage.setItem("user", JSON.stringify(tempUser));

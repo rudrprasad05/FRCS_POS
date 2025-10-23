@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/media")]
     public class MediaController : BaseController
@@ -114,32 +115,6 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
-        // [HttpGet("download")]
-        // public async Task<IActionResult> DownloadFile([FromQuery] string objKey)
-        // {
-        //     try
-        //     {
 
-        //         if (fileStream == null)
-        //         {
-        //             return BadRequest("File not found or error retrieving file.");
-        //         }
-
-        //         using var responseStream = fileStream.ResponseStream;
-        //         using var memoryStream = new MemoryStream();
-        //         await responseStream.CopyToAsync(memoryStream);
-
-        //         var contentType = fileStream.Headers["Content-Type"];
-        //         return File(memoryStream.ToArray(), contentType, objKey);
-        //     }
-        //     catch (AmazonS3Exception ex)
-        //     {
-        //         return BadRequest($"S3 error: {ex.Message}");
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         return StatusCode(500, $"Server error: {ex.Message}");
-        //     }
-        // }
     }
 }

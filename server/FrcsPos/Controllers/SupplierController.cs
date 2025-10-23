@@ -4,12 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
     [Route("api/supplier")]
     [ApiController]
+    [Authorize(Roles = "admin, cashier")]
+
     public class SupplierController : BaseController
     {
         private readonly ISupplierRepository _supplierRepository;
@@ -24,6 +27,7 @@ namespace FrcsPos.Controllers
             _supplierRepository = supplierRepository;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateSupplier([FromBody] NewSupplierRequest data)
         {
@@ -37,6 +41,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> EditSupplier([FromBody] EditSupplierData data, [FromQuery] RequestQueryObject queryObject)
         {
@@ -61,6 +66,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
         {
@@ -69,6 +75,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
         {

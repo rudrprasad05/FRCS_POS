@@ -16,10 +16,13 @@ namespace FrcsPos.Services
     public class RedisCacheService : IRedisCacheService
     {
         private readonly IConnectionMultiplexer _redis;
+        private readonly ILogger<RedisCacheService> _logger;
 
-        public RedisCacheService(IConnectionMultiplexer redis)
+
+        public RedisCacheService(IConnectionMultiplexer redis, ILogger<RedisCacheService> logger)
         {
             _redis = redis;
+            _logger = logger;
         }
 
         public async Task<T?> GetAsync<T>(string key)
@@ -28,6 +31,7 @@ namespace FrcsPos.Services
             {
                 if (_redis == null || !_redis.IsConnected)
                 {
+                    _logger.LogWarning("REDIS: A request to redis was made but redis is OFFLINE");
                     return default;
                 }
 
@@ -35,15 +39,18 @@ namespace FrcsPos.Services
                 var value = await db.StringGetAsync(key);
 
                 if (value.IsNullOrEmpty)
+                {
+                    _logger.LogWarning("REDIS: A request to redis was made but NOTHING was returned");
                     return default;
+                }
 
 
-
+                _logger.LogInformation("REDIS: A request to redis was made and SOMETHING was returned");
                 return System.Text.Json.JsonSerializer.Deserialize<T>(value!);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Redis unavailable: {ex.Message}");
+                _logger.LogWarning($"Redis unavailable: {ex.Message}");
                 return default;
             }
         }
@@ -54,16 +61,20 @@ namespace FrcsPos.Services
             {
                 if (_redis == null || !_redis.IsConnected)
                 {
+                    _logger.LogWarning("REDIS: A request to redis was made but redis is OFFLINE");
                     return;
                 }
 
                 var db = _redis.GetDatabase();
                 var json = System.Text.Json.JsonSerializer.Serialize(value);
                 await db.StringSetAsync(key, json, expiry);
+
+                _logger.LogInformation("REDIS: A request to redis was made and SOMETHING was set");
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Redis unavailable (Set): {ex.Message}");
+                _logger.LogWarning($"Redis unavailable: {ex.Message}");
             }
         }
 
@@ -73,17 +84,19 @@ namespace FrcsPos.Services
             {
                 if (_redis == null || !_redis.IsConnected)
                 {
-                    // Redis not configured or offline → just skip
+                    _logger.LogWarning("REDIS: A request to redis was made but redis is OFFLINE");
                     return;
                 }
 
                 var db = _redis.GetDatabase();
                 await db.KeyDeleteAsync(key);
+
+                _logger.LogInformation("REDIS: A request to redis was made and SOMETHING was set");
+
             }
             catch (Exception ex)
             {
-                // Optional: log instead of throw
-                Console.WriteLine($"Redis unavailable (Remove): {ex.Message}");
+                _logger.LogWarning($"Redis unavailable: {ex.Message}");
             }
         }
     }

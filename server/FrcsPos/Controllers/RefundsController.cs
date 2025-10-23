@@ -9,6 +9,7 @@ using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize(Roles = "admin, cashier")]
     [ApiController]
     [Route("api/refunds")]
     public class RefundsController : ControllerBase
@@ -21,7 +22,6 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] RequestQueryObject query)
         {
             var res = await _refundService.GetAllRefundsAsync(query);
@@ -29,7 +29,6 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<IActionResult> Get(int id)
         {
             var res = await _refundService.GetRefundByIdAsync(id);
@@ -37,7 +36,6 @@ namespace FrcsPos.Controllers
         }
 
         [HttpGet("get-by-uuid")]
-        [Authorize]
         public async Task<IActionResult> GetByUUID([FromQuery] RequestQueryObject query)
         {
             var res = await _refundService.GetRefundByUUIDAsync(query);
@@ -46,7 +44,6 @@ namespace FrcsPos.Controllers
 
         // POST api/refunds
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> Start([FromBody] StartRefundRequest request)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
@@ -56,7 +53,7 @@ namespace FrcsPos.Controllers
 
         // POST api/refunds/{id}/approve
         [HttpPost("approve")]
-        [Authorize]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Approve([FromQuery] RequestQueryObject query, [FromBody] AdminApprovalRequest request)
         {
             var res = await _refundService.ApproveRefundAsync(query, request);

@@ -43,6 +43,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateTax([FromBody] NewTaxRequest request)
         {
@@ -52,6 +53,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpPost("edit")]
         public async Task<IActionResult> EditTax([FromBody] NewTaxRequest request, [FromQuery] RequestQueryObject queryObject)
         {
@@ -61,6 +63,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteTax([FromQuery] string uuid)
         {
@@ -70,6 +73,8 @@ namespace FrcsPos.Controllers
             if (!model.Success) return BadRequest(model);
             return Ok(model);
         }
+
+        [Authorize(Roles = "superadmin")]
         [HttpPatch("activate")]
         public async Task<IActionResult> Activate([FromQuery] string uuid)
         {

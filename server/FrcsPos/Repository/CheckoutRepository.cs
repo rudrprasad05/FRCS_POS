@@ -541,7 +541,7 @@ namespace FrcsPos.Repository
             var subject = "Your Receipt";
             var htmlBody = "<p>Dear Customer,</p><p>Please find your receipt attached.</p>";
 
-            FireAndForget.Run(_emailService.SendVerifyEmailAsync(email, subject, htmlBody, attachment));
+            FireAndForget.Run(_emailService.SendEmailAsync(email, subject, htmlBody, attachment));
 
             return ApiResponse<bool>.Ok(true);
         }

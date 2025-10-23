@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    // [Authorize]
+    [Authorize(Roles = "admin, cashier")]
     [Route("api/product-batch")]
     [ApiController]
     public class ProductBatchController : BaseController
@@ -26,6 +26,7 @@ namespace FrcsPos.Controllers
             _productBatchRepository = productBatchRepository;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateBatch([FromBody] NewProductBatchRequest newProductBatchRequest)
         {

@@ -6,7 +6,7 @@ import { useAuth } from "@/context/UserContext";
 import { HandCoins, Wrench } from "lucide-react";
 import { useParams } from "next/navigation";
 
-export function CompanySidebarLogo() {
+export function SideBarLogo() {
   const { user } = useAuth();
   const params = useParams();
   const companyName = decodeURIComponent(params.companyName as string);
@@ -17,7 +17,7 @@ export function CompanySidebarLogo() {
       </div>
       <div className="flex flex-col">
         <span className="text-sm font-semibold ">
-          {companyName.toUpperCase()}
+          {companyName != "undefined" ? companyName.toUpperCase() : "TapNGo"}
         </span>
         <Label className="text-xs ">
           {user?.role || (

@@ -8,8 +8,9 @@ import { H1 } from "@/components/font/HeaderFonts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
-import { type PosTerminal } from "@/types/models";
+import { UserRoles, type PosTerminal } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, PenBox } from "lucide-react";
 import Link from "next/link";
@@ -61,12 +62,14 @@ function PosTerminalInfo({ posTerminal }: { posTerminal: PosTerminal | null }) {
             </Badge>
           </div>
         </div>
-        <Button variant={"secondary"} className="ml-auto mr-2" asChild>
-          <Link href={`edit`}>
-            <PenBox />
-            Edit Terminal
-          </Link>
-        </Button>
+        <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
+          <Button variant={"secondary"} className="ml-auto mr-2" asChild>
+            <Link href={`edit`}>
+              <PenBox />
+              Edit Terminal
+            </Link>
+          </Button>
+        </RoleWrapper>
         <NewSessionDialog terminal={posTerminal} />
       </div>
     </div>

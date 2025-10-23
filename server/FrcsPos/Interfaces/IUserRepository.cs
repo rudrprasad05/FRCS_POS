@@ -18,6 +18,9 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<List<UserDTO>>> GetAllUsers(RequestQueryObject requestQuery);
 
         public Task<User?> Exists(string uuid);
+
+        public Task<ApiResponse<UserDTO>> ChangePfp(RequestQueryObject requestQuery, IFormFile formFile);
+        public Task<ApiResponse<UserDTO>> ChangeUsernameAsync(RequestQueryObject requestQuery, ChangeUsernameRequest request);
         public Task<ApiResponse<UserDTO>> SafeDelete(string uuid);
         public Task<ApiResponse<double>> SumStorage();
         public Task<ApiResponse<List<UserDTO>>> GetAllSuperAdminsNotInCompany(string? role);

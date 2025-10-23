@@ -1,5 +1,6 @@
 "use client";
 
+import { RequestPasswordReset } from "@/actions/User";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,29 +9,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { User } from "@/types/models";
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function PasswordSection() {
+export function PasswordSection({ user }: { user: User }) {
   const [isSending, setIsSending] = useState(false);
 
   const handleSendResetEmail = async () => {
     setIsSending(true);
 
-    try {
-      // TODO: Call your API to send password reset email
-      // await fetch('/api/auth/password-reset', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ email: userEmail })
-      // })
+    const res = await RequestPasswordReset(user.email);
 
+    if (res.success) {
       toast.success("Email sent");
-    } catch (error) {
+    } else {
       toast.error("Email not sent");
-    } finally {
-      setIsSending(false);
     }
+
+    setIsSending(false);
   };
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +14,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronUp, Settings, User, LogOut } from "lucide-react";
 import { useAuth } from "@/context/UserContext";
+import { ChevronUp, Loader2, LogOut, User } from "lucide-react";
+import Link from "next/link";
 
-export function CompanySidebarUserMenu() {
+export function SideBarUserMenu() {
   const { user, logout } = useAuth();
+  if (!user) {
+    return <Loader2 className="animate-spin" />;
+  }
+  console.log(user.profilePictureLink);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -28,11 +33,11 @@ export function CompanySidebarUserMenu() {
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
                   <AvatarImage
-                    src="/placeholder.svg?height=32&width=32"
+                    src={user?.profilePictureLink as string}
                     alt="Admin"
                   />
                   <AvatarFallback className="bg-primary text-sm">
-                    AC
+                    {user?.username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col text-left">
@@ -50,14 +55,13 @@ export function CompanySidebarUserMenu() {
           >
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              Profile
+            <DropdownMenuItem asChild>
+              <Link prefetch href={"profile"}>
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {

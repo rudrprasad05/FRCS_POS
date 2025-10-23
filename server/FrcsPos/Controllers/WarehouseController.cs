@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize(Roles = "admin, cashier")]
     [Route("api/warehouse")]
     [ApiController]
     public class WarehouseController : BaseController
@@ -23,7 +25,7 @@ namespace FrcsPos.Controllers
         {
             _warehouseRepository = warehouseRepository;
         }
-
+        [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCheckout([FromBody] NewWarehouseRequest data)
         {
@@ -37,6 +39,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> EditWarehouse([FromBody] EditWarehouseData data, [FromQuery] RequestQueryObject queryObject)
         {
@@ -66,6 +69,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
         {
@@ -73,7 +77,7 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
-
+        [Authorize(Roles = "admin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
         {

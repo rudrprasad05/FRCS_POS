@@ -1,5 +1,6 @@
 "use client";
 
+import { ChangeUsername } from "@/actions/User";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,12 +11,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { User } from "@/types/models";
 import { Check, Pencil } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
-export function UsernameSection() {
+export function UsernameSection({ user }: { user: User }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [username, setUsername] = useState("johndoe");
+  const [username, setUsername] = useState(user.username);
   const [newUsername, setNewUsername] = useState(username);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -32,15 +35,18 @@ export function UsernameSection() {
     setIsSaving(true);
 
     try {
-      // TODO: Call your API to update username
-      // await fetch('/api/profile/username', {
-      //   method: 'PATCH',
-      //   body: JSON.stringify({ username: newUsername })
-      // })
+      const res = await ChangeUsername(
+        { newUsername: newUsername },
+        { userId: user.id }
+      );
 
-      setUsername(newUsername);
-      setIsEditing(false);
+      if (res.success) {
+        toast.success("Username updated");
+      } else {
+        toast.error("An error occured", { description: res.message });
+      }
     } catch (error) {
+      toast.error("Update failed");
     } finally {
       setIsSaving(false);
     }

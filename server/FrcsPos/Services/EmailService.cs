@@ -19,56 +19,71 @@ namespace FrcsPos.Services
     {
         private readonly EmailClient _emailClient;
         private readonly string _senderAddress;
+        private readonly IBackgroundTaskQueue _taskQueue;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration configuration)
+
+        public EmailService(
+            IConfiguration configuration,
+            IBackgroundTaskQueue taskQueue,
+            IServiceScopeFactory serviceScopeFactory,
+            ILogger<EmailService> logger
+
+        )
         {
             string connectionString = configuration["AZURE_EMAIL:ConnectionString"] ?? throw new ArgumentNullException("AzureCommunicationServices:ConnectionString is missing");
             _senderAddress = configuration["AZURE_EMAIL:SenderAddress"] ?? "DoNotReply@1b369397-0976-4de5-923f-a49b58d1438b.azurecomm.net";
             _emailClient = new EmailClient(connectionString);
+            _taskQueue = taskQueue;
+            _serviceScopeFactory = serviceScopeFactory;
+            _logger = logger;
+
         }
-
-        public async Task<bool> SendVerifyEmailAsync(string to, string subject, string htmlBody, EmailAttachment? attachment = null)
+        // add this similar to notifications
+        public Task SendEmailAsync(string to, string subject, string htmlBody, EmailAttachment? attachment = null)
         {
-            try
+            _taskQueue.QueueBackgroundWorkItem(async token =>
             {
-                // Retry policy for transient ACS failures
-                var policy = Policy
-                    .Handle<RequestFailedException>()
-                    .Or<Exception>()
-                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                try
+                {
+                    // Retry policy for transient ACS failures
+                    var policy = Policy
+                        .Handle<RequestFailedException>()
+                        .Or<Exception>()
+                        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
-                var emailMessage = new EmailMessage(
-                    senderAddress: _senderAddress,
-                    content: new EmailContent(subject)
+                    var emailMessage = new EmailMessage(
+                        senderAddress: _senderAddress,
+                        content: new EmailContent(subject)
+                        {
+                            PlainText = subject,
+                            Html = htmlBody
+                        },
+                        recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(to) })
+                    );
+
+                    if (attachment != null)
                     {
-                        PlainText = subject,
-                        Html = htmlBody
-                    },
-                    recipients: new EmailRecipients(new List<EmailAddress> { new EmailAddress(to) })
-                );
+                        emailMessage.Attachments.Add(attachment);
+                    }
 
-                if (attachment != null)
-                {
-                    emailMessage.Attachments.Add(attachment);
+                    EmailSendOperation emailSendOperation = await policy.ExecuteAsync(async () =>
+                        await _emailClient.SendAsync(WaitUntil.Completed, emailMessage));
+
+                    if (emailSendOperation.HasCompleted && emailSendOperation.Value.Status == EmailSendStatus.Succeeded)
+                    {
+                        Console.WriteLine($"Email sent successfully. MessageId: {emailSendOperation.Value}");
+                        return;
+                    }
                 }
-
-                EmailSendOperation emailSendOperation = await policy.ExecuteAsync(async () =>
-                    await _emailClient.SendAsync(WaitUntil.Completed, emailMessage));
-
-                if (emailSendOperation.HasCompleted && emailSendOperation.Value.Status == EmailSendStatus.Succeeded)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Email sent successfully. MessageId: {emailSendOperation.Value}");
-                    return true;
+                    _logger.LogError(ex, "Error creating background email: {_senderAddress}", _senderAddress);
                 }
+            });
 
-                Console.WriteLine($"Email send failed. Status: {emailSendOperation.Value.Status}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to send email: {ex.Message}\nStack: {ex.StackTrace}");
-                return false;
-            }
+            return Task.CompletedTask;
         }
     }
 

@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using FrcsPos.DTO;
+using FrcsPos.Models;
 
 namespace FrcsPos.Response.DTO
 {
@@ -13,6 +15,8 @@ namespace FrcsPos.Response.DTO
         [Required] public DateTime CreatedOn { get; set; } = DateTime.Now;
         [Required] public DateTime UpdatedOn { get; set; } = DateTime.Now;
         [Required] public bool IsDeleted { get; set; } = false;
+        public MediaDto? ProfilePicture { get; set; } = null;
+        public string? ProfilePictureLink { get; set; } = null;
 
     }
 

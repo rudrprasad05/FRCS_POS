@@ -1,6 +1,7 @@
 import { SaleStatus } from "../enum";
 import {
   Company,
+  Media,
   Notification,
   PosSession,
   Product,
@@ -63,6 +64,8 @@ export type LoginResponse = {
   email: string;
   token: string;
   role: UserRoles;
+  profilePicture?: Media;
+  profilePictureLink?: string;
 };
 
 export type LoginDTO = {

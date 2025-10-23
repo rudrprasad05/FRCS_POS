@@ -10,16 +10,20 @@ import { useAuth } from "@/context/UserContext";
 import { cn } from "@/lib/utils";
 import { UserRoles } from "@/types/models";
 import {
+  BookText,
   Box,
+  Building2,
   Coins,
   Computer,
   Container,
   File,
+  Flag,
   Info,
   LayoutDashboard,
   Loader2,
   LucideIcon,
   User,
+  UsersIcon,
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
@@ -31,23 +35,51 @@ interface INavArr {
   icon: LucideIcon;
 }
 
-export function CompanySidebarNavigation() {
+export function SideBarNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
 
   const segments = pathname.split("/").filter(Boolean);
   const base = `/${segments[0]}`;
 
-  const cashierNavigationItems: INavArr[] = [
+  const superAdminItems: INavArr[] = [
     {
       title: "Dashboard",
-      href: `${base}/dashboard`,
+      href: "/admin/dashboard",
       icon: LayoutDashboard,
     },
+    {
+      title: "Companies",
+      href: "/admin/companies",
+      icon: Building2,
+    },
+    {
+      title: "Users",
+      href: "/admin/users",
+      icon: UsersIcon,
+    },
+    {
+      title: "Tax",
+      href: "/admin/tax",
+      icon: BookText,
+    },
+    {
+      title: "Reports",
+      href: "/admin/reports",
+      icon: Flag,
+    },
+  ];
+
+  const cashierNavigationItems: INavArr[] = [
     {
       title: "Point of Sale",
       href: `${base}/pos`,
       icon: Computer,
+    },
+    {
+      title: "Notifications",
+      href: `${base}/notifications`,
+      icon: Info,
     },
   ];
 
@@ -107,10 +139,14 @@ export function CompanySidebarNavigation() {
     );
   }
 
-  const navArr =
-    user?.role?.toUpperCase() === UserRoles.ADMIN
-      ? adminNavigationItems
-      : cashierNavigationItems;
+  let navArr: INavArr[];
+
+  if (user?.role?.toUpperCase() === UserRoles.CASHIER)
+    navArr = cashierNavigationItems;
+  else if (user?.role?.toUpperCase() === UserRoles.ADMIN)
+    navArr = adminNavigationItems;
+  else navArr = superAdminItems;
+
   return (
     <SidebarGroup className="h-full">
       <SidebarGroupContent className="h-full">

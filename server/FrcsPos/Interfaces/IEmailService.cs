@@ -9,6 +9,6 @@ namespace FrcsPos.Interfaces
 {
     public interface IEmailService
     {
-        public Task<bool> SendVerifyEmailAsync(string to, string subject, string htmlBody, EmailAttachment? attachment = null);
+        public Task SendEmailAsync(string to, string subject, string htmlBody, EmailAttachment? attachment = null);
     }
 }

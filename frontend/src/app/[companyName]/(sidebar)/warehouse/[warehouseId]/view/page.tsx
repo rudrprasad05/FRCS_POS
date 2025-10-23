@@ -53,12 +53,12 @@ export default function WarehousePage() {
   return (
     <div className="space-y-6">
       <WarehouseInfo wh={data?.data as Warehouse} />
-      <BatchesSection />
+      <BatchesSection wh={data?.data as Warehouse} />
     </div>
   );
 }
 
-function BatchesSection() {
+function BatchesSection({ wh }: { wh: Warehouse | null }) {
   const param = useParams();
   const warehouseId = decodeURIComponent(param.warehouseId as string);
   const queryClient = useQueryClient();
@@ -103,12 +103,14 @@ function BatchesSection() {
         setPagination={setPagination}
         newButton={
           <RoleWrapper allowedRoles={[UserRoles.ADMIN, UserRoles.SUPERADMIN]}>
-            <Button asChild>
-              <Link href={`batch/new`} className="gap-2">
-                <Plus className="h-4 w-4" />
-                New Batch
-              </Link>
-            </Button>
+            {!wh?.isDeleted && (
+              <Button disabled={wh?.isDeleted || !wh?.isActive} asChild>
+                <Link href={`batch/new`} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  New Batch
+                </Link>
+              </Button>
+            )}
           </RoleWrapper>
         }
       >

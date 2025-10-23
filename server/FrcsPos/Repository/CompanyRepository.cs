@@ -22,18 +22,21 @@ namespace FrcsPos.Repository
         private readonly INotificationService _notificationService;
         private readonly UserManager<User> _userManager;
         private readonly IUserContext _userContext;
+        private readonly IUserMapper _userMapper;
 
         public CompanyRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
             UserManager<User> userManager,
-            IUserContext userContext
+            IUserContext userContext,
+            IUserMapper userMapper
         )
         {
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
             _userContext = userContext;
+            _userMapper = userMapper;
 
         }
 
@@ -277,7 +280,7 @@ namespace FrcsPos.Repository
                 var user = companyUser.User;
                 if (user != null)
                 {
-                    userDtos.Add(await user.FromUserToDtoAsync(_userManager));
+                    userDtos.Add(await _userMapper.FromModelToDtoAsync(user));
                 }
             }
 
@@ -300,7 +303,7 @@ namespace FrcsPos.Repository
             // Populate AdminUser (with role as well)
             if (model.AdminUser != null)
             {
-                dto.AdminUser = await model.AdminUser.FromUserToDtoAsync(_userManager);
+                dto.AdminUser = await _userMapper.FromModelToDtoAsync(model.AdminUser);
             }
 
 

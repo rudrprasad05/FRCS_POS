@@ -10,7 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    // [Authorize]
+
+    [Authorize(Roles = "admin, cashier")]
     [Route("api/pos-terminal")]
     [ApiController]
     public class PosTerminalController : BaseController
@@ -27,6 +28,7 @@ namespace FrcsPos.Controllers
             _posTerminalRepository = posTerminalRepository;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCompany([FromBody] NewPosTerminalRequest data)
         {
@@ -67,6 +69,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDelete([FromQuery] RequestQueryObject queryObject)
         {
@@ -80,6 +83,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> SoftDelete([FromQuery] RequestQueryObject queryObject, [FromBody] EditTerminal editTerminal)
         {
@@ -93,6 +97,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> Activate([FromQuery] RequestQueryObject queryObject)
         {

@@ -22,26 +22,36 @@ namespace FrcsPos.Repository
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly UserManager<User> _userManager;
+        private readonly ILogger<EmailVerificationRepository> _logger;
+
 
 
         public EmailVerificationRepository(
             ApplicationDbContext context,
             IConfiguration configuration,
             IEmailService emailService,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            ILogger<EmailVerificationRepository> logger
         )
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
             _emailService = emailService;
+            _logger = logger;
         }
 
-        public async Task<bool> CreateNewLink(User user)
+        public async Task<ApiResponse<EmailVerificationDTO>> CreateNewLink(User user)
         {
+
             if (user == null)
             {
-                return false;
+                return ApiResponse<EmailVerificationDTO>.NotFound();
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return ApiResponse<EmailVerificationDTO>.Fail(message: "User email already verified");
             }
 
             var code = Guid.NewGuid().ToString();
@@ -61,14 +71,17 @@ namespace FrcsPos.Repository
             string baseUrl = _configuration["BASE_URL"] ?? throw new InvalidOperationException("base url not found");
             var verificationLink = $"{baseUrl}/auth/verify-email?code={code}&userId={user.Id}";
 
+            FireAndForget.Run(_emailService.SendEmailAsync(user.Email ?? "", "Verify Email Address", EmailTemplates.VerifyEmailBody(verificationLink)));
 
-            var email = await _emailService.SendVerifyEmailAsync(user.Email ?? "", "Verify Email Address", EmailTemplates.VerifyEmailBody(verificationLink));
-            return email;
+            return ApiResponse<EmailVerificationDTO>.Ok(new EmailVerificationDTO
+            {
+                UserId = user.Id,
+                UseBy = emailVerification.UseBy
+            });
         }
 
         public async Task<ApiResponse<EmailVerificationDTO>> VerifyLink(string code, string userId)
         {
-
             var verification = _context.EmailVerifications.FirstOrDefault(
                 x => x.Code == code &&
                 x.UserId == userId &&
@@ -78,6 +91,11 @@ namespace FrcsPos.Repository
             if (verification == null || user == null)
             {
                 return ApiResponse<EmailVerificationDTO>.NotFound(message: "link not found");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return ApiResponse<EmailVerificationDTO>.Fail(message: "Email already verified");
             }
 
             user.EmailConfirmed = true;
@@ -158,7 +176,7 @@ namespace FrcsPos.Repository
             string baseUrl = _configuration["BASE_URL"] ?? throw new InvalidOperationException("base url not found");
             var verificationLink = $"{baseUrl}/auth/forgot-password?code={code}&userId={user.Id}";
 
-            FireAndForget.Run(_emailService.SendVerifyEmailAsync(user.Email ?? "", "Reset Password", EmailTemplates.ResetPasswordBody(verificationLink)));
+            FireAndForget.Run(_emailService.SendEmailAsync(user.Email ?? "", "Reset Password", EmailTemplates.ResetPasswordBody(verificationLink)));
 
             return true;
         }

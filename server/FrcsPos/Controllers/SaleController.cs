@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
@@ -24,6 +25,7 @@ namespace FrcsPos.Controllers
             _checkoutRepository = checkoutRepository;
         }
 
+        [Authorize(Roles = "admin, cashier")]
         [HttpGet("get-by-uuid")]
         public async Task<IActionResult> CreateCheckout([FromQuery] string uuid)
         {
@@ -36,6 +38,8 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+
+        [Authorize(Roles = "admin, cashier")]
         [HttpGet("get-by-company")]
         public async Task<IActionResult> GetSaleByCompany([FromQuery] RequestQueryObject requestQuery)
         {

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FrcsPos.Controllers
 {
     [Route("api/pos-session")]
-    [Authorize]
+    [Authorize(Roles = "admin, cashier")]
     [ApiController]
     public class PosSessionController : BaseController
     {

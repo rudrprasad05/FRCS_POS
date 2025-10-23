@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using FrcsPos.DTO;
 
 namespace FrcsPos.Response.DTO
 {
@@ -17,5 +18,7 @@ namespace FrcsPos.Response.DTO
         [Required]
         public string Token { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public MediaDto? ProfilePicture { get; set; } = null;
+        public string? ProfilePictureLink { get; set; } = null;
     }
 }

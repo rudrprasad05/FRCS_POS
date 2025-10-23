@@ -1,4 +1,4 @@
-import { ApiResponse, User, UserRoles } from "@/types/models";
+import { ApiResponse, User } from "@/types/models";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -21,13 +21,18 @@ export async function POST(req: NextRequest) {
     console.log("be1", response);
 
     const data: ApiResponse<User> = await response.json();
-    const resp: User = {
-      id: data.data?.id || "", // Adjust fields based on your API response
-      username: data.data?.username || "",
-      email: data.data?.email || "",
-      token: data.data?.token,
-      role: data.data?.role || UserRoles.CASHIER,
-    } as User;
+    const resp: ApiResponse<User> = {
+      ...data,
+      data: {
+        id: data.data?.id || "",
+        username: data.data?.username || "",
+        email: data.data?.email || "",
+        token: data.data?.token,
+        role: data.data?.role || "",
+        profilePicture: data.data?.profilePicture || null,
+        profilePictureLink: data.data?.profilePictureLink || null,
+      },
+    } as ApiResponse<User>;
 
     console.log("be2", data);
     console.log("be3", resp);

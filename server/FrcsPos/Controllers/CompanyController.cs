@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    [Authorize]
     [Route("api/company")]
     [ApiController]
     public class CompanyController : BaseController
@@ -24,6 +26,7 @@ namespace FrcsPos.Controllers
             _companyRepository = companyRepository;
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCompany([FromBody] NewCompanyRequest data)
         {
@@ -32,6 +35,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin, admin")]
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompany request)
         {
@@ -40,6 +44,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin")]
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
         {
@@ -71,6 +76,7 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
+        [Authorize(Roles = "superadmin, admin")]
         [HttpDelete("remove-user")]
         public async Task<IActionResult> RemoveUser([FromBody] RemoveUserFromCompany request)
         {
@@ -79,6 +85,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin, admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] string uuid)
         {
@@ -86,6 +93,7 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
+
 
         [HttpGet("exists")]
         public async Task<IActionResult> CheckCompanyExists([FromQuery] RequestQueryObject queryObject)

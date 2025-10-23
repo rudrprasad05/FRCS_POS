@@ -16,4 +16,9 @@ namespace FrcsPos.Request
     {
         public string Email { get; set; } = null!;
     }
+
+    public class ChangeUsernameRequest
+    {
+        public string NewUsername { get; set; } = null!;
+    }
 }

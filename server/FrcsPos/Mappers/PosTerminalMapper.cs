@@ -53,7 +53,7 @@ namespace FrcsPos.Mappers
             if (request.Session != null)
             {
                 dto.Session = request.Session.FromPosSessionListToPosSessionDTOList();
-                dto.LastUsedBy = request.Session.OrderByDescending(s => s.CreatedOn)?.FirstOrDefault()?.PosUser.FromUserToDto();
+                dto.LastUsedBy = request.Session.OrderByDescending(s => s.CreatedOn)?.FirstOrDefault()?.PosUser.FromUserToDtoStatic();
             }
 
             return dto;

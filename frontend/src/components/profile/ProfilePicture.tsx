@@ -2,6 +2,7 @@
 
 import type React from "react";
 
+import { ChangePfp } from "@/actions/User";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,13 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { User } from "@/types/models";
 import { Camera, Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function ProfilePictureSection() {
+export function ProfilePictureSection({ user }: { user: User }) {
   const [isUploading, setIsUploading] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(
+    user.profilePictureLink ?? null
+  );
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -45,12 +49,17 @@ export function ProfilePictureSection() {
       };
       reader.readAsDataURL(file);
 
-      // TODO: Upload to your backend/storage service
-      // const formData = new FormData()
-      // formData.append('file', file)
-      // await fetch('/api/profile/picture', { method: 'POST', body: formData })
+      const formData = new FormData();
+      formData.append("formFile", file);
 
-      toast.success("Profile picture updated");
+      const res = await ChangePfp(formData, { userId: user.id });
+
+      console.log(res.data);
+      if (res.success) {
+        toast.success("Profile picture updated");
+      } else {
+        toast.error("An error occured", { description: res.message });
+      }
     } catch (error) {
       toast.error("Upload failed");
     } finally {
@@ -75,7 +84,7 @@ export function ProfilePictureSection() {
                 alt="Profile picture"
               />
               <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                JD
+                {user.username.slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div className="absolute -bottom-1 -right-1 rounded-full bg-card p-1.5 shadow-md">
