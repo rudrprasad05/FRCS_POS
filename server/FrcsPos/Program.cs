@@ -48,7 +48,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IPosTerminalRepository, PosTerminalRepository>();
 builder.Services.AddScoped<ISuperAdminDashboardRepository, SuperAdminDashboardRepository>();
 builder.Services.AddScoped<IPosSessionRepository, PosSessionRepository>();
-builder.Services.AddScoped<IQuickConnectRepository, QuickConnectReopsitory>();
+builder.Services.AddScoped<IQuickConnectRepository, QuickConnectRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserContext, UserContextService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

@@ -12,11 +12,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Repository
 {
-    public class QuickConnectReopsitory : IQuickConnectRepository
+    public class QuickConnectRepository : IQuickConnectRepository
     {
         private readonly INotificationService _notificationService;
         private readonly ApplicationDbContext _context;
-        public QuickConnectReopsitory(
+        public QuickConnectRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService
         )
