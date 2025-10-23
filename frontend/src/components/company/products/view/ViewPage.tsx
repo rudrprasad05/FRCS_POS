@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Product, ProductVariant } from "@/types/models";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PenBox, Upload } from "lucide-react";
+import { ImageIcon, PenBox } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -231,7 +231,7 @@ function AddMediaDialoge({ variant }: { variant: ProductVariant }) {
 
   return (
     <div className="w-14 h-14 aspect-square grid grid-cols-1 place-items-center outline outline-border rounded-lg">
-      {!existingMedia?.url && <Upload className="h-4 w-4" />}
+      {!existingMedia?.url && <ImageIcon className="h-4 w-4" />}
       {existingMedia?.url && (
         <Image
           className="w-full h-full object-cover rounded-lg"

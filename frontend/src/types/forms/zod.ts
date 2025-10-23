@@ -80,8 +80,8 @@ export const productVariantSchema = z.object({
   uuid: z.uuid(),
   name: z.string().min(1, "Variant name is required"),
   sku: z.string().min(1, "Variant SKU is required"),
-  barcode: z.string(),
-  price: z.number().min(0, "Price must be >= 0"),
+  barcode: z.string().min(1, "Variant barcode is required"),
+  price: z.number().min(1, "Price must be >= 0"),
   mediaFile: z.any().optional(),
 });
 

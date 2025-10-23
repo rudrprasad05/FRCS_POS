@@ -1,19 +1,21 @@
 "use client";
 
-import { GetEditProductData } from "@/actions/Product";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
-
-import ConfigTab from "@/components/company/products/view/ConfigTab";
-
+import {
+  ActivateProduct,
+  GetEditProductData,
+  SoftDeleteProduct,
+} from "@/actions/Product";
 import EditorTab from "@/components/company/products/view/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
+import ConfigTab from "@/components/global/ConfigTab";
 import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Product, TaxCategory } from "@/types/models";
-import { useQuery } from "@tanstack/react-query";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -25,6 +27,7 @@ export default function EditorPage() {
   const params = useParams();
   const productId = String(params.productId);
   const companyName = String(params.companyName);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["editProduct", productId],
@@ -43,6 +46,35 @@ export default function EditorPage() {
 
   const product = data.data.product as Product;
   const taxCategories = data.data.taxCategories as TaxCategory[];
+
+  const deleteFn = async (uuid: string): Promise<{ success: boolean }> => {
+    const res = await SoftDeleteProduct(uuid);
+
+    queryClient.invalidateQueries({
+      queryKey: ["editProduct", productId],
+      exact: false,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["products", companyName, {}],
+      exact: false,
+    });
+    return { success: res.success };
+  };
+
+  const activateFn = async (uuid: string): Promise<{ success: boolean }> => {
+    const res = await ActivateProduct(uuid);
+
+    queryClient.invalidateQueries({
+      queryKey: ["editProduct", productId],
+      exact: false,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["products", companyName, {}],
+      exact: false,
+    });
+
+    return { success: res.success };
+  };
 
   return (
     <div>
@@ -86,7 +118,11 @@ export default function EditorPage() {
           <EditorTab product={product} taxes={taxCategories} />
         </TabsContent>
         <TabsContent value="config">
-          <ConfigTab product={product} />
+          <ConfigTab
+            deleteFn={deleteFn}
+            activateFn={activateFn}
+            entity={product}
+          />
         </TabsContent>
       </Tabs>
     </div>

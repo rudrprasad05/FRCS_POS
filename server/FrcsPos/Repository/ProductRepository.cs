@@ -306,7 +306,9 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductDTO>> SoftDelete(RequestQueryObject queryObject)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            var product = await _context.Products
+                .Include(x => x.Variants)
+                .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
             if (product == null)
             {
                 return ApiResponse<ProductDTO>.NotFound();
@@ -315,6 +317,13 @@ namespace FrcsPos.Repository
             product.IsDeleted = true;
             product.UpdatedOn = DateTime.UtcNow;
 
+            foreach (var variant in product.Variants)
+            {
+                variant.IsActive = false;
+                variant.IsDeleted = true;
+                product.UpdatedOn = DateTime.UtcNow;
+
+            }
 
             await _context.SaveChangesAsync();
 
@@ -327,7 +336,9 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductDTO>> Activate(RequestQueryObject queryObject)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            var product = await _context.Products
+                .Include(x => x.Variants)
+                .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
             if (product == null)
             {
                 return ApiResponse<ProductDTO>.NotFound();
@@ -335,6 +346,12 @@ namespace FrcsPos.Repository
 
             product.IsDeleted = false;
             product.UpdatedOn = DateTime.UtcNow;
+
+            foreach (var variant in product.Variants)
+            {
+                variant.IsActive = true;
+                variant.IsDeleted = false;
+            }
 
             await _context.SaveChangesAsync();
 

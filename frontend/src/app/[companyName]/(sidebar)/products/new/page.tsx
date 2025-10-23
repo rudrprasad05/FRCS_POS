@@ -949,9 +949,7 @@ function VariantCard({ form, index, remove }: VariantCardProps) {
                 placeholder="Price"
                 {...field}
                 value={field.value ?? ""} // Handle undefined/null
-                onChange={(e) =>
-                  field.onChange(parseFloat(e.target.value) || 0)
-                } // Ensure valid number
+                onChange={(e) => field.onChange(parseFloat(e.target.value))} // Ensure valid number
                 className={cn(
                   "w-full",
                   fieldState.error && "border-red-500 focus:border-red-500"
