@@ -79,6 +79,13 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
+        [HttpGet("get-one-var-barcode")]
+        public async Task<IActionResult> GetOneByBarcode([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productRepository.GetProductByBarcode(queryObject);
+
+            return StatusCode(model.StatusCode, model);
+        }
 
 
         [Authorize(Roles = "admin")]

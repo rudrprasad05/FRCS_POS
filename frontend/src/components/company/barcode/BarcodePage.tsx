@@ -1,6 +1,5 @@
 "use client";
 
-import { ValidateQr } from "@/actions/PosSession";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,8 +13,8 @@ import {
   Loader2,
   Maximize,
   Minimize,
-  OctagonX,
   Trash2,
+  WifiOff,
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -28,15 +27,16 @@ interface ScannedItem {
 }
 
 export default function BarcodeScanner() {
-  const [isUUIDValidated, setIsUUIDValidated] = useState(false);
-  const [initalLoad, setInitialLoad] = useState(true);
-
+  const [initialLoad, setInitialLoad] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [scannedItems, setScannedItems] = useState<ScannedItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connecting" | "connected" | "disconnected" | "reconnecting"
+  >("connecting");
 
   const params = useParams();
   const id = params.id as string;
@@ -45,89 +45,138 @@ export default function BarcodeScanner() {
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
   const beep = useMemo(() => new Audio("/scanner-beep.mp3"), []);
-  const [connection, setConnection] = useState<any>(null);
+  const connectionRef = useRef<signalR.HubConnection | null>(null);
   const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
 
   const createConnection = useCallback(() => {
-    return new signalR.HubConnectionBuilder()
-      .withUrl(`${apiUrl}/socket/posHub?terminalId=${id}`, {
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl(`${apiUrl}/socket/posHub`, {
         withCredentials: true,
       })
-      .withAutomaticReconnect()
+      .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: (retryContext) => {
+          // Exponential backoff: 0, 2, 10, 30 seconds, then 30 seconds
+          if (retryContext.previousRetryCount === 0) return 0;
+          if (retryContext.previousRetryCount === 1) return 2000;
+          if (retryContext.previousRetryCount === 2) return 10000;
+          return 30000;
+        },
+      })
       .build();
+
+    // Connection status handlers
+    conn.onreconnecting(() => {
+      console.log("SignalR reconnecting...");
+      setConnectionStatus("reconnecting");
+    });
+
+    conn.onreconnected(() => {
+      console.log("SignalR reconnected");
+      setConnectionStatus("connected");
+      // Rejoin the scanner group after reconnection
+      conn.invoke("JoinScanner", id).catch((err) => {
+        console.error("Failed to rejoin scanner group", err);
+      });
+    });
+
+    conn.onclose(() => {
+      console.log("SignalR connection closed");
+      setConnectionStatus("disconnected");
+    });
+
+    // Listen for confirmations from server
+    conn.on("ReceivedJoinScanner", (message: string) => {
+      console.log("Server confirmed:", message);
+    });
+
+    return conn;
   }, [apiUrl, id]);
 
   const validateUUID = useCallback(async () => {
     setInitialLoad(true);
     try {
-      const res = await ValidateQr(id);
-      if (res.success) {
-        setIsUUIDValidated(true);
+      const conn = createConnection();
+      connectionRef.current = conn;
 
-        // setup signalR once validated
-        const conn = createConnection();
-        conn
-          .start()
-          .then(() => {
-            conn.invoke("JoinScanner", id);
-          })
-          .catch((err) => console.error("SignalR connection failed", err));
+      await conn.start();
+      setConnectionStatus("connected");
+      console.log("SignalR connected");
 
-        // conn.on("ReceiveMessage", (msg) => {});
-
-        // conn.on("ReceivedJoinScanner", (msg) => {});
-
-        setConnection(conn);
-      } else {
-        setIsUUIDValidated(false);
-      }
-    } catch {
-      setIsUUIDValidated(false);
+      await conn.invoke("JoinScanner", id);
+      console.log(`Joined scanner group: ${id}`);
+    } catch (err) {
+      console.error("SignalR connection failed", err);
+      setConnectionStatus("disconnected");
+      setError("Failed to connect to server");
     } finally {
       setInitialLoad(false);
     }
-  }, [setIsUUIDValidated, id, createConnection]);
+  }, [id, createConnection]);
 
   const startScanning = useCallback(async () => {
     try {
+      setError(null);
+
       if (!codeReader.current) {
         codeReader.current = new BrowserMultiFormatReader();
       }
 
       const videoInputDevices =
         await codeReader.current.listVideoInputDevices();
-      if (videoInputDevices.length === 0) throw new Error("No camera found");
 
-      const selectedDeviceId = videoInputDevices[0].deviceId;
+      if (videoInputDevices.length === 0) {
+        throw new Error("No camera found");
+      }
+
+      // Prefer back camera on mobile devices
+      const backCamera = videoInputDevices.find((device) =>
+        device.label.toLowerCase().includes("back")
+      );
+      const selectedDeviceId =
+        backCamera?.deviceId || videoInputDevices[0].deviceId;
+
       await codeReader.current.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current!,
         (result, error) => {
           if (result) {
             const data = result.getText();
+
+            // Debounce: prevent scanning the same code within 2 seconds
             if (lastScanned !== data) {
-              const newItem = {
+              const newItem: ScannedItem = {
                 id: Date.now().toString(),
                 data,
                 format: result.getBarcodeFormat().toString(),
                 timestamp: new Date(),
               };
+
               setScannedItems((prev) => [newItem, ...prev]);
               setLastScanned(data);
               beep.play().catch(() => {});
 
-              // 🔥 send scan to server via SignalR
-              connection
-                ?.invoke("SendScan", {
-                  quickConnectId: id,
-                  barcode: data,
-                  format: result.getBarcodeFormat().toString(),
-                })
-                .catch((err: any) => console.error("SendScan failed", err));
+              // Send scan to server via SignalR
+              if (
+                connectionRef.current?.state ===
+                signalR.HubConnectionState.Connected
+              ) {
+                connectionRef.current
+                  .invoke("SendScan", {
+                    quickConnectId: id,
+                    barcode: data,
+                  })
+                  .catch((err) => {
+                    console.error("SendScan failed", err);
+                    setError("Failed to send scan to server");
+                  });
+              } else {
+                console.warn("Cannot send scan - not connected to server");
+              }
 
               setTimeout(() => setLastScanned(null), 2000);
             }
           }
+
           if (error && !(error instanceof NotFoundException)) {
             console.error("Scan error", error);
           }
@@ -136,9 +185,12 @@ export default function BarcodeScanner() {
 
       setIsScanning(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start camera");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to start camera";
+      setError(errorMessage);
+      console.error("Camera error:", err);
     }
-  }, [beep, lastScanned, connection, id]);
+  }, [beep, lastScanned, id]);
 
   const stopScanning = useCallback(() => {
     if (codeReader.current) {
@@ -165,36 +217,36 @@ export default function BarcodeScanner() {
     setScannedItems([]);
   }, []);
 
-  const copyToClipboard = useCallback(async (text: string, id: string) => {
+  const copyToClipboard = useCallback(async (text: string, itemId: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopiedId(id);
+      setCopiedId(itemId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
       console.error("Copy failed:", err);
     }
   }, []);
 
+  // Initialize connection on mount
   useEffect(() => {
     validateUUID();
-  }, [id, validateUUID]);
+  }, [validateUUID]);
 
+  // Cleanup on unmount
   useEffect(() => {
-    const handleBeforeUnload = (event: any) => {
-      event.preventDefault();
-      connection
-        ?.invoke("SendScan", id)
-        .catch((err: any) => console.error("SendScan failed", err));
-      event.returnValue = "";
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (codeReader.current) {
+        codeReader.current.reset();
+      }
+      if (connectionRef.current) {
+        connectionRef.current.stop().catch((err) => {
+          console.error("Error stopping connection", err);
+        });
+      }
     };
-  }, [connection, id]);
+  }, []);
 
+  // Handle fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -205,24 +257,13 @@ export default function BarcodeScanner() {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (codeReader.current) {
-        codeReader.current.reset();
-        connection?.stop();
-      }
-    };
-  }, [connection]);
-
-  if (initalLoad) {
-    return <Loader2 className="animate-spin" />;
-  }
-
-  if (!isUUIDValidated) {
+  if (initialLoad) {
     return (
-      <div className="flex items-center gap-4">
-        <OctagonX />
-        Quick Connect Device could not be verified
+      <div className="h-screen flex items-center justify-center bg-black">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
+          <p className="text-gray-400">Connecting to terminal...</p>
+        </div>
       </div>
     );
   }
@@ -234,7 +275,27 @@ export default function BarcodeScanner() {
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
-        <h1 className="text-xl font-bold">Barcode Scanner</h1>
+        <div>
+          <h1 className="text-xl font-bold">Barcode Scanner</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                connectionStatus === "connected"
+                  ? "bg-green-400"
+                  : connectionStatus === "reconnecting"
+                  ? "bg-yellow-400 animate-pulse"
+                  : "bg-red-400"
+              }`}
+            ></div>
+            <span className="text-xs text-gray-400">
+              {connectionStatus === "connected"
+                ? "Connected"
+                : connectionStatus === "reconnecting"
+                ? "Reconnecting..."
+                : "Disconnected"}
+            </span>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -271,7 +332,7 @@ export default function BarcodeScanner() {
           />
 
           {/* Scanning Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="relative">
               <div className="w-64 h-64 border-2 border-white border-dashed rounded-lg opacity-50"></div>
               <div className="absolute top-2 left-2 w-6 h-6 border-l-4 border-t-4 border-green-400"></div>
@@ -283,7 +344,8 @@ export default function BarcodeScanner() {
 
           {/* Status Messages */}
           {error && (
-            <div className="absolute top-4 left-4 right-4 bg-red-600 text-white p-3 rounded-lg">
+            <div className="absolute top-4 left-4 right-4 bg-red-600 text-white p-3 rounded-lg flex items-center gap-2">
+              <WifiOff className="w-5 h-5" />
               {error}
             </div>
           )}
@@ -295,9 +357,12 @@ export default function BarcodeScanner() {
                 <p className="text-gray-300 mb-4">Camera not active</p>
                 <Button
                   onClick={startScanning}
-                  className="bg-green-600 hover:bg-green-700"
+                  disabled={connectionStatus !== "connected"}
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
                 >
-                  Start Scanning
+                  {connectionStatus !== "connected"
+                    ? "Waiting for connection..."
+                    : "Start Scanning"}
                 </Button>
               </div>
             </div>
@@ -311,7 +376,7 @@ export default function BarcodeScanner() {
               <div className="flex items-center gap-2">
                 <div
                   className={`w-3 h-3 rounded-full ${
-                    isScanning ? "bg-green-400" : "bg-gray-400"
+                    isScanning ? "bg-green-400 animate-pulse" : "bg-gray-400"
                   }`}
                 ></div>
                 <span className="text-sm text-gray-300">
@@ -325,10 +390,11 @@ export default function BarcodeScanner() {
 
             <Button
               onClick={isScanning ? stopScanning : startScanning}
+              disabled={!isScanning && connectionStatus !== "connected"}
               className={
                 isScanning
                   ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
+                  : "bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
               }
             >
               {isScanning ? "Stop" : "Start"} Scanning

@@ -33,6 +33,15 @@ export async function CreateProductAsync(
     data: data,
   });
 }
+
+export async function GetOneProductByBarcode(
+  query?: QueryObject
+): Promise<ApiResponse<ProductVariant>> {
+  return RequestWrapper<ProductVariant>("GET", `product/get-one-var-barcode`, {
+    query,
+  });
+}
+
 export async function GetAllProductVar(
   query?: QueryObject,
   forPos?: boolean

@@ -7,11 +7,14 @@ import { GetOneWarehouseWithBatch } from "@/actions/Warehouse";
 import ConfigTab from "@/components/company/warehouse/edit/ConfigTab";
 import { EditorTab } from "@/components/company/warehouse/edit/EditTab";
 import NoDataContainer from "@/components/containers/NoDataContainer";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
+import { Button } from "@/components/ui/button";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Warehouse } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, PenBox } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +23,7 @@ export default function WarehouseEditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();
   const warehouseId = String(params.warehouseId);
+  const companyName = String(params.companyName);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["editWarehouse", warehouseId],
@@ -40,15 +44,25 @@ export default function WarehouseEditorPage() {
 
   return (
     <div>
-      <div className="">
-        <div className="flex items-center gap-2 mb-2">
-          <PenBox className="text-primary h-6 w-6" />
-          <h1 className="text-3xl font-bold">Edit Warehouse</h1>
-        </div>
-        <p className="text-muted-foreground">
-          You are editing the Warehouse &quot;{warehouse?.name}&quot;
-        </p>
+      <div className="flex items-start justify-between">
+        <HeaderWithBackButton
+          title={"Edit Warehouse"}
+          description={`You are editing the Warehouse "${warehouse?.name}"`}
+          link={`/${companyName}/warehouse`}
+        />
+
+        <Button asChild className="w-24">
+          <Link
+            prefetch
+            href={`view`}
+            className="w-24 flex items-center justify-between"
+          >
+            View
+            <Eye className="" />
+          </Link>
+        </Button>
       </div>
+
       <Tabs
         defaultValue="edit"
         className="w-full overflow-hidden relative h-screen p-4 flex flex-col"

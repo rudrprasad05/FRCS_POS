@@ -100,11 +100,13 @@ namespace FrcsPos.Repository
             var totalCount = await query.CountAsync();
 
             // Pagination
-            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var productVariants = await query
-                .Skip(skip)
-                .Take(queryObject.PageSize)
-                .ToListAsync();
+            // var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
+            // var productVariants = await query
+            //     .Skip(skip)
+            //     .Take(queryObject.PageSize)
+            //     .ToListAsync();
+
+            var productVariants = await query.ToListAsync();
 
             // Mapping to DTOs
             var result = new List<ProductVariantDTO>();
@@ -457,6 +459,17 @@ namespace FrcsPos.Repository
         public Task<ApiResponse<ProductDTO>> GetProductByUUID(string uuid)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<ApiResponse<ProductVariantDTO>> GetProductByBarcode(RequestQueryObject queryObject)
+        {
+            var pv = await _context.ProductVariants.FirstOrDefaultAsync(x => x.Barcode == queryObject.UUID);
+            if (pv == null)
+            {
+                return ApiResponse<ProductVariantDTO>.NotFound();
+            }
+
+            return ApiResponse<ProductVariantDTO>.Ok(pv.FromModelToDtoStatic());
         }
     }
 }

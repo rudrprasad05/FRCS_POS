@@ -69,6 +69,7 @@ export function RecentProductCard({ item }: { item: ProductVariant }) {
               <div className="text-xs font-light">
                 SKU: {item.sku as string}
               </div>
+              <div className="text-xs font-light">{item.barcode as string}</div>
             </h3>
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-2">

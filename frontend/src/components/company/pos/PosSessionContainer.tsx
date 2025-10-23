@@ -1,16 +1,6 @@
 "use client";
 
 import { GetPosSession } from "@/actions/PosSession";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { usePosSession } from "@/context/PosContext";
 import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import * as signalR from "@microsoft/signalr";
@@ -21,8 +11,9 @@ import { toast } from "sonner";
 import PosTerminal from "./PosTerminal";
 
 export default function PosSessionContainer({ uuid }: { uuid: string }) {
-  const [loading, setLoading] = useState(true);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connecting" | "connected" | "disconnected" | "reconnecting"
+  >("connecting");
 
   const {
     setInitialState,
@@ -31,29 +22,15 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     setIsScannerConnectedToServer,
     isScannerConnectedToServer,
     addProduct,
+    products,
   } = usePosSession();
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const productsRef = useRef<ProductVariant[]>([]);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
-
-  const handleProductAdd = useCallback(
-    async (scan: string) => {
-      const product = productsRef.current.find((p) => p.barcode === scan);
-      if (!product) return;
-      const sI: SaleItemOmitted = {
-        productVariantId: product.id,
-        productVariant: product,
-        quantity: 1,
-        unitPrice: product.price,
-        taxRatePercent: product.taxCategory?.ratePercent as number,
-        lineTotal: product.price,
-      };
-      addProduct(sI);
-    },
-    [addProduct]
-  );
 
   useEffect(() => {
     const getData = async () => {
@@ -61,72 +38,135 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
 
       if (!cake.data) return;
 
+      console.log(cake.data);
+
       setInitialState(cake.data);
-      setLoading(false);
     };
 
     getData();
   }, [setInitialState, uuid]);
 
-  const initializeConnection = async () => {
-    setIsConnecting(true);
-    if (!uuid || connectionRef.current) {
-      console.warn("Invalid uuid or connection already exists");
-      return;
-    }
+  const handleProductAdd = useCallback(
+    (barcode: string) => {
+      console.log("📦 Received barcode from scanner:", barcode);
+      toast.success(`Scanned: ${barcode}`);
 
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${apiUrl}/socket/posHub?terminalId=${uuid}`)
-      .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: (retryContext) =>
-          retryContext.previousRetryCount < 3 ? 1000 : null, // Retry 3 times
+      // TODO: Look up product by barcode and add to cart
+      // For now, just logging it
+      // addProduct(foundProduct);
+
+      let res = products.find((x) => x?.barcode == barcode);
+
+      console.log(res);
+
+      const product = res as ProductVariant;
+
+      const sI: SaleItemOmitted = {
+        productVariantId: product.id,
+        productVariant: product,
+        quantity: 1,
+        unitPrice: product.price,
+        taxRatePercent: 0.125,
+        lineTotal: product.price,
+      };
+      addProduct(sI);
+    },
+    [addProduct]
+  );
+
+  const createConnection = useCallback(() => {
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl(`${apiUrl}/socket/posHub?terminalId=${uuid}`, {
+        withCredentials: true,
       })
-      .configureLogging(signalR.LogLevel.Information)
+      .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: (retryContext) => {
+          if (retryContext.previousRetryCount === 0) return 0;
+          if (retryContext.previousRetryCount === 1) return 2000;
+          if (retryContext.previousRetryCount === 2) return 10000;
+          return 30000;
+        },
+      })
       .build();
 
-    connectionRef.current = connection;
-
-    try {
-      await connection.start();
-      setIsTerminalConnectedToServer(true);
-      console.log(`✅ Connected to terminal ${uuid}`);
-      await connection.invoke("JoinTerminal", uuid);
-      setIsConnecting(false);
-    } catch (err: any) {
+    conn.onreconnecting(() => {
+      console.log("SignalR reconnecting...");
+      setConnectionStatus("reconnecting");
       setIsTerminalConnectedToServer(false);
-      console.error("❌ SignalR connection failed:", err.message, err.stack);
-    }
+    });
 
-    // Event handlers
-    connection.on("ReceiveScan", (scan) => handleProductAdd(scan));
-    connection.on("ReceivedJoinTerminal", () =>
-      setIsTerminalConnectedToServer(true)
-    );
-    connection.on("ScannerConnected", () => {
+    conn.onreconnected(() => {
+      console.log("SignalR reconnected");
+      setConnectionStatus("connected");
+      conn.invoke("JoinTerminal", uuid).catch((err) => {
+        console.error("Failed to rejoin terminal group", err);
+      });
+    });
+
+    conn.onclose(() => {
+      console.log("SignalR connection closed");
+      setConnectionStatus("disconnected");
+      setIsTerminalConnectedToServer(false);
+    });
+
+    conn.on("ReceivedJoinTerminal", (message: string) => {
+      console.log("✅ Server confirmed:", message);
+      setIsTerminalConnectedToServer(true);
+    });
+
+    // THIS IS THE KEY PART - Listen for scans from the scanner
+    conn.on("ReceiveScan", (barcode: string) => {
+      handleProductAdd(barcode);
+    });
+
+    conn.on("ScannerConnected", (message: string) => {
+      console.log("📱 Scanner connected:", message);
       setIsScannerConnectedToServer(true);
       toast.success("Scanner connected");
     });
-    connection.on("ScannerDisconnected", () => {
+
+    conn.on("ScannerDisconnected", () => {
+      console.log("Scanner disconnected");
       setIsScannerConnectedToServer(false);
       toast.warning("Scanner disconnected");
     });
 
-    // Handle reconnection
-    connection.onreconnected(() => {
+    return conn;
+  }, [apiUrl, uuid]);
+
+  const validateUUID = useCallback(async () => {
+    setInitialLoad(true);
+    try {
+      const conn = createConnection();
+      connectionRef.current = conn;
+
+      await conn.start();
+      setConnectionStatus("connected");
       setIsTerminalConnectedToServer(true);
-      connection
-        .invoke("JoinTerminal", uuid)
-        .catch((err) => console.error("Reconnection invoke failed:", err));
-    });
+      console.log("SignalR connected");
 
-    // Handle close
-    connection.onclose((error) => {
+      await conn.invoke("JoinTerminal", uuid);
+      console.log(`🖥️ Joined terminal group: ${uuid}`);
+    } catch (err) {
+      console.error("SignalR connection failed", err);
+      setConnectionStatus("disconnected");
       setIsTerminalConnectedToServer(false);
-      console.error("Connection closed:", error);
-    });
-  };
+      setError("Failed to connect to server");
+    } finally {
+      setInitialLoad(false);
+    }
+  }, [uuid, createConnection]);
 
-  if (loading)
+  useEffect(() => {
+    if (uuid) {
+      validateUUID();
+    }
+    return () => {
+      connectionRef.current?.stop();
+    };
+  }, [uuid, validateUUID]);
+
+  if (initialLoad)
     return (
       <div className="w-screen h-screen grid place-items-center">
         <div className="flex items-center flex-col ">
@@ -135,49 +175,6 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
         </div>
       </div>
     );
-
-  if (!isTerminalConnectedToServer) {
-    return (
-      <div className="w-screen h-screen grid place-items-center">
-        <Card className="min-w-xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Oops!</CardTitle>
-            <CardDescription>
-              Looks like you arent connected to the server
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              Terminal:
-              <Badge variant={"destructive"}>Offline</Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              Scanner:
-              {isScannerConnectedToServer ? (
-                <Badge variant={"default"}>Online</Badge>
-              ) : (
-                <Badge variant={"destructive"}>Offline</Badge>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div className="flex gap-2">
-              <Button variant={"secondary"} onClick={() => router.back()}>
-                Go Back
-              </Button>
-              <Button
-                disabled={isTerminalConnectedToServer || !uuid || isConnecting}
-                onClick={initializeConnection}
-              >
-                {isConnecting && <Loader2 className="animate-spin" />}
-                Connect
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
 
   return <PosTerminal />;
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,62 +11,63 @@ namespace FrcsPos.Socket
 {
     public class PosHub : Hub
     {
-        // private readonly IQuickConnectRepository _quickConnectRepo;
+        // Track which connections are scanners and their terminal groups
+        private static ConcurrentDictionary<string, string> _scannerConnections = new();
 
-        // public PosHub(IQuickConnectRepository quickConnectRepo)
-        // {
-        //     _quickConnectRepo = quickConnectRepo;
-        // }
         public async Task SendScan(ScannerDTO scanDto)
         {
-            var qcId = scanDto.QuickConnectId;
+            var terminalId = scanDto.QuickConnectId;
             var barcode = scanDto.Barcode;
+            Console.WriteLine($"📱 Scanner sending barcode {barcode} to terminal {terminalId}");
 
-            // var posSession = await _quickConnectRepo.GetPosSession(qcId);
-            // if (posSession == null || posSession.Data == null)
-            // {
-            //     return;
-            // }
-            Console.WriteLine("connected from scanner " + qcId + " with barcode " + barcode);
-            await Clients
-                .Group("posSession.Data.UUID")
-                .SendAsync("ReceiveScan", barcode);
+            // Send to the terminal's group
+            await Clients.Group(terminalId).SendAsync("ReceiveScan", barcode);
         }
 
         public async Task JoinTerminal(string terminalId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, terminalId);
-            Console.WriteLine("connected from terminal " + Context.ConnectionId + " " + terminalId);
+            Console.WriteLine($"🖥️ Terminal {terminalId} joined (ConnectionId: {Context.ConnectionId})");
             await Clients.Caller.SendAsync("ReceivedJoinTerminal", $"✅ Terminal {terminalId} joined successfully");
         }
 
-        // Scanner joins the same group
-        public async Task JoinScanner(string qcUUID)
+        public async Task JoinScanner(string terminalId)
         {
-            // var posSession = await _quickConnectRepo.GetPosSession(qcUUID);
-            // if (posSession == null || posSession.Data == null)
-            // {
-            //     return;
-            // }
+            await Groups.AddToGroupAsync(Context.ConnectionId, terminalId);
 
-            // await Groups.AddToGroupAsync(Context.ConnectionId, posSession.Data.UUID);
-            // Console.WriteLine("connected from terminal " + Context.ConnectionId + " " + posSession.Data.UUID);
-            // await Clients.Caller.SendAsync("ReceivedJoinScanner", $"✅ Terminal {posSession.Data.UUID} joined successfully");
-            // await Clients.OthersInGroup(posSession.Data.UUID).SendAsync(
-            //     "ScannerConnected",
-            //     $"📱 A new scanner joined terminal {posSession.Data.UUID}"
-            // );
+            // Track this connection as a scanner for this terminal
+            _scannerConnections[Context.ConnectionId] = terminalId;
+
+            Console.WriteLine($"📱 Scanner joined terminal {terminalId} (ConnectionId: {Context.ConnectionId})");
+
+            // Confirm to the scanner
+            await Clients.Caller.SendAsync("ReceivedJoinScanner", $"✅ Scanner joined terminal {terminalId}");
+
+            // Notify the terminal (not the scanner itself)
+            Console.WriteLine($"🔔 Notifying terminal {terminalId} about scanner connection");
+            await Clients.OthersInGroup(terminalId).SendAsync(
+                "ScannerConnected",
+                $"📱 A scanner joined terminal {terminalId}"
+            );
+
+            Console.WriteLine($"✅ Scanner join complete for terminal {terminalId}");
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            Console.WriteLine($"Connection {Context.ConnectionId} disconnected.");
+            Console.WriteLine($"🔌 Connection {Context.ConnectionId} disconnected.");
 
-            // If you need to remove from group:
-            // (you may need to map connectionId -> qcUUID somewhere)
-            // await Groups.RemoveFromGroupAsync(Context.ConnectionId, someGroupId);
+            // Check if this was a scanner connection
+            if (_scannerConnections.TryRemove(Context.ConnectionId, out var terminalId))
+            {
+                Console.WriteLine($"📱 Scanner disconnected from terminal {terminalId}");
 
-            await Clients.Others.SendAsync("ScannerDisconnected", Context.ConnectionId);
+                // Only notify the specific terminal group that their scanner disconnected
+                await Clients.Group(terminalId).SendAsync(
+                    "ScannerDisconnected",
+                    $"Scanner disconnected from terminal {terminalId}"
+                );
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
