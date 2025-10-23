@@ -53,7 +53,6 @@ namespace FrcsPos.Controllers
         }
 
         [Authorize(Roles = "admin")]
-
         [HttpPost("update")]
         public async Task<IActionResult> UpdateProdut(
             [FromForm] string Product,
@@ -69,12 +68,8 @@ namespace FrcsPos.Controllers
                 VariantFiles = VariantFiles
 
             };
-            var res = await _productRepository.UpdateProductAsync(request, queryObject);
-            if (!res.Success)
-            {
-                return BadRequest(res);
-            }
-            return Ok(res);
+            var model = await _productRepository.UpdateProductAsync(request, queryObject);
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpPost("get-all-var")]

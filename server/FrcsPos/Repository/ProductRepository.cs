@@ -21,12 +21,9 @@ namespace FrcsPos.Repository
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IAzureBlobService _azureBlobService;
-
         private readonly IMediaRepository _mediaRepository;
         private readonly IProductVariantMapper _productVariantMapper;
         private readonly IProductMapper _productMapper;
-
-
         private readonly IUserContext _userContext;
         private readonly IRedisCacheService _redisCacheService;
 
@@ -147,6 +144,7 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductDTO>> CreateProductAsync(ProductRequest request, RequestQueryObject queryObject)
         {
+
             var options = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -199,6 +197,8 @@ namespace FrcsPos.Repository
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+            string cacheKey = $"product:{product.UUID}";
+            await _redisCacheService.SetAsync(cacheKey, product, TimeSpan.FromMinutes(30));
 
             // Process variants
             for (int i = 0; i < request.Variants.Count; i++)
@@ -241,6 +241,8 @@ namespace FrcsPos.Repository
                 }
 
                 _context.ProductVariants.Add(variant);
+                string vCacheKey = $"productVariant:{variant.UUID}";
+                await _redisCacheService.SetAsync(cacheKey, variant, TimeSpan.FromMinutes(30));
             }
 
             await _context.SaveChangesAsync();
@@ -252,13 +254,6 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<ProductEditInfo>> GetProductEditPageAsync(RequestQueryObject queryObject)
         {
-            var cacheKey = $"product:{queryObject.UUID}";
-            var cached = await _redisCacheService.GetAsync<ProductEditInfo>(cacheKey);
-            if (cached != null)
-            {
-                return ApiResponse<ProductEditInfo>.Ok(cached);
-            }
-
             var product = await _context.Products
                 .Include(p => p.Variants)
                     .ThenInclude(x => x.Media)
@@ -281,7 +276,6 @@ namespace FrcsPos.Repository
                 TaxCategories = allTaxes.FromModelToDto()
             };
 
-            FireAndForget.Run(_redisCacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5)));
             return ApiResponse<ProductEditInfo>.Ok(dto);
         }
 
@@ -322,8 +316,10 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            var productDto = await _productMapper.FromModelToDtoAsync(product);
+            string cacheKey = $"product:{product.UUID}";
+            await _redisCacheService.SetAsync(cacheKey, product, TimeSpan.FromMinutes(30));
 
+            var productDto = await _productMapper.FromModelToDtoAsync(product);
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
 
@@ -340,8 +336,10 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            var productDto = await _productMapper.FromModelToDtoAsync(product);
+            string cacheKey = $"product:{product.UUID}";
+            await _redisCacheService.SetAsync(cacheKey, product, TimeSpan.FromMinutes(30));
 
+            var productDto = await _productMapper.FromModelToDtoAsync(product);
             return ApiResponse<ProductDTO>.Ok(productDto);
         }
 

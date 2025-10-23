@@ -203,6 +203,8 @@ export default function EditorTab({ product, taxes }: IProductEditorPage) {
 
     const res = await EditProduct(formData, query);
 
+    console.log("ep", res);
+
     if (res.success) {
       toast.success("Product Saved");
 
