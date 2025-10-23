@@ -11,6 +11,7 @@ namespace FrcsPos.Interfaces
     public interface ICompanyRepository
     {
         public Task<ApiResponse<CompanyDTO>> CreateCompanyAsync(NewCompanyRequest request);
+        public Task<ApiResponse<CompanyDTO>> EditCompanyAsync(NewCompanyRequest request, RequestQueryObject requestQueryObject);
         public Task<ApiResponse<CompanyDTO>> AddUserToCompanyAsync(AddUserToCompany request);
         public Task<ApiResponse<List<CompanyDTO>>> GetAllCompanyAsync(RequestQueryObject queryObject);
         public Task<ApiResponse<bool>> Exists(RequestQueryObject queryObject);

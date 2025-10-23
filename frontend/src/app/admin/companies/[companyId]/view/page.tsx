@@ -10,6 +10,7 @@ import { CompanyUserColumn } from "@/components/tables/CompaniesColumns";
 import { PosTerminalOnlyColumns } from "@/components/tables/PosTerminalColumns";
 import { ProductsOnlyColumns } from "@/components/tables/ProductsColumns";
 import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,7 +22,8 @@ import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { Company } from "@/types/models";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { Building2, Loader2 } from "lucide-react";
+import { Building2, Loader2, PenBox } from "lucide-react";
+import Link from "next/link";
 import { use } from "react";
 import { toast } from "sonner";
 
@@ -55,10 +57,19 @@ export default function SuperAdminCompanyPageContainer({ params }: PageProps) {
 function DataSection({ data }: { data: Company }) {
   return (
     <div className="space-y-4">
-      <HeaderWithBackButton
-        title={data.name}
-        description={`ID: ${data.uuid}`}
-      />
+      <div className="flex pr-4 justify-between items-start">
+        <HeaderWithBackButton
+          title={data.name}
+          description={`ID: ${data.uuid}`}
+          link="/admin/companies"
+        />
+        <Button variant={"secondary"} asChild>
+          <Link href={`edit`}>
+            <PenBox />
+            Edit Company
+          </Link>
+        </Button>
+      </div>
       <CompanyInfo data={data} />
 
       <GenericSection

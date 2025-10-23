@@ -28,7 +28,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -51,6 +51,8 @@ export function EditorTab({ company }: { company: Company }) {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
+  const searchParams = useSearchParams();
+  const selectedUser = searchParams.get("selectedUser");
 
   console.log("fkfkf", company);
 
@@ -60,8 +62,11 @@ export function EditorTab({ company }: { company: Company }) {
   const form = useForm<EditCompanyData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: company?.name,
-      adminUserId: company?.adminUserId,
+      name: company.name,
+      adminUserId:
+        selectedUser && selectedUser?.trim().length > 0
+          ? selectedUser
+          : company.adminUserId,
     },
   });
 
@@ -71,14 +76,17 @@ export function EditorTab({ company }: { company: Company }) {
         role: UserRoles.ADMIN,
       } as QueryObject);
 
-      const users = data.data ?? [];
+      let users = data.data ?? [];
       if (company.adminUser) {
         users.push(company.adminUser as User);
       }
       setAdminUsers(data.data as User[]);
 
       form.reset({
-        adminUserId: company.adminUserId || "",
+        adminUserId:
+          selectedUser && selectedUser?.trim().length > 0
+            ? selectedUser
+            : company.adminUserId,
       });
 
       setLoading(false);
@@ -100,7 +108,7 @@ export function EditorTab({ company }: { company: Company }) {
         exact: false,
       });
       toast.success("Uploaded");
-      router.back();
+      router.push("/admin/companies");
     } else {
       toast.error("Failed to upload");
     }
@@ -152,7 +160,7 @@ export function EditorTab({ company }: { company: Company }) {
                         {loading && <Loader2 className="animate-spin" />}
                         {adminUsers.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
-                            {user.username ?? user.email}
+                            {user.email}
                           </SelectItem>
                         ))}
 
@@ -184,7 +192,7 @@ export function EditorTab({ company }: { company: Company }) {
                   {isSubmitting && (
                     <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   )}
-                  {isSubmitting ? "Editing..." : "Edit Product"}
+                  {isSubmitting ? "Editing..." : "Edit Company"}
                 </Button>
                 <Button
                   type="button"

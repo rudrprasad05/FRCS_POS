@@ -23,15 +23,19 @@ namespace FrcsPos.Repository
         private readonly UserManager<User> _userManager;
         private readonly IUserContext _userContext;
         private readonly IUserMapper _userMapper;
+        private readonly IRedisCacheService _redisCacheService;
+
 
         public CompanyRepository(
             ApplicationDbContext applicationDbContext,
             INotificationService notificationService,
             UserManager<User> userManager,
             IUserContext userContext,
-            IUserMapper userMapper
+            IUserMapper userMapper,
+            IRedisCacheService redisCacheService
         )
         {
+            _redisCacheService = redisCacheService;
             _userManager = userManager;
             _context = applicationDbContext;
             _notificationService = notificationService;
@@ -42,6 +46,13 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<bool>> Exists(RequestQueryObject queryObject)
         {
+            string cacheKey = $"company:{queryObject.UUID}";
+            var cachedCompany = await _redisCacheService.GetAsync<Company>(cacheKey);
+            if (cachedCompany != null)
+            {
+                return ApiResponse<bool>.Ok(true);
+            }
+
             var model = await _context.Companies.FirstOrDefaultAsync(c => c.UUID == queryObject.CompanyName);
             if (model == null)
             {
@@ -69,6 +80,7 @@ namespace FrcsPos.Repository
             var model = await _context.Companies.AddAsync(company);
             await _context.SaveChangesAsync();
 
+
             var result = model.Entity.FromModelToDto();
 
             var adminNotification = new NotificationDTO
@@ -94,6 +106,8 @@ namespace FrcsPos.Repository
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
+            string cacheKey = $"company:{company.UUID}";
+            await _redisCacheService.SetAsync(cacheKey, company.FromModelToDto(), TimeSpan.FromMinutes(30));
 
             return new ApiResponse<CompanyDTO>
             {
@@ -138,6 +152,9 @@ namespace FrcsPos.Repository
 
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
+
+            string cacheKey = $"company:{model.UUID}";
+            await _redisCacheService.SetAsync(cacheKey, model.FromModelToDto(), TimeSpan.FromMinutes(30));
 
             return new ApiResponse<CompanyDTO>
             {
@@ -206,6 +223,13 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<CompanyDTO>> GetCompanyByAdminUserIdAsync(string uuid)
         {
+            string cacheKey = $"company:{uuid}";
+            var cachedCompany = await _redisCacheService.GetAsync<Company>(cacheKey);
+            if (cachedCompany != null)
+            {
+                return ApiResponse<CompanyDTO>.Ok(cachedCompany.FromModelToDto());
+            }
+
             var model = await _context.Companies.FirstOrDefaultAsync(c => c.AdminUserId == uuid);
             CompanyDTO? companyToBeRetuned = null;
 
@@ -230,6 +254,10 @@ namespace FrcsPos.Repository
             {
                 return ApiResponse<CompanyDTO>.Fail();
             }
+
+
+            await _redisCacheService.SetAsync(cacheKey, companyToBeRetuned, TimeSpan.FromMinutes(30));
+
             return ApiResponse<CompanyDTO>.Ok(companyToBeRetuned);
         }
         public async Task<ApiResponse<CompanyDTO>> GetCompanyByAssociatedAdminUserIdAsync(string uuid)
@@ -263,6 +291,13 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<CompanyDTO>> GetFullCompanyByUUIDAsync(string uuid)
         {
+            string cacheKey = $"company:{uuid}";
+            var cachedCompany = await _redisCacheService.GetAsync<Company>(cacheKey);
+            if (cachedCompany != null)
+            {
+                return ApiResponse<CompanyDTO>.Ok(cachedCompany.FromModelToDto());
+            }
+
             var model = await _context.Companies
             .Include(c => c.Warehouses)
             .Include(c => c.Products)
@@ -312,6 +347,8 @@ namespace FrcsPos.Repository
                 dto.AdminUser = await _userMapper.FromModelToDtoAsync(model.AdminUser);
             }
 
+            await _redisCacheService.SetAsync(cacheKey, model.FromModelToDto(), TimeSpan.FromMinutes(30));
+
 
             return ApiResponse<CompanyDTO>.Ok(dto);
         }
@@ -346,8 +383,14 @@ namespace FrcsPos.Repository
                 return ApiResponse<CompanyDTO>.Fail(message: "User not found");
             }
 
+            var userPartOfCompany = await _context.CompanyUsers.FirstOrDefaultAsync(u => u.UserId == request.UserId && u.Company.UUID == request.CompanyUUID);
+            if (userPartOfCompany != null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "User already part of company");
+            }
+
             var company = await _context.Companies
-                .Include(c => c.Users) // make sure Users are loaded
+                .Include(c => c.Users)
                 .FirstOrDefaultAsync(c => c.UUID == request.CompanyUUID || c.Name == request.CompanyUUID);
             if (company == null)
             {
@@ -371,6 +414,42 @@ namespace FrcsPos.Repository
 
             return ApiResponse<CompanyDTO>.Ok(company.FromModelToDto());
 
+        }
+
+        public async Task<ApiResponse<CompanyDTO>> EditCompanyAsync(NewCompanyRequest request, RequestQueryObject requestQueryObject)
+        {
+            string cacheKey = $"company:{requestQueryObject.UUID}";
+
+            var company = await _context.Companies.FirstOrDefaultAsync(x => x.UUID == requestQueryObject.UUID);
+            if (company == null)
+            {
+                return ApiResponse<CompanyDTO>.NotFound(message: "company not found");
+            }
+
+            if (company.AdminUserId != request.AdminUserId)
+            {
+                var newAdmin = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.AdminUserId);
+                if (newAdmin == null)
+                {
+                    return ApiResponse<CompanyDTO>.NotFound(message: "invalid new admin");
+                }
+
+                var checkIfAlreadyAdmin = await _context.Companies.FirstOrDefaultAsync(x => x.AdminUserId == newAdmin.Id);
+                if (checkIfAlreadyAdmin != null)
+                {
+                    return ApiResponse<CompanyDTO>.Fail(message: "admin is part of another company");
+                }
+
+                company.AdminUserId = request.AdminUserId;
+
+            }
+
+            company.Name = request.Name;
+
+            await _context.SaveChangesAsync();
+            await _redisCacheService.SetAsync(cacheKey, company.FromModelToDto(), TimeSpan.FromMinutes(30));
+
+            return ApiResponse<CompanyDTO>.Ok(company.FromModelToDto());
         }
     }
 }

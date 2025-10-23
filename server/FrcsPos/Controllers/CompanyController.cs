@@ -35,6 +35,15 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin")]
+        [HttpPatch("edit")]
+        public async Task<IActionResult> EditCompany([FromBody] NewCompanyRequest data, [FromQuery] RequestQueryObject requestQuery)
+        {
+            var model = await _companyRepository.EditCompanyAsync(data, requestQuery);
+
+            return StatusCode(model.StatusCode, model);
+        }
+
         [Authorize(Roles = "superadmin, admin")]
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompany request)

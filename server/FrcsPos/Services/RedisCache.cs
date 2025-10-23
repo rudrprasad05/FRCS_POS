@@ -40,12 +40,12 @@ namespace FrcsPos.Services
 
                 if (value.IsNullOrEmpty)
                 {
-                    _logger.LogWarning("REDIS: A request to redis was made but NOTHING was returned");
+                    _logger.LogWarning($"REDIS: A request to redis was made to {key} but NOTHING was returned");
                     return default;
                 }
 
 
-                _logger.LogInformation("REDIS: A request to redis was made and SOMETHING was returned");
+                _logger.LogInformation($"REDIS: A request to redis was made and {key} was returned");
                 return System.Text.Json.JsonSerializer.Deserialize<T>(value!);
             }
             catch (Exception ex)
@@ -69,7 +69,7 @@ namespace FrcsPos.Services
                 var json = System.Text.Json.JsonSerializer.Serialize(value);
                 await db.StringSetAsync(key, json, expiry);
 
-                _logger.LogInformation("REDIS: A request to redis was made and SOMETHING was set");
+                _logger.LogInformation($"REDIS: A request to redis was made and {key} was set");
 
             }
             catch (Exception ex)
@@ -91,7 +91,7 @@ namespace FrcsPos.Services
                 var db = _redis.GetDatabase();
                 await db.KeyDeleteAsync(key);
 
-                _logger.LogInformation("REDIS: A request to redis was made and SOMETHING was set");
+                _logger.LogInformation($"REDIS: A request to redis was made to ${key} and SOMETHING was removed");
 
             }
             catch (Exception ex)

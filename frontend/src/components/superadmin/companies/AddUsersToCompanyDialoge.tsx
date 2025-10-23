@@ -55,6 +55,7 @@ export default function AddUsersToCompanyDialoge() {
   const [open, setOpen] = useState(false);
   const params = useParams();
   const searchParams = useSearchParams();
+  const selectedUser = searchParams.get("selectedUser");
 
   const companyId = String(params.companyId);
   const queryClient = useQueryClient();
@@ -69,7 +70,7 @@ export default function AddUsersToCompanyDialoge() {
   const form = useForm<AddUsersToCompanyFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      adminUserId: searchParams.get("selectedUser") || "",
+      adminUserId: selectedUser || "",
     },
   });
 
@@ -79,7 +80,14 @@ export default function AddUsersToCompanyDialoge() {
     const getData = async () => {
       const data = await GetUnAssignedUsers();
 
-      setAdminUsers(data.data as User[]);
+      const users = data.data;
+
+      setAdminUsers(users as User[]);
+
+      const admin = users?.find((x) => x.id == selectedUser);
+      if (admin == null) {
+        router.push(`/admin/companies/${companyId}/view`);
+      }
 
       setLoading(false);
     };
@@ -118,13 +126,15 @@ export default function AddUsersToCompanyDialoge() {
       innerParams.delete("selectedUser");
       innerParams.delete("open_create");
 
+      form.reset();
+
       toast.success("User added");
-      router.replace(`${window.location.pathname}?${innerParams.toString()}`);
 
       queryClient.invalidateQueries({
         queryKey: ["editCompany", companyId],
         exact: false,
       });
+      router.push(`/admin/companies/${companyId}?${params.toString()}`);
       setOpen(false);
     }
 

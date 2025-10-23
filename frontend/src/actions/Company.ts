@@ -48,21 +48,11 @@ export async function GetFullCompanyByUUID(
 
 export async function AddUserToCompany(
   userId: string,
-  companyId: string
+  companyUUID: string
 ): Promise<ApiResponse<Company>> {
-  try {
-    const res = await axiosGlobal.post<ApiResponse<Company>>(
-      "company/add-user",
-      { userId: userId, companyUUID: companyId }
-    );
-    return res.data;
-  } catch (error: any) {
-    if (error.response?.data) {
-      return error.response.data as ApiResponse<Company>;
-    }
-
-    return ApiResponseFail<Company>();
-  }
+  return RequestWrapper<Company>("POST", `company/add-user`, {
+    data: { userId, companyUUID },
+  });
 }
 
 export async function CreateCompany(

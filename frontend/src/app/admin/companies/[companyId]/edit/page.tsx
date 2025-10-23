@@ -7,13 +7,15 @@ import ConfigTab from "@/components/global/ConfigTab";
 import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 
 import { EditorTab } from "@/components/superadmin/companies/EditTab";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Company } from "@/types/models";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -71,10 +73,19 @@ export default function EditorPage() {
 
   return (
     <div>
-      <HeaderWithBackButton
-        title="Edit Company"
-        description={`You are editing the company "${company?.name}"`}
-      />
+      <div className="flex pr-4 justify-between items-start">
+        <HeaderWithBackButton
+          title="Edit Company"
+          description={`You are editing the company "${company?.name}"`}
+          link="/admin/companies"
+        />
+        <Button variant={"secondary"} asChild>
+          <Link href={`view`}>
+            <Eye />
+            View Company
+          </Link>
+        </Button>
+      </div>
 
       <Tabs
         defaultValue="edit"
