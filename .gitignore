@@ -9,3 +9,5 @@
 /ssl
 /test
 .DS_Store
+obj/
+FrcsPos.Tests/

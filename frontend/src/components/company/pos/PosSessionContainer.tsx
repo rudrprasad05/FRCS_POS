@@ -18,63 +18,37 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
   const {
     setInitialState,
     setIsTerminalConnectedToServer,
-    isTerminalConnectedToServer,
     setIsScannerConnectedToServer,
-    isScannerConnectedToServer,
-    addProduct,
     products,
+    setCart,
   } = usePosSession();
+
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const productsRef = useRef<ProductVariant[]>([]);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const router = useRouter();
-  const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
 
+  // Keep products ref in sync
+  useEffect(() => {
+    productsRef.current = products as ProductVariant[];
+  }, [products]);
+
+  // Initial data load
   useEffect(() => {
     const getData = async () => {
       const cake = await GetPosSession(uuid);
-
       if (!cake.data) return;
-
-      console.log(cake.data);
-
       setInitialState(cake.data);
     };
-
     getData();
   }, [setInitialState, uuid]);
 
-  const handleProductAdd = useCallback(
-    (barcode: string) => {
-      console.log("📦 Received barcode from scanner:", barcode);
-      toast.success(`Scanned: ${barcode}`);
-
-      // TODO: Look up product by barcode and add to cart
-      // For now, just logging it
-      // addProduct(foundProduct);
-
-      const res = products.find((x) => x?.barcode == barcode);
-
-      console.log(res);
-
-      const product = res as ProductVariant;
-
-      const sI: SaleItemOmitted = {
-        productVariantId: product.id,
-        productVariant: product,
-        quantity: 1,
-        unitPrice: product.price,
-        taxRatePercent: 0.125,
-        lineTotal: product.price,
-      };
-      addProduct(sI);
-    },
-    [addProduct, products]
-  );
-
+  // Create connection ONCE
   const createConnection = useCallback(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
+
     const conn = new signalR.HubConnectionBuilder()
       .withUrl(`${apiUrl}/socket/posHub?terminalId=${uuid}`, {
         withCredentials: true,
@@ -110,17 +84,35 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     });
 
     conn.on("ReceivedJoinTerminal", (message: string) => {
-      console.log("✅ Server confirmed:", message);
+      console.log("Server confirmed:", message);
       setIsTerminalConnectedToServer(true);
     });
 
-    // THIS IS THE KEY PART - Listen for scans from the scanner
+    // THIS IS NOW INSIDE — uses latest products via ref
     conn.on("ReceiveScan", (barcode: string) => {
-      handleProductAdd(barcode);
+      console.log("Received barcode from scanner:", barcode);
+      toast.success(`Scanned: ${barcode}`);
+
+      const product = productsRef.current.find((x) => x?.barcode === barcode);
+      if (!product) {
+        toast.error(`Product not found: ${barcode}`);
+        return;
+      }
+
+      const sI: SaleItemOmitted = {
+        productVariantId: product.id,
+        productVariant: product,
+        quantity: 1,
+        unitPrice: product.price,
+        taxRatePercent: 0.125,
+        lineTotal: product.price,
+      };
+
+      addProduct(sI); // This will trigger re-render, but ONLY when needed
     });
 
     conn.on("ScannerConnected", (message: string) => {
-      console.log("📱 Scanner connected:", message);
+      console.log("Scanner connected:", message);
       setIsScannerConnectedToServer(true);
       toast.success("Scanner connected");
     });
@@ -132,13 +124,41 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     });
 
     return conn;
-  }, [
-    apiUrl,
-    uuid,
-    handleProductAdd,
-    setIsScannerConnectedToServer,
-    setIsTerminalConnectedToServer,
-  ]);
+  }, [uuid, setIsTerminalConnectedToServer, setIsScannerConnectedToServer]);
+
+  const addProduct = useCallback(
+    (saleItem: SaleItemOmitted) => {
+      setCart((prev) => {
+        const existing = prev.find(
+          (p) => p.productVariantId === saleItem.productVariantId
+        );
+
+        if (existing) {
+          return prev.map((p) =>
+            p.productVariantId === saleItem.productVariantId
+              ? {
+                  ...p,
+                  quantity: p.quantity + 1,
+                  lineTotal: (p.quantity + 1) * p.unitPrice,
+                }
+              : p
+          );
+        }
+
+        return [
+          ...prev,
+          {
+            ...saleItem,
+            quantity: 1,
+            taxRatePercent: Number(
+              saleItem.productVariant.taxCategory?.ratePercent ?? 0
+            ),
+          },
+        ];
+      });
+    },
+    [setCart]
+  );
 
   const validateUUID = useCallback(async () => {
     setInitialLoad(true);
@@ -152,7 +172,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       console.log("SignalR connected");
 
       await conn.invoke("JoinTerminal", uuid);
-      console.log(`🖥️ Joined terminal group: ${uuid}`);
+      console.log(`Joined terminal group: ${uuid}`);
     } catch (err) {
       console.error("SignalR connection failed", err);
       setConnectionStatus("disconnected");
@@ -161,7 +181,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     } finally {
       setInitialLoad(false);
     }
-  }, [uuid, createConnection, setIsTerminalConnectedToServer]);
+  }, [createConnection, uuid, setIsTerminalConnectedToServer]);
 
   useEffect(() => {
     if (uuid) {
@@ -172,15 +192,16 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     };
   }, [uuid, validateUUID]);
 
-  if (initialLoad)
+  if (initialLoad) {
     return (
       <div className="w-screen h-screen grid place-items-center">
-        <div className="flex items-center flex-col ">
-          <Loader2 className="animate-spin" />
-          Loading Products
+        <div className="flex items-center flex-col">
+          <Loader2 className="animate-spin h-8 w-8" />
+          <span className="mt-2">Loading Products</span>
         </div>
       </div>
     );
+  }
 
   return <PosTerminal />;
 }

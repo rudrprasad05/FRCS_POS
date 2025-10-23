@@ -55,6 +55,7 @@ interface PosSessionContextType {
   setIsTerminalConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
   setIsScannerConnectedToServer: React.Dispatch<React.SetStateAction<boolean>>;
   setPagination: React.Dispatch<React.SetStateAction<QueryObject>>;
+  setCart: React.Dispatch<React.SetStateAction<SaleItemOmitted[]>>;
 
   //   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
@@ -83,6 +84,7 @@ const PosSessionContext = createContext<PosSessionContextType>({
   removeProduct: () => {},
   setPagination: () => {},
   checkout: async () => {},
+  setCart: () => {},
 
   setIsTerminalConnectedToServer: () => {},
   setIsScannerConnectedToServer: () => {},
@@ -327,6 +329,7 @@ export const PosSessionProvider = ({ children }: { children: ReactNode }) => {
         qr,
         pagination,
         cart,
+        setCart,
         moneyValues,
         isTerminalConnectedToServer,
         isScannerConnectedToServer,
