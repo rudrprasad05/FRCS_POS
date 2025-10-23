@@ -75,7 +75,7 @@ export function NotificationBell() {
     setNotifications([]);
     const getData = async () => {
       let data;
-      let pagination = {
+      const pagination = {
         pageNumber: 1,
         pageSize: 10,
         sortBy: ESortBy.DSC,
