@@ -60,12 +60,13 @@ export default function NewCompanyDialoge() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const selectedUser = searchParams.get("selectedUser");
 
   const form = useForm<NewCompanyFormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      adminUserId: searchParams.get("selectedUser") || "",
+      adminUserId: selectedUser || "",
     },
   });
   useEffect(() => {
@@ -90,12 +91,19 @@ export default function NewCompanyDialoge() {
         role: UserRoles.ADMIN,
       } as QueryObject);
 
-      setAdminUsers(data.data as User[]);
+      const users = data.data;
+
+      setAdminUsers(users as User[]);
+
+      const admin = users?.find((x) => x.id == selectedUser);
+      if (admin == null) {
+        router.push("/admin/companies");
+      }
 
       setLoading(false);
     };
     getData();
-  }, []);
+  }, [open]);
 
   async function onSubmit(values: NewCompanyFormType) {
     setLoading(true);
@@ -109,13 +117,16 @@ export default function NewCompanyDialoge() {
 
       toast.success("Company created");
       params.delete("selectedUser");
-      router.replace(`${window.location.pathname}?${params.toString()}`);
+      form.reset();
 
       queryClient.invalidateQueries({
         queryKey: ["adminCompanies", {}],
         exact: false,
       });
 
+      setAdminUsers((prev) => prev.filter((x) => x.id != values.adminUserId));
+
+      router.push(`/admin/companies?${params.toString()}`);
       handleOpenChange(false);
     }
 

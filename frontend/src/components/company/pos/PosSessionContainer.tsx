@@ -1,10 +1,10 @@
 "use client";
 
 import { GetPosSession } from "@/actions/PosSession";
+import { Button } from "@/components/ui/button";
 import { usePosSession } from "@/context/PosContext";
 import { ProductVariant, SaleItemOmitted } from "@/types/models";
 import * as signalR from "@microsoft/signalr";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -183,21 +183,21 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     }
   }, [createConnection, uuid, setIsTerminalConnectedToServer]);
 
-  useEffect(() => {
-    if (uuid) {
-      validateUUID();
-    }
-    return () => {
-      connectionRef.current?.stop();
-    };
-  }, [uuid, validateUUID]);
+  //   useEffect(() => {
+  //     if (uuid) {
+  //       validateUUID();
+  //     }
+  //     return () => {
+  //       connectionRef.current?.stop();
+  //     };
+  //   }, [uuid, validateUUID]);
 
   if (initialLoad) {
     return (
       <div className="w-screen h-screen grid place-items-center">
-        <div className="flex items-center flex-col">
-          <Loader2 className="animate-spin h-8 w-8" />
-          <span className="mt-2">Loading Products</span>
+        <div className="flex items-center flex-col gap-3">
+          <span className="mt-2">Connect To Server</span>
+          <Button onClick={() => validateUUID()}>Connect</Button>
         </div>
       </div>
     );

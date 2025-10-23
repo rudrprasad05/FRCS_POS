@@ -60,6 +60,12 @@ namespace FrcsPos.Repository
                 return ApiResponse<CompanyDTO>.Fail(message: "duplicate company name");
             }
 
+            var adminAssigned = await _context.Companies.FirstOrDefaultAsync(x => x.AdminUserId == request.AdminUserId);
+            if (exists != null)
+            {
+                return ApiResponse<CompanyDTO>.Fail(message: "admin already assigned");
+            }
+
             var model = await _context.Companies.AddAsync(company);
             await _context.SaveChangesAsync();
 

@@ -1,16 +1,18 @@
 "use client";
 
+import { ActivateCompany, SoftDeleteCompany } from "@/actions/Company";
 import { GetFullCompanyByUUID } from "@/actions/Product";
 import NoDataContainer from "@/components/containers/NoDataContainer";
+import ConfigTab from "@/components/global/ConfigTab";
 import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
-import ConfigTab from "@/components/superadmin/companies/ConfigTab";
+
 import { EditorTab } from "@/components/superadmin/companies/EditTab";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { cn } from "@/lib/utils";
 import { Company } from "@/types/models";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -20,6 +22,36 @@ export default function EditorPage() {
   const [state, setState] = useState<"edit" | "config">("edit");
   const params = useParams();
   const companyId = String(params.companyId);
+  const queryClient = useQueryClient();
+
+  const deleteFn = async (uuid: string): Promise<{ success: boolean }> => {
+    const res = await SoftDeleteCompany(uuid);
+
+    queryClient.invalidateQueries({
+      queryKey: ["editCompany", companyId],
+      exact: false,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["adminCompanies", {}],
+      exact: false,
+    });
+    return { success: res.success };
+  };
+
+  const activateFn = async (uuid: string): Promise<{ success: boolean }> => {
+    const res = await ActivateCompany(uuid);
+
+    queryClient.invalidateQueries({
+      queryKey: ["editCompany", companyId],
+      exact: false,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["adminCompanies", {}],
+      exact: false,
+    });
+
+    return { success: res.success };
+  };
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["editCompany", companyId],
@@ -74,7 +106,11 @@ export default function EditorPage() {
           <EditorTab company={company} />
         </TabsContent>
         <TabsContent value="config">
-          <ConfigTab company={company} />
+          <ConfigTab
+            entity={company}
+            deleteFn={deleteFn}
+            activateFn={activateFn}
+          />
         </TabsContent>
       </Tabs>
     </div>

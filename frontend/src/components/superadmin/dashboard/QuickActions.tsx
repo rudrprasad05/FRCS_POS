@@ -19,7 +19,7 @@ export function QuickActions({ isSuperAdmin }: { isSuperAdmin: boolean }) {
       title: "New Company",
       description: "New Company",
       icon: Plus,
-      href: "/admin/company",
+      href: "/admin/companies",
     },
     {
       title: "New User",
@@ -28,8 +28,8 @@ export function QuickActions({ isSuperAdmin }: { isSuperAdmin: boolean }) {
       href: "/admin/users",
     },
     {
-      title: "New Tax Sales",
-      description: "View sales from each company",
+      title: "New Tax",
+      description: "Create new tax category",
       icon: Coins,
       href: "/admin/tax",
     },

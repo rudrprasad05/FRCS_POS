@@ -1,7 +1,7 @@
 "use client";
 import { GetAllCompanies } from "@/actions/Company";
-import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
+import { HeaderWithBackButton } from "@/components/global/HeaderWithBackButton";
 import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
@@ -44,8 +44,10 @@ export default function CompanySection() {
           </RoleWrapper>
         }
       >
-        <H1>Companies</H1>
-        <P className="text-muted-foreground">Create and manage the companies</P>
+        <HeaderWithBackButton
+          title={"Companies"}
+          description={"Create and manage the companies"}
+        />
       </Header>
 
       <HandleDataSection
