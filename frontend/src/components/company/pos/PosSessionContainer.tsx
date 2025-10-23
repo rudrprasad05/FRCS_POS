@@ -55,7 +55,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       // For now, just logging it
       // addProduct(foundProduct);
 
-      let res = products.find((x) => x?.barcode == barcode);
+      const res = products.find((x) => x?.barcode == barcode);
 
       console.log(res);
 
@@ -71,7 +71,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
       };
       addProduct(sI);
     },
-    [addProduct]
+    [addProduct, products]
   );
 
   const createConnection = useCallback(() => {
@@ -132,7 +132,13 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     });
 
     return conn;
-  }, [apiUrl, uuid]);
+  }, [
+    apiUrl,
+    uuid,
+    handleProductAdd,
+    setIsScannerConnectedToServer,
+    setIsTerminalConnectedToServer,
+  ]);
 
   const validateUUID = useCallback(async () => {
     setInitialLoad(true);
@@ -155,7 +161,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     } finally {
       setInitialLoad(false);
     }
-  }, [uuid, createConnection]);
+  }, [uuid, createConnection, setIsTerminalConnectedToServer]);
 
   useEffect(() => {
     if (uuid) {
