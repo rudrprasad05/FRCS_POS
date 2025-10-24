@@ -103,6 +103,15 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin, admin")]
+        [HttpPatch("activate")]
+        public async Task<IActionResult> ActivateCompany([FromQuery] string uuid)
+        {
+            var model = await _companyRepository.Activate(uuid);
+
+            return StatusCode(model.StatusCode, model);
+        }
+
 
         [HttpGet("exists")]
         public async Task<IActionResult> CheckCompanyExists([FromQuery] RequestQueryObject queryObject)

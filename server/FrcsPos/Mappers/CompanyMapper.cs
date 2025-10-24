@@ -34,6 +34,7 @@ namespace FrcsPos.Mappers
                 CreatedOn = request.CreatedOn,
                 UpdatedOn = request.UpdatedOn,
                 Name = request.Name,
+                IsDeleted = request.IsDeleted,
                 AdminUser = request.AdminUser.FromUserToDtoStatic(),
                 AdminUserId = request.AdminUserId,
                 PosTerminals = request.PosTerminals.FromModelToDtoWithoutCompany(),

@@ -93,7 +93,7 @@ export async function SoftDeleteCompany(
 export async function ActivateCompany(
   uuid: string
 ): Promise<ApiResponse<Company>> {
-  return RequestWrapper<Company>("DELETE", `company/activate`, {
+  return RequestWrapper<Company>("PATCH", `company/activate`, {
     query: { uuid },
   });
 }

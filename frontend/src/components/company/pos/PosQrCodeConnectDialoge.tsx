@@ -1,5 +1,4 @@
 "use client";
-import { GenerateQr } from "@/actions/PosSession";
 import { MutedText } from "@/components/font/HeaderFonts";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,16 +22,16 @@ export default function PosQrCodeConnectDialoge() {
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [isGeneratingQr, setIsGeneratingQr] = useState(false);
   const { isScannerConnectedToServer } = usePosSession();
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://frcs.procyonfiji.com";
+  console.log("wewe", baseUrl);
 
   const { qr, setQr } = usePosSession();
 
   const generateQr = async () => {
     setIsGeneratingQr(true);
     try {
-      const res = await GenerateQr(sessionId);
-      setIsQrGenerated(true);
-      setQr(`${baseUrl}/quickconnect/${res.data?.uuid}`);
+      setQr(`${baseUrl}/quickconnect/${sessionId}`);
     } catch (error) {
       toast.error("Error generating QR Code", { description: error as string });
     } finally {

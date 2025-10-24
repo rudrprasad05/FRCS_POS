@@ -451,5 +451,53 @@ namespace FrcsPos.Repository
 
             return ApiResponse<CompanyDTO>.Ok(company.FromModelToDto());
         }
+
+        public async Task<ApiResponse<CompanyDTO>> Activate(string uuid)
+        {
+            var model = await _context.Companies.FirstOrDefaultAsync(c => c.UUID == uuid);
+            if (model == null)
+            {
+                return ApiResponse<CompanyDTO>.Fail();
+            }
+
+            model.IsDeleted = false;
+            model.IsActive = true;
+
+            model.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var adminNotification = new NotificationDTO
+            {
+                Title = "Company Activated",
+                Message = $"The company {model.Name} was Activated",
+                Type = NotificationType.WARNING,
+                ActionUrl = "#",
+                IsSuperAdmin = true,
+            };
+
+            var userNotification = new NotificationDTO
+            {
+                Title = "Company Activated",
+                Message = $"The company {model.Name} was Activated",
+                Type = NotificationType.WARNING,
+                ActionUrl = "#",
+                IsSuperAdmin = false,
+                CompanyId = model.Id,
+            };
+
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
+            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
+
+            string cacheKey = $"company:{model.UUID}";
+            await _redisCacheService.SetAsync(cacheKey, model.FromModelToDto(), TimeSpan.FromMinutes(30));
+
+            return new ApiResponse<CompanyDTO>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = model.FromModelToDto(),
+            };
+        }
     }
 }

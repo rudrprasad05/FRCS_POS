@@ -68,7 +68,7 @@ namespace FrcsPos.Repository
             _context.EmailVerifications.Add(emailVerification);
             await _context.SaveChangesAsync();
 
-            string baseUrl = _configuration["BASE_URL"] ?? throw new InvalidOperationException("base url not found");
+            string baseUrl = "https://frcs.procyonfiji.com";
             var verificationLink = $"{baseUrl}/auth/verify-email?code={code}&userId={user.Id}";
 
             FireAndForget.Run(_emailService.SendEmailAsync(user.Email ?? "", "Verify Email Address", EmailTemplates.VerifyEmailBody(verificationLink)));

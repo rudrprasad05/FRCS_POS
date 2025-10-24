@@ -58,7 +58,10 @@ export default function ReceiptPage() {
   const checkoutId = String(params.checkoutId);
   const sessionId = String(params.sessionId);
   const router = useRouter();
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://frcs.procyonfiji.com";
+
+  console.log("wewe", baseUrl);
 
   const queryClient = useQueryClient();
 

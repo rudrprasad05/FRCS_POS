@@ -4,17 +4,25 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Company, CompanyUser, User } from "@/types/models";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 
 export const CompanyOnlyColumn: ColumnDef<Company>[] = [
   {
-    accessorKey: "id",
-    header: "#",
+    accessorKey: "isDeleted",
+    header: "Status",
     cell: ({ row }) => {
-      const company = row.original;
-      return <div className="flex gap-2">{company.id}</div>;
+      const isDeleted = row.getValue("isDeleted") as boolean;
+      return (
+        <div
+          className={cn(
+            "rounded-full w-2 h-2 mx-auto",
+            isDeleted ? "bg-rose-500" : "bg-green-500"
+          )}
+        />
+      );
     },
   },
   {

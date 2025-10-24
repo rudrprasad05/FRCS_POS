@@ -133,7 +133,7 @@ export default function ConfigTab({
                 description="This will make the entity visible again."
                 confirmWord="activate"
                 actionLabel="Activate"
-                successMessage="entity Activated"
+                successMessage="Entity Activated"
                 errorMessage="Error Occurred"
                 buttonVariant="default"
                 buttonIcon={<Check />}

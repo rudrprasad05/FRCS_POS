@@ -63,10 +63,7 @@ export function EditorTab({ company }: { company: Company }) {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: company.name,
-      adminUserId:
-        selectedUser && selectedUser?.trim().length > 0
-          ? selectedUser
-          : company.adminUserId,
+      adminUserId: company.adminUserId,
     },
   });
 
@@ -83,10 +80,7 @@ export function EditorTab({ company }: { company: Company }) {
       setAdminUsers(data.data as User[]);
 
       form.reset({
-        adminUserId:
-          selectedUser && selectedUser?.trim().length > 0
-            ? selectedUser
-            : company.adminUserId,
+        adminUserId: company.adminUserId,
       });
 
       setLoading(false);
