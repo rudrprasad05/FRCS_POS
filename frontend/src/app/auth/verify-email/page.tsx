@@ -90,20 +90,15 @@ export default function VerifyEmailPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={state === "sent"}
               />
             </div>
             <Button
               type="submit"
               className="w-full"
               size="lg"
-              disabled={!email || state === "sent"}
+              disabled={!email}
             >
-              {state === "verifying" ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                "Resend verification link"
-              )}
+              Resend verification link
             </Button>
           </form>
         ) : (

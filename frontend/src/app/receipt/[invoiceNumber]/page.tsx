@@ -1,11 +1,18 @@
 "use client";
 
 import { DownloadRecieptFromServer, GetSaleByReceipt } from "@/actions/Sale";
+import { EmailReceiptDialog } from "@/components/company/pos/EmailReceiptDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Sale } from "@/types/models";
-import { ArrowLeftIcon, Check, Download, Loader2, Mail } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Check,
+  Download,
+  Loader2,
+  TriangleAlert,
+} from "lucide-react";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -97,11 +104,25 @@ export default function ReceiptPage() {
   }, [params, getDate]);
 
   if (state == EReceiptPageState.LOADING) {
-    return <>loading</>;
+    return (
+      <div className="w-screen h-screen grid place-items-center">
+        <div className="flex items-center flex-col ">
+          <Loader2 className="animate-spin" />
+          Loading Receipt
+        </div>
+      </div>
+    );
   }
 
   if (sale == null || state == EReceiptPageState.ERROR) {
-    return <>error</>;
+    return (
+      <div className="w-screen h-screen grid place-items-center">
+        <div className="flex items-center flex-col ">
+          <TriangleAlert className="animate-spin" />
+          Error
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -224,28 +245,18 @@ export default function ReceiptPage() {
             </Button>
           </div>
           <div className="flex items-start gap-2">
-            <div>
-              <Button
-                onClick={handleDownloadReceipt}
-                disabled={isDownloading}
-                className="flex items-center gap-2"
-              >
-                {isDownloading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
             <div
               onClick={handleDownloadReceipt}
               className="bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 rounded-full p-2"
             >
-              <Mail className="w-4 h-4" />
+              {isDownloading ? (
+                <Loader2 className="animate-spin w-4 h-4" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
             </div>
+            <EmailReceiptDialog />
           </div>
-
-          {/* Back to POS Button */}
         </div>
       </div>
     </div>

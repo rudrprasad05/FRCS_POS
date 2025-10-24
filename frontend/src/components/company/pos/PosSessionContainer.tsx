@@ -197,7 +197,7 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
   //     };
   //   }, [uuid, validateUUID]);
 
-  if (initialLoad) {
+  if (initialLoad && !connectionRef.current) {
     return (
       <div className="w-screen h-screen grid place-items-center">
         <div className="flex items-center flex-col gap-3">

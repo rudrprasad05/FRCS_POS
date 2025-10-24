@@ -29,6 +29,7 @@ namespace FrcsPos.Repository
         private readonly UserManager<User> _userManager;
         private readonly IAzureBlobService _azureBlobService;
         private readonly ISaleMapper _saleMapper;
+        private readonly IRedisCacheService _redisCacheService;
 
 
 
@@ -38,7 +39,8 @@ namespace FrcsPos.Repository
             UserManager<User> userManager,
             IAzureBlobService azureBlobService,
             ISaleMapper saleMapper,
-            IEmailService emailService
+            IEmailService emailService,
+            IRedisCacheService redisCacheService
         )
         {
             _userManager = userManager;
@@ -47,6 +49,7 @@ namespace FrcsPos.Repository
             _azureBlobService = azureBlobService;
             _saleMapper = saleMapper;
             _emailService = emailService;
+            _redisCacheService = redisCacheService;
 
         }
 
@@ -217,7 +220,33 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<string>> GenerateReceiptPDF(string uuid)
         {
-            var sale = await _context.Sales
+            var maybeObjKey = $"frcs/{uuid}.pdf";
+            var checkUrl = await _azureBlobService.GetImageSignedUrl(maybeObjKey);
+            if (checkUrl != null && !string.IsNullOrEmpty(checkUrl))
+            {
+                return ApiResponse<string>.Ok(data: checkUrl);
+            }
+
+            string cacheKey = $"receipt:{uuid}";
+            var cachedReceipt = await _redisCacheService.GetAsync<Sale>(cacheKey);
+
+            if (cachedReceipt != null)
+            {
+                var pdfBytes = GenerateReceiptPdfBytes(cachedReceipt);
+                var formFile = ToFormFile(pdfBytes, $"{cachedReceipt.InvoiceNumber}.pdf");
+
+                var objKey = await _azureBlobService.UploadFileAsync(formFile, cachedReceipt.InvoiceNumber);
+                if (objKey == null || string.IsNullOrEmpty(objKey))
+                {
+                    return ApiResponse<string>.Fail(message: "invalid pdf url");
+                }
+
+                var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
+                return ApiResponse<string>.Ok(data: fileUrl);
+            }
+            else
+            {
+                var sale = await _context.Sales
                 .Include(s => s.Company)
                 .Include(s => s.Items)
                     .ThenInclude(si => si.ProductVariant.Product)
@@ -227,28 +256,22 @@ namespace FrcsPos.Repository
                 .Include(s => s.Cashier)
                 .FirstOrDefaultAsync(s => s.InvoiceNumber == uuid);
 
-            if (sale == null)
-                return ApiResponse<string>.NotFound(message: "Sale not found");
+                if (sale == null)
+                    return ApiResponse<string>.NotFound(message: "Sale not found");
 
-            var maybeObjKey = $"frcs/{uuid}.pdf";
-            var checkUrl = await _azureBlobService.GetImageSignedUrl(maybeObjKey);
-            if (checkUrl != null && !string.IsNullOrEmpty(checkUrl))
-            {
-                return ApiResponse<string>.Ok(data: checkUrl);
+                // Generate PDF bytes using QuestPDF
+                var pdfBytes = GenerateReceiptPdfBytes(sale);
+                var formFile = ToFormFile(pdfBytes, $"{sale.InvoiceNumber}.pdf");
+
+                var objKey = await _azureBlobService.UploadFileAsync(formFile, sale.InvoiceNumber);
+                if (objKey == null || string.IsNullOrEmpty(objKey))
+                {
+                    return ApiResponse<string>.Fail(message: "invalid pdf url");
+                }
+
+                var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
+                return ApiResponse<string>.Ok(data: fileUrl);
             }
-
-            // Generate PDF bytes using QuestPDF
-            var pdfBytes = GenerateReceiptPdfBytes(sale);
-            var formFile = ToFormFile(pdfBytes, $"{sale.InvoiceNumber}.pdf");
-
-            var objKey = await _azureBlobService.UploadFileAsync(formFile, sale.InvoiceNumber);
-            if (objKey == null || string.IsNullOrEmpty(objKey))
-            {
-                return ApiResponse<string>.Fail(message: "invalid pdf url");
-            }
-
-            var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
-            return ApiResponse<string>.Ok(data: fileUrl);
         }
         private static IFormFile ToFormFile(byte[] fileBytes, string fileName)
         {
@@ -270,140 +293,117 @@ namespace FrcsPos.Repository
                 container.Page(page =>
                 {
                     page.Margin(0);
-                    page.Size(400, 600); // Narrower receipt-like dimensions
-                    page.PageColor("#1a1a1a"); // Dark background
+                    page.Size(400, 600); // Receipt-style narrow width
+                    page.PageColor(Colors.White); // White background
 
                     page.Content().Padding(30).Column(col =>
                     {
                         col.Spacing(20);
 
-                        // Header with company name
+                        // === HEADER ===
                         col.Item()
                             .AlignCenter()
                             .Text(sale.Company.Name.ToUpper())
                             .FontSize(18)
-                            .SemiBold()           // <- replaces FontWeight
-                            .FontColor("#ffffff");
+                            .SemiBold()
+                            .FontColor(Colors.Black);
 
-                        // Served by line
-                        col.Item().AlignCenter().Text($"Served By: {sale.Cashier.UserName}")
+                        col.Item()
+                            .AlignCenter()
+                            .Text($"Served By: {sale.Cashier.UserName}")
                             .FontSize(12)
-                            .FontColor("#9ca3af");
+                            .FontColor(Colors.Grey.Darken2);
 
-                        col.Item().LineHorizontal(1).LineColor("#374151");
+                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken1);
 
-                        // Receipt details section
+                        // === RECEIPT DETAILS ===
                         col.Item().Column(details =>
                         {
                             details.Spacing(8);
 
                             details.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Invoice #:")
-                                    .FontSize(11)
-                                    .FontColor("#9ca3af");
-                                row.RelativeItem().AlignRight().Text(sale.InvoiceNumber)
-                                    .FontSize(11)
-                                    .FontColor("#ffffff");
+                                row.RelativeItem().Text("Invoice #:").FontSize(11).FontColor(Colors.Grey.Darken1);
+                                row.RelativeItem().AlignRight().Text(sale.InvoiceNumber).FontSize(11).FontColor(Colors.Black);
                             });
 
                             details.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Date:")
-                                    .FontSize(11)
-                                    .FontColor("#9ca3af");
-                                row.RelativeItem().AlignRight().Text(sale.CreatedOn.ToString("MMM d, yyyy"))
-                                    .FontSize(11)
-                                    .FontColor("#ffffff");
+                                row.RelativeItem().Text("Date:").FontSize(11).FontColor(Colors.Grey.Darken1);
+                                row.RelativeItem().AlignRight().Text(sale.CreatedOn.ToString("MMM d, yyyy")).FontSize(11).FontColor(Colors.Black);
                             });
 
                             details.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Time:")
-                                    .FontSize(11)
-                                    .FontColor("#9ca3af");
-                                row.RelativeItem().AlignRight().Text(sale.CreatedOn.ToString("hh:mm tt"))
-                                    .FontSize(11)
-                                    .FontColor("#ffffff");
+                                row.RelativeItem().Text("Time:").FontSize(11).FontColor(Colors.Grey.Darken1);
+                                row.RelativeItem().AlignRight().Text(sale.CreatedOn.ToString("hh:mm tt")).FontSize(11).FontColor(Colors.Black);
                             });
 
                             details.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Terminal:")
-                                    .FontSize(11)
-                                    .FontColor("#9ca3af");
-                                row.RelativeItem().AlignRight().Text(sale.PosSession.PosTerminal.Name)
-                                    .FontSize(11)
-                                    .FontColor("#ffffff");
+                                row.RelativeItem().Text("Terminal:").FontSize(11).FontColor(Colors.Grey.Darken1);
+                                row.RelativeItem().AlignRight().Text(sale.PosSession.PosTerminal.Name).FontSize(11).FontColor(Colors.Black);
                             });
                         });
 
-                        col.Item().LineHorizontal(1).LineColor("#374151");
+                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken1);
 
-                        // Items Purchased section
-                        col.Item().Text("Items Purchased")
+                        col.Item()
+                            .Text("Items Purchased")
                             .FontSize(14)
-                            .SemiBold()           // <- replaces FontWeight
-                            .FontColor("#ffffff");
+                            .SemiBold()
+                            .FontColor(Colors.Black);
 
-                        // Items list
                         col.Item().Column(items =>
                         {
                             foreach (var item in sale.Items)
                             {
-                                items.Item().Padding(8).Row(row =>
+                                items.Item().PaddingVertical(6).Row(row =>
                                 {
                                     row.RelativeItem(3).Column(itemDetails =>
                                     {
                                         itemDetails.Item().Text(item.ProductVariant.Product.Name)
                                             .FontSize(12)
-                                            .FontColor("#ffffff");
+                                            .FontColor(Colors.Black);
+
                                         itemDetails.Item().Text($"SKU: {item.ProductVariant.Product.Sku}")
                                             .FontSize(10)
-                                            .FontColor("#9ca3af");
+                                            .FontColor(Colors.Grey.Darken2);
+
                                         itemDetails.Item().Text($"{item.Quantity} x {item.UnitPrice:C}")
                                             .FontSize(10)
-                                            .FontColor("#9ca3af");
+                                            .FontColor(Colors.Grey.Darken2);
                                     });
 
                                     row.RelativeItem(1).AlignRight().Text(item.LineTotal.ToString("C"))
                                         .FontSize(12)
-                                        .FontSize(18)
-                                        .Medium()           // <- replaces FontWeight
-                                        .FontColor("#ffffff");
+                                        .Medium()
+                                        .FontColor(Colors.Black);
                                 });
 
+                                // Tax per line
                                 items.Item().PaddingLeft(8).Text($"Tax: {(item.LineTotal * 0.125m):P1}")
                                     .FontSize(10)
-                                    .FontColor("#9ca3af");
+                                    .FontColor(Colors.Grey.Darken2);
                             }
                         });
 
-                        col.Item().LineHorizontal(1).LineColor("#374151");
+                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken1);
 
-                        // Totals section
                         col.Item().Column(totals =>
                         {
                             totals.Spacing(4);
 
                             totals.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Subtotal:")
-                                    .FontSize(12)
-                                    .FontColor("#9ca3af");
-                                row.RelativeItem().AlignRight().Text(sale.Subtotal.ToString("C"))
-                                    .FontSize(12)
-                                    .FontColor("#ffffff");
+                                row.RelativeItem().Text("Subtotal:").FontSize(12).FontColor(Colors.Grey.Darken2);
+                                row.RelativeItem().AlignRight().Text(sale.Subtotal.ToString("C")).FontSize(12).FontColor(Colors.Black);
                             });
 
                             totals.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Tax Total:")
-                                    .FontSize(12)
-                                    .FontColor("#9ca3af");
-                                row.RelativeItem().AlignRight().Text(sale.TaxTotal.ToString("C"))
-                                    .FontSize(12)
-                                    .FontColor("#ffffff");
+                                row.RelativeItem().Text("Tax Total:").FontSize(12).FontColor(Colors.Grey.Darken2);
+                                row.RelativeItem().AlignRight().Text(sale.TaxTotal.ToString("C")).FontSize(12).FontColor(Colors.Black);
                             });
 
                             totals.Item().PaddingTop(8).Row(row =>
@@ -411,11 +411,12 @@ namespace FrcsPos.Repository
                                 row.RelativeItem().Text("Total:")
                                     .FontSize(16)
                                     .SemiBold()
-                                    .FontColor("#10b981"); // Green color for total
+                                    .FontColor(Colors.Green.Darken3);
+
                                 row.RelativeItem().AlignRight().Text(sale.Total.ToString("C"))
                                     .FontSize(16)
                                     .Bold()
-                                    .FontColor("#10b981");
+                                    .FontColor(Colors.Green.Darken3);
                             });
                         });
 
@@ -423,11 +424,12 @@ namespace FrcsPos.Repository
                         {
                             footer.Item().Text("Thank you for shopping with us!")
                                 .FontSize(11)
-                                .FontColor("#9ca3af")
+                                .FontColor(Colors.Grey.Darken2)
                                 .AlignCenter();
+
                             footer.Item().Text("Please keep this receipt for your records.")
                                 .FontSize(10)
-                                .FontColor("#6b7280")
+                                .FontColor(Colors.Grey.Darken1)
                                 .AlignCenter();
                         });
                     });
@@ -440,22 +442,40 @@ namespace FrcsPos.Repository
 
         public async Task<ApiResponse<SaleDTO>> GetReceiptAsync(string uuid)
         {
-            var sale = await _context.Sales
-                    .Include(s => s.Company)
-                    .Include(s => s.Items)
-                        .ThenInclude(si => si.ProductVariant.Product)
-                            .ThenInclude(p => p.TaxCategory)
-                    .Include(s => s.PosSession)
-                        .ThenInclude(ps => ps.PosTerminal)
-                    .Include(s => s.Cashier)
-                    .FirstOrDefaultAsync(s => s.InvoiceNumber == uuid);
+            string cacheKey = $"receipt:{uuid}";
+            var cachedReceipt = await _redisCacheService.GetAsync<Sale>(cacheKey);
 
-            if (sale == null)
-                return ApiResponse<SaleDTO>.NotFound(message: "Sale not found");
-            if (sale.Company == null)
-                return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
+            if (cachedReceipt != null)
+            {
+                var pdfBytes = GenerateReceiptPdfBytes(cachedReceipt);
+                var formFile = ToFormFile(pdfBytes, $"{cachedReceipt.InvoiceNumber}.pdf");
 
-            return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
+                var objKey = await _azureBlobService.UploadFileAsync(formFile, cachedReceipt.InvoiceNumber);
+                if (objKey == null || string.IsNullOrEmpty(objKey))
+                {
+                    return ApiResponse<SaleDTO>.Fail(message: "invalid pdf url");
+                }
+
+                var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
+                return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(cachedReceipt));
+            }
+            else
+            {
+                var sale = await _context.Sales
+                .Include(s => s.Company)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant.Product)
+                        .ThenInclude(p => p.TaxCategory)
+                .Include(s => s.PosSession)
+                    .ThenInclude(ps => ps.PosTerminal)
+                .Include(s => s.Cashier)
+                .FirstOrDefaultAsync(s => s.InvoiceNumber == uuid);
+
+                if (sale == null)
+                    return ApiResponse<SaleDTO>.NotFound(message: "Sale not found");
+
+                return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
+            }
         }
 
         public async Task<ApiResponse<List<SaleDTO>>> GetSaleByCompanyAsync(RequestQueryObject queryObject)

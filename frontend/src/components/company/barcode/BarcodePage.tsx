@@ -10,7 +10,6 @@ import {
   Camera,
   CheckCircle,
   Copy,
-  Loader2,
   Maximize,
   Minimize,
   Trash2,
@@ -227,10 +226,10 @@ export default function BarcodeScanner() {
     }
   }, []);
 
-  // Initialize connection on mount
-  useEffect(() => {
-    validateUUID();
-  }, [validateUUID]);
+  //   // Initialize connection on mount
+  //   useEffect(() => {
+  //     validateUUID();
+  //   }, [validateUUID]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -259,10 +258,10 @@ export default function BarcodeScanner() {
 
   if (initialLoad) {
     return (
-      <div className="h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-white mx-auto mb-4" />
-          <p className="text-gray-400">Connecting to terminal...</p>
+      <div className="w-screen h-screen grid place-items-center">
+        <div className="flex items-center flex-col gap-3">
+          <span className="mt-2">Connect To Server</span>
+          <Button onClick={() => validateUUID()}>Connect</Button>
         </div>
       </div>
     );

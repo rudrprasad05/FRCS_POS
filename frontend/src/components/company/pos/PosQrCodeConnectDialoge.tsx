@@ -28,10 +28,11 @@ export default function PosQrCodeConnectDialoge() {
 
   const { qr, setQr } = usePosSession();
 
-  const generateQr = async () => {
+  const generateQr = () => {
     setIsGeneratingQr(true);
     try {
       setQr(`${baseUrl}/quickconnect/${sessionId}`);
+      setIsQrGenerated(true);
     } catch (error) {
       toast.error("Error generating QR Code", { description: error as string });
     } finally {
