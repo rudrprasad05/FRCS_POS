@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { CheckCircle2, Loader2, Mail, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type PageState = "resend" | "sent" | "verifying" | "verified" | "failed";
@@ -27,17 +27,9 @@ export default function VerifyEmailPage() {
   const userId = searchParams.get("userId");
   const code = searchParams.get("code");
 
-  // Auto-verify if we have userId + code
-  useEffect(() => {
-    if (userId && code) {
-      verifyEmail();
-    } else {
-      setState("resend");
-    }
-  }, [userId, code]);
-
-  const verifyEmail = async () => {
+  const verifyEmail = useCallback(async () => {
     setState("verifying");
+
     const res = await VerifyEmail({ userId: userId!, uuid: code! });
 
     if (res.success) {
@@ -47,7 +39,15 @@ export default function VerifyEmailPage() {
       setState("failed");
       toast.error("Verification failed", { description: res.message });
     }
-  };
+  }, [userId, code]);
+
+  useEffect(() => {
+    if (userId && code) {
+      verifyEmail();
+    } else {
+      setState("resend");
+    }
+  }, [userId, code, verifyEmail]);
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +104,7 @@ export default function VerifyEmailPage() {
         ) : (
           <div className="space-y-4">
             <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-              If you don't see the email, check your spam folder.
+              If you don&apos;t see the email, check your spam folder.
             </div>
           </div>
         )}
