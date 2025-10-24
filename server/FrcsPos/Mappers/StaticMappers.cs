@@ -73,6 +73,7 @@ namespace FrcsPos.Mappers
 
             if (request.Product != null)
             {
+                dto.IsPerishable = request.Product.IsPerishable;
                 dto.Product = request.Product.FromModelToDtoStatic();
             }
 

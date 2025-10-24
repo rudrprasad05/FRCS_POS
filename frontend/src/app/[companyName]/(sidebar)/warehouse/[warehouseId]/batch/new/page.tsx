@@ -15,11 +15,12 @@ import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import { NewBatchData, NewBatchDataSchema } from "@/types/forms/zod";
+import { ILoadPreCreationInfo } from "@/types/res";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { PackagePlus } from "lucide-react";
+import { Loader2, PackagePlus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -30,6 +31,8 @@ export default function StepperForm() {
   const companyName = String(params.companyName);
   const warehouseId = String(params.warehouseId);
   const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
@@ -78,7 +81,26 @@ export default function StepperForm() {
     });
   };
 
+  useEffect(() => {
+    if (currentStep < steps.length - 1) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    // Cleanup the timeout on unmount or re-run
+    return () => clearTimeout(timer);
+  }, [currentStep]);
+
   const onSubmit = async (data: NewBatchData) => {
+    if (isLoading) {
+      console.log("click2");
+      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(true);
+
     const res = await CreateProductBatch(data);
 
     if (res.success) {
@@ -91,6 +113,7 @@ export default function StepperForm() {
     } else {
       toast.error("Error creating batch", { description: res.message });
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -125,7 +148,9 @@ export default function StepperForm() {
             <BatchCreationStep3 form={form} products={data?.data?.products} />
           )}
 
-          {currentStep === 3 && <Step4 form={form} />}
+          {currentStep === 3 && (
+            <Step4 form={form} data={data?.data as ILoadPreCreationInfo} />
+          )}
 
           <Separator className="my-4 mt-auto" />
 
@@ -138,6 +163,7 @@ export default function StepperForm() {
             >
               Back
             </Button>
+
             {currentStep < steps.length - 1 ? (
               <Button
                 type="button"
@@ -149,7 +175,14 @@ export default function StepperForm() {
                 Next
               </Button>
             ) : (
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
+              <Button
+                disabled={isLoading || isSubmitting}
+                type="submit"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {(isLoading || isSubmitting) && (
+                  <Loader2 className="animate-spin" />
+                )}
                 Finish
               </Button>
             )}
@@ -160,7 +193,13 @@ export default function StepperForm() {
   );
 }
 
-function Step4({ form }: { form: UseFormReturn<NewBatchData> }) {
+function Step4({
+  form,
+  data,
+}: {
+  form: UseFormReturn<NewBatchData>;
+  data: ILoadPreCreationInfo;
+}) {
   const values = form.getValues();
 
   return (
@@ -181,6 +220,14 @@ function Step4({ form }: { form: UseFormReturn<NewBatchData> }) {
           <div>
             <strong>Supplier:</strong> {values.supplierId || "—"}
           </div>
+          <div>
+            <strong>Product:</strong>{" "}
+            {data.products.find((x) => x.uuid == values.productId)?.name}
+          </div>
+          <div>
+            <strong>Warehouse:</strong>{" "}
+            {data.warehouses.find((x) => x.uuid == values.warehouseId)?.name}
+          </div>
         </CardContent>
       </Card>
 
@@ -189,7 +236,19 @@ function Step4({ form }: { form: UseFormReturn<NewBatchData> }) {
         <CardHeader>
           <LargeText>Expiry Info</LargeText>
         </CardHeader>
-        <CardContent className="space-y-1 text-sm"></CardContent>
+        <CardContent className="space-y-1 text-sm">
+          <div>
+            <strong>Quantity:</strong> {values.quantity || "—"}
+          </div>
+          <div>
+            <strong>Expiry:</strong>{" "}
+            {values.expiryDate?.toLocaleDateString() || "—"}
+          </div>
+          <div>
+            <strong>Receive:</strong>{" "}
+            {values.receiveDate?.toLocaleDateString() || "—"}
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

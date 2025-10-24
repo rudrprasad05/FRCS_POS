@@ -1,5 +1,6 @@
 "use client";
 import { CreateProductAsync, GetNewPageInfo } from "@/actions/Product";
+import NoDataContainer from "@/components/containers/NoDataContainer";
 import { LargeText, MutedText } from "@/components/font/HeaderFonts";
 import StepperCircles from "@/components/global/StepperCircles";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ const customExpiryHours = [6, 12, 24, 48, 72];
 export default function StepperForm() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const companyName = params.companyName;
@@ -87,11 +89,20 @@ export default function StepperForm() {
     },
   });
 
-  const { data } = useQuery({
+  const { data, error } = useQuery({
     queryKey: ["NewProductData", companyName],
     queryFn: () => GetNewPageInfo(companyName?.toString()),
     staleTime: FIVE_MINUTE_CACHE,
   });
+
+  useEffect(() => {
+    form.setValue("taxCategoryId", String(data?.data?.taxCategories[0].uuid));
+  }, [data, form]);
+
+  if (error || !data?.success || !data.data) {
+    toast.error("Failed to fetch product data");
+    return <NoDataContainer />;
+  }
 
   const nextStep = async () => {
     let fieldsToValidate: (keyof ProductFormData)[] = [];
@@ -133,11 +144,11 @@ export default function StepperForm() {
   const onSubmit = async (data: ProductFormData) => {
     if (isLoading) {
       console.log("click2");
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     console.log("click");
 
     const formData = new FormData();
@@ -172,12 +183,8 @@ export default function StepperForm() {
     } else {
       toast.info("Failed to upload", { description: res.message });
     }
-    setIsLoading(false);
+    setIsSubmitting(false);
   };
-
-  useEffect(() => {
-    form.setValue("taxCategoryId", String(data?.data?.taxCategories[0].uuid));
-  }, [data, form]);
 
   return (
     <div className="mx-auto p-6 h-full flex flex-col">
@@ -240,11 +247,14 @@ export default function StepperForm() {
               </Button>
             ) : (
               <Button
-                disabled={isLoading}
+                disabled={isLoading || isSubmitting}
                 type="submit"
                 className="bg-green-600 hover:bg-green-700"
               >
-                {isLoading && <Loader2 className="animate-spin" />}Finish
+                {(isLoading || isSubmitting) && (
+                  <Loader2 className="animate-spin" />
+                )}
+                Finish
               </Button>
             )}
           </div>

@@ -58,6 +58,19 @@ export const NewBatchDataSchema = z.object({
     .nullable(),
 });
 
+export const EditBatchDataSchema = z.object({
+  batchId: z.uuid({ error: "no supplier selected" }),
+  quantity: z.number({ error: "Quantity is required" }).int().nonnegative(),
+  expiryDate: z
+    .date({ error: "Expiry date is required" })
+    .optional()
+    .nullable(),
+  receivedDate: z
+    .date({ error: "Expiry date is required" })
+    .optional()
+    .nullable(),
+});
+
 export const ResetPasswordSchema = z
   .object({
     code: z.string().min(1),
@@ -127,6 +140,7 @@ export type ProductFormData = z.infer<typeof productSchema>;
 export type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
 export type EmailReceiptSchemaType = z.infer<typeof EmailReceipt>;
 export type NewBatchData = z.output<typeof NewBatchDataSchema>;
+export type EditBatchData = z.output<typeof EditBatchDataSchema>;
 export type NewMediaFormType = z.infer<typeof NewMediaFormSchema>;
 export type SignInFormType = z.infer<typeof SignInForm>;
 export type RegisterFormType = z.infer<typeof RegisterForm>;

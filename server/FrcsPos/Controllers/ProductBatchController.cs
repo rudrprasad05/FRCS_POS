@@ -39,6 +39,34 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+        [Authorize(Roles = "admin")]
+        [HttpPatch("edit")]
+        public async Task<IActionResult> Edit([FromBody] EditProductBatchRequest newProductBatchRequest)
+        {
+            var model = await _productBatchRepository.EditAsync(newProductBatchRequest);
+
+            return StatusCode(model.StatusCode, model);
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpDelete("soft-delete")]
+        public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productBatchRepository.SoftDeleteAsync(queryObject);
+
+            return StatusCode(model.StatusCode, model);
+
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpDelete("activate")]
+        public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productBatchRepository.ActivateAsync(queryObject);
+
+            return StatusCode(model.StatusCode, model);
+
+        }
 
         [HttpGet("get-all-by-warehouse")]
         public async Task<IActionResult> GetAll([FromQuery] RequestQueryObject queryObject)
@@ -51,6 +79,13 @@ namespace FrcsPos.Controllers
             }
 
             return Ok(model);
+        }
+        [HttpGet("get-by-uuid")]
+        public async Task<IActionResult> GetOnByUUID([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _productBatchRepository.GetOneByUUID(queryObject);
+
+            return StatusCode(model.StatusCode, model);
         }
 
         [HttpGet("load-pre-new")]

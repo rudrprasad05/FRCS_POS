@@ -43,6 +43,25 @@ namespace FrcsPos.Repository
             _productVariantMapper = productVariantMapper;
         }
 
+        public async Task<ApiResponse<ProductBatchDTO>> ActivateAsync(RequestQueryObject queryObject)
+        {
+            var product = await _context.ProductBatches
+               .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductBatchDTO>.NotFound();
+            }
+
+            product.IsDeleted = false;
+            product.IsActive = true;
+            product.UpdatedOn = DateTime.UtcNow;
+
+
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<ProductBatchDTO>.Ok(product.FromModelToDto());
+        }
+
         public async Task<ApiResponse<ProductBatchDTO>> CreateAsync(NewProductBatchRequest request)
         {
             var company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == request.CompanyName);
@@ -94,6 +113,47 @@ namespace FrcsPos.Repository
                 Success = true,
                 StatusCode = 200,
                 Data = result,
+            };
+        }
+
+        public async Task<ApiResponse<ProductBatchDTO>> EditAsync(EditProductBatchRequest request)
+        {
+            var batch = await _context.ProductBatches
+            .Include(x => x.ProductVariant)
+            .ThenInclude(x => x.Product)
+                .FirstOrDefaultAsync(c => c.UUID == request.BatchId);
+            if (batch == null)
+            {
+                return ApiResponse<ProductBatchDTO>.Fail(message: "invalid params");
+            }
+
+            batch.Quantity = request.Quantity;
+            batch.RecievedDate = request.ReceivedDate;
+            batch.UpdatedOn = DateTime.UtcNow;
+
+            if (batch.ProductVariant.Product.IsPerishable)
+            {
+                batch.ExpiryDate = request.ExpiryDate;
+
+                if (batch.ExpiryDate < batch.RecievedDate)
+                {
+                    return ApiResponse<ProductBatchDTO>.Fail(message: "batch expires before receive date");
+                }
+            }
+            else
+            {
+                batch.ExpiryDate = null;
+            }
+
+
+
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<ProductBatchDTO>
+            {
+                Success = true,
+                StatusCode = 200,
+                Data = batch.FromModelToDto(),
             };
         }
 
@@ -173,9 +233,13 @@ namespace FrcsPos.Repository
             }
 
             var company = await _context.Companies
-                .Include(c => c.Suppliers)
+                .Include(c => c.Suppliers
+                    .Where(x => x.IsActive && !x.IsDeleted
+                ))
                 .Include(c => c.Products)
-                    .ThenInclude(p => p.Variants)
+                    .ThenInclude(p => p.Variants
+                        .Where(x => x.IsActive && !x.IsDeleted
+                    ))
                 .FirstOrDefaultAsync(c => c.Name == queryObject.CompanyName);
 
             if (company == null)
@@ -213,9 +277,36 @@ namespace FrcsPos.Repository
             return ApiResponse<LoadPreCreationInfo>.Ok(dto);
         }
 
-        public Task<ApiResponse<ProductBatchDTO>> SoftDeleteAsync(RequestQueryObject queryObject)
+        public async Task<ApiResponse<ProductBatchDTO>> GetOneByUUID(RequestQueryObject queryObject)
         {
-            throw new NotImplementedException();
+            var batch = await _context.ProductBatches
+                .Include(x => x.ProductVariant)
+                    .ThenInclude(x => x.Product)
+                .FirstOrDefaultAsync(x => x.UUID == queryObject.UUID && x.Company.Name == queryObject.CompanyName);
+            if (batch == null)
+            {
+                return ApiResponse<ProductBatchDTO>.NotFound();
+            }
+
+            return ApiResponse<ProductBatchDTO>.Ok(batch.FromModelToDto());
+        }
+
+        public async Task<ApiResponse<ProductBatchDTO>> SoftDeleteAsync(RequestQueryObject queryObject)
+        {
+            var product = await _context.ProductBatches
+                .FirstOrDefaultAsync(p => p.UUID == queryObject.UUID);
+            if (product == null)
+            {
+                return ApiResponse<ProductBatchDTO>.NotFound();
+            }
+
+            product.IsDeleted = true;
+            product.IsActive = false;
+            product.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<ProductBatchDTO>.Ok(product.FromModelToDto());
         }
     }
 }

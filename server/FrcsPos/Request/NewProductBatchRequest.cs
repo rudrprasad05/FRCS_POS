@@ -16,4 +16,13 @@ namespace FrcsPos.Request
         public DateTime ReceiveDate { get; set; } = DateTime.UtcNow;
 
     }
+
+    public class EditProductBatchRequest
+    {
+        public string BatchId { get; set; } = string.Empty;
+        public int Quantity { get; set; } = 1;
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime ReceivedDate { get; set; } = DateTime.UtcNow;
+
+    }
 }

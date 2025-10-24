@@ -179,7 +179,7 @@ const ProductLink = ({ pb }: { pb: ProductBatch }) => {
     <div className="flex gap-2">
       <div className="flex items-center gap-2">
         <Link
-          href={`/${companyName}/warehouse/${warehouseId}/batch/${pb.uuid}/view`}
+          href={`/${companyName}/warehouse/${warehouseId}/batch/${pb.uuid}/edit`}
         >
           <ExternalLink className="w-4 h-4" />
         </Link>

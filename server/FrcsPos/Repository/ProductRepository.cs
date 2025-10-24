@@ -290,7 +290,7 @@ namespace FrcsPos.Repository
             }
 
             var suppliers = await _context.Suppliers
-                .Where(p => p.Company.Id == company.Id)
+                .Where(p => p.Company.Id == company.Id && p.IsActive && !p.IsDeleted)
                 .ToListAsync();
 
             var taxes = await _context.TaxCategories.Where(x => x.IsActive && !x.IsDeleted).ToListAsync();
