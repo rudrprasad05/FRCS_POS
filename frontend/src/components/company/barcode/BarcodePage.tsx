@@ -49,7 +49,7 @@ export default function BarcodeScanner() {
 
   const createConnection = useCallback(() => {
     const conn = new signalR.HubConnectionBuilder()
-      .withUrl(`${apiUrl}/socket/posHub`, {
+      .withUrl(`${apiUrl}/socket/posHub?terminalId=${id}`, {
         withCredentials: true,
       })
       .withAutomaticReconnect({

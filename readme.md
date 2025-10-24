@@ -236,3 +236,9 @@ If you encounter any issues:
 ---
 
 **Built with ❤️ for modern retail businesses**
+
+testing
+
+dotnet test --collect:"XPlat Code Coverage" --logger trx --results-directory ./coverage
+
+reportgenerator -reports:"./coverage/\*\*/coverage.cobertura.xml" -targetdir:"./coverage-report" -reporttypes:Html
