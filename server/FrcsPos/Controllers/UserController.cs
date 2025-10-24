@@ -164,6 +164,28 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        [Authorize(Roles = "superadmin")]
+        [HttpDelete("soft-delete")]
+        public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _userRepository.SoftDeleteAsync(queryObject);
+
+            return StatusCode(model.StatusCode, model);
+        }
+        [Authorize(Roles = "superadmin")]
+        [HttpDelete("activate")]
+        public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
+        {
+            var model = await _userRepository.Activate(queryObject);
+
+            if (!model.Success)
+            {
+                return BadRequest(model);
+            }
+
+            return Ok(model);
+        }
+
         [Authorize(Roles = "superadmin, admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] RequestQueryObject queryObject)
@@ -240,7 +262,6 @@ namespace FrcsPos.Controllers
                 // Include role(s) in JWT
                 var roles = await _userManager.GetRolesAsync(user);
                 var dto = user.FromUserToDtoStatic();
-                var isSuperAdmin = true;
 
                 if (!string.IsNullOrEmpty(queryObject.CompanyName))
                 {
@@ -254,7 +275,6 @@ namespace FrcsPos.Controllers
                     {
                         return BadRequest(company);
                     }
-                    isSuperAdmin = false;
                 }
 
                 var adminNotification = new NotificationDTO
@@ -263,21 +283,10 @@ namespace FrcsPos.Controllers
                     Message = $"The user {user.UserName} was created",
                     Type = NotificationType.SUCCESS,
                     ActionUrl = $"/admin/users/{user.Id}/view",
-                    IsSuperAdmin = isSuperAdmin,
-                };
-
-                var userNotification = new NotificationDTO
-                {
-                    Title = "Welcome to Tap N Go",
-                    Message = $"Contact an admin for further information",
-                    Type = NotificationType.SUCCESS,
-                    ActionUrl = "#",
-                    IsSuperAdmin = isSuperAdmin,
-                    UserId = user.Id
+                    IsSuperAdmin = true,
                 };
 
                 FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
-                FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
                 await _emailRepository.CreateNewLink(user);
 

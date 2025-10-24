@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Config
 {
+    /// <summary>
+    /// Database config file used to connect to mysql database
+    /// </summary>
     public static class Database
     {
         public static void AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)

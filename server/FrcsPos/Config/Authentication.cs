@@ -14,6 +14,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace FrcsPos.Config
 {
+    /// <summary>
+    /// Authentication file responsible for handling cors and JWT
+    /// </summary>
     public static class Authentication
     {
         public static void AddAuthentication(this IServiceCollection services, IConfiguration configuration)

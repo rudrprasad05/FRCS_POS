@@ -134,7 +134,7 @@ export function EditorTab({ tax }: { tax: TaxCategory }) {
                   {isSubmitting && (
                     <div className="mr-2 h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   )}
-                  {isSubmitting ? "Editing..." : "Edit Product"}
+                  {isSubmitting ? "Editing..." : "Edit Tax"}
                 </Button>
                 <Button
                   type="button"

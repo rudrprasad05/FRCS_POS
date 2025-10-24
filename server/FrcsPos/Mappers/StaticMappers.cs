@@ -224,32 +224,34 @@ namespace FrcsPos.Mappers
             };
         }
 
-        // public static async Task<UserDTO> FromUserToDtoAsync(this User request, UserManager<User> userManager)
-        // {
-        //     if (request == null)
-        //     {
-        //         return new UserDTO
-        //         {
-        //             Id = "id",
-        //             Username = "null",
-        //             Email = "null",
-        //             Token = "null",
-        //             Role = "null"
-        //         };
-        //     }
+        public static NotificationDTO FromModelToDtoStatic(Notification model)
+        {
+            if (model == null)
+                return new NotificationDTO();
 
-        //     // Get roles from UserManager
-        //     var roles = await userManager.GetRolesAsync(request);
+            var dto = new NotificationDTO
+            {
+                UUID = model.UUID,
+                Id = model.Id,
+                CreatedOn = model.CreatedOn,
+                UpdatedOn = model.UpdatedOn,
+                Title = model.Title,
+                Message = model.Message,
+                IsRead = model.IsRead,
+                Type = model.Type,
+                IsSuperAdmin = model.IsSuperAdmin,
+                ActionUrl = model.ActionUrl,
+                UserId = model.UserId,
+                CompanyId = model.CompanyId
+            };
 
-        //     return new UserDTO
-        //     {
-        //         Id = request.Id,
-        //         Username = request.UserName ?? string.Empty,
-        //         Email = request.Email ?? string.Empty,
-        //         Token = request.PasswordHash ?? string.Empty, // or leave blank if not needed
-        //         Role = string.Join(", ", roles) // assuming you want a single string; else use List<string> in DTO
-        //     };
-        // }
+            if (model.User != null)
+            {
+                dto.User = model.User.FromUserToDtoStatic();
+            }
+
+            return dto;
+        }
 
 
     }

@@ -2,6 +2,7 @@
 
 import { GetRefundByUUID } from "@/actions/Refund";
 import ApproveRefundDialoge from "@/components/company/sales/view/ApproveRefundDialoge";
+import RejectRefundDialoge from "@/components/company/sales/view/RejectRefundDialoge";
 import NoDataContainer from "@/components/containers/NoDataContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -185,7 +186,12 @@ export default function RefundRequestPage() {
               <>
                 <Separator />
                 <div>
-                  <h3 className="text-sm font-medium mb-1">Approved By</h3>
+                  <h3 className="text-sm font-medium mb-1">
+                    {refundRequest.status == RefundStatus.APPROVED &&
+                      "Approved By"}
+                    {refundRequest.status == RefundStatus.REJECTED &&
+                      "Rejected By"}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     {refundRequest.approvedBy.username} (
                     {refundRequest.approvedBy.email})
@@ -318,9 +324,7 @@ export default function RefundRequestPage() {
         <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
           {refundRequest.status === RefundStatus.PENDING && (
             <div className="flex justify-end gap-3">
-              <Button variant="outline" size="lg">
-                Reject
-              </Button>
+              <RejectRefundDialoge />
               <ApproveRefundDialoge />
             </div>
           )}

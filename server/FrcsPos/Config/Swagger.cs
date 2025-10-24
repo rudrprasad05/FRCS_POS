@@ -8,6 +8,9 @@ using FrcsPos.Config;
 
 namespace FrcsPos.Config
 {
+    /// <summary>
+    /// swagger docs for development
+    /// </summary>
     public static class SwaggerConfiguration
     {
         public static void AddSwaggerServices(this IServiceCollection services)

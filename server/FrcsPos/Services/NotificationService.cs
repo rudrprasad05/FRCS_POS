@@ -49,20 +49,33 @@ namespace FrcsPos.Service
                     using var scope = _serviceScopeFactory.CreateScope();
                     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    var notification = notificationDTO.FromDTOToModel();
+                    var notification = new Notification
+                    {
+                        UUID = notificationDTO.UUID,
+                        Id = notificationDTO.Id,
+                        CreatedOn = notificationDTO.CreatedOn,
+                        UpdatedOn = notificationDTO.UpdatedOn,
+                        Title = notificationDTO.Title,
+                        Message = notificationDTO.Message,
+                        IsRead = notificationDTO.IsRead,
+                        Type = notificationDTO.Type,
+                        IsSuperAdmin = notificationDTO.IsSuperAdmin,
+                        ActionUrl = notificationDTO.ActionUrl,
+                        UserId = notificationDTO.UserId,
+                        CompanyId = notificationDTO.CompanyId
+                    };
 
                     context.Notifications.Add(notification);
                     await context.SaveChangesAsync();
 
                     _logger.LogInformation("Notification queued: {Title}", notificationDTO.Title);
 
-                    var notificationDto = notification.FromModelToDto();
                     string? userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                     if (!string.IsNullOrEmpty(userId))
-                        await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notificationDto);
+                        await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notificationDTO);
                     else
-                        await _hubContext.Clients.All.SendAsync("ReceiveNotification", notificationDto);
+                        await _hubContext.Clients.All.SendAsync("ReceiveNotification", notificationDTO);
                 }
                 catch (Exception ex)
                 {

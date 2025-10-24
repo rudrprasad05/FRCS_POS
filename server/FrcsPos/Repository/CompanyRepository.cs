@@ -92,19 +92,7 @@ namespace FrcsPos.Repository
                 IsSuperAdmin = true,
             };
 
-            var userNotification = new NotificationDTO
-            {
-                Title = "Company Created",
-                Message = $"The company {result.Name} was created",
-                Type = NotificationType.SUCCESS,
-                ActionUrl = "#",
-                IsSuperAdmin = false,
-                CompanyId = result.Id,
-                UserId = _userContext.UserId
-            };
-
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             string cacheKey = $"company:{company.UUID}";
             await _redisCacheService.SetAsync(cacheKey, company.FromModelToDto(), TimeSpan.FromMinutes(30));
@@ -140,18 +128,7 @@ namespace FrcsPos.Repository
                 IsSuperAdmin = true,
             };
 
-            var userNotification = new NotificationDTO
-            {
-                Title = "Company Deleted",
-                Message = $"The company {model.Name} was deleted",
-                Type = NotificationType.WARNING,
-                ActionUrl = "#",
-                IsSuperAdmin = false,
-                CompanyId = model.Id,
-            };
-
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             string cacheKey = $"company:{model.UUID}";
             await _redisCacheService.SetAsync(cacheKey, model.FromModelToDto(), TimeSpan.FromMinutes(30));
@@ -476,18 +453,7 @@ namespace FrcsPos.Repository
                 IsSuperAdmin = true,
             };
 
-            var userNotification = new NotificationDTO
-            {
-                Title = "Company Activated",
-                Message = $"The company {model.Name} was Activated",
-                Type = NotificationType.WARNING,
-                ActionUrl = "#",
-                IsSuperAdmin = false,
-                CompanyId = model.Id,
-            };
-
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(adminNotification));
-            FireAndForget.Run(_notificationService.CreateBackgroundNotification(userNotification));
 
             string cacheKey = $"company:{model.UUID}";
             await _redisCacheService.SetAsync(cacheKey, model.FromModelToDto(), TimeSpan.FromMinutes(30));

@@ -149,12 +149,13 @@ export interface ProductBatch extends BaseModel {
 
   notifications?: Notification[];
 }
-
 export enum NotificationTypes {
-  "INFO",
-  "WARNING",
-  "ERROR",
-  "SUCCESS",
+  INFO = "INFO",
+  WARNING = "WARNING",
+  ERROR = "ERROR",
+  SUCCESS = "SUCCESS",
+  EXPIRED = "EXPIRED",
+  CRITICAL = "CRITICAL",
 }
 
 export interface QueryObject {
@@ -204,10 +205,10 @@ export enum UserRoles {
 }
 
 export interface User {
-  id: string; // corresponds to IdentityUser's string ID (usually a GUID)
+  id: string;
   username: string;
   email: string;
-  token?: string; // custom field for auth tokens, etc.
+  token?: string;
   role?: UserRoles;
   companies?: CompanyUser[];
   salesAsCashier?: Sale[];
@@ -342,7 +343,7 @@ export function ApiResponseFail<T>(): ApiResponse<T> {
     data: undefined,
     errors: ["Network error"],
     message: "Unable to reach the server",
-    timestamp: Date.now().toString(), // FIXED: need parentheses
+    timestamp: Date.now().toString(),
   };
 }
 

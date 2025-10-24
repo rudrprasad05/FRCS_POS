@@ -21,6 +21,18 @@ export async function GetUser() {
   return res;
 }
 
+export async function SoftDeleteUser(uuid: string): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("DELETE", `user/soft-delete`, {
+    query: { uuid },
+  });
+}
+
+export async function ActivateUser(uuid: string): Promise<ApiResponse<User>> {
+  return RequestWrapper<User>("DELETE", `user/activate`, {
+    query: { uuid },
+  });
+}
+
 export async function GetAllAdmins(
   query?: QueryObject
 ): Promise<ApiResponse<User[]>> {

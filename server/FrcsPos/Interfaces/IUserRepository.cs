@@ -22,6 +22,8 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<UserDTO>> ChangePfp(RequestQueryObject requestQuery, IFormFile formFile);
         public Task<ApiResponse<UserDTO>> ChangeUsernameAsync(RequestQueryObject requestQuery, ChangeUsernameRequest request);
         public Task<ApiResponse<UserDTO>> SafeDelete(string uuid);
+        public Task<ApiResponse<UserDTO>> SoftDeleteAsync(RequestQueryObject queryObject);
+        public Task<ApiResponse<UserDTO>> Activate(RequestQueryObject queryObject);
         public Task<ApiResponse<double>> SumStorage();
         public Task<ApiResponse<List<UserDTO>>> GetAllSuperAdminsNotInCompany(string? role);
         public Task<ApiResponse<List<UserDTO>>> GetUserByCompany(RequestQueryObject queryObject);

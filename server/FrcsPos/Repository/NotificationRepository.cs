@@ -15,72 +15,23 @@ namespace FrcsPos.Repository
     public class NotificationRepository : INotificationRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotificationMapper _notificationMapper;
         public NotificationRepository(
-           ApplicationDbContext applicationDbContext
+           ApplicationDbContext applicationDbContext,
+           INotificationMapper notificationMapper
        )
         {
             _context = applicationDbContext;
-        }
-
-        public async Task<ApiResponse<List<NotificationDTO>>> GetNotificationByUserId(RequestQueryObject queryObject, string userId)
-        {
-            var query = _context.Notifications.AsQueryable();
-
-            // filtering
-            if (queryObject.IsDeleted.HasValue)
-            {
-                query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
-            }
-
-            if (!string.IsNullOrEmpty(userId))
-            {
-                query = query.Where(c => c.UserId == userId);
-            }
-
-            query = query.Where(c => c.IsSuperAdmin == false);
-
-            // Sorting
-            query = queryObject.SortBy switch
-            {
-                ESortBy.ASC => query.OrderBy(c => c.CreatedOn),
-                ESortBy.DSC => query.OrderByDescending(c => c.CreatedOn),
-                _ => query.OrderByDescending(c => c.CreatedOn)
-            };
-
-            var totalCount = await query.CountAsync();
-
-            // Pagination
-            var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-            var notifications = await query
-                .Skip(skip)
-                .Take(queryObject.PageSize)
-                .ToListAsync();
-
-            // Mapping to DTOs
-            var result = new List<NotificationDTO>();
-            foreach (var notification in notifications)
-            {
-                var dto = notification.FromModelToDto();
-                result.Add(dto);
-            }
-
-            return new ApiResponse<List<NotificationDTO>>
-            {
-                Success = true,
-                StatusCode = 200,
-                Data = result,
-                Meta = new MetaData
-                {
-                    TotalCount = totalCount,
-                    PageNumber = queryObject.PageNumber,
-                    PageSize = queryObject.PageSize
-                }
-            };
+            _notificationMapper = notificationMapper;
         }
 
         public async Task<ApiResponse<List<NotificationDTO>>> GetNotificationByCompany(RequestQueryObject queryObject)
         {
-            var query = _context.Notifications.AsQueryable();
+            var query = _context.Notifications
+                .Include(x => x.User)
+                    .ThenInclude(x => x.ProfilePicture)
+                .Where(x => x.User != null)
+                .AsQueryable();
 
             // filtering
             if (queryObject.IsDeleted.HasValue)
@@ -116,7 +67,7 @@ namespace FrcsPos.Repository
             var result = new List<NotificationDTO>();
             foreach (var notification in notifications)
             {
-                var dto = notification.FromModelToDto();
+                var dto = await _notificationMapper.FromModelToDto(notification);
                 result.Add(dto);
             }
 
@@ -179,7 +130,7 @@ namespace FrcsPos.Repository
             var result = new List<NotificationDTO>();
             foreach (var notification in notifications)
             {
-                var dto = notification.FromModelToDto();
+                var dto = await _notificationMapper.FromModelToDto(notification);
                 result.Add(dto);
             }
 
@@ -209,7 +160,7 @@ namespace FrcsPos.Repository
 
             await _context.SaveChangesAsync();
 
-            return ApiResponse<NotificationDTO>.Ok(notification.FromModelToDto());
+            return ApiResponse<NotificationDTO>.Ok(await _notificationMapper.FromModelToDto(notification));
         }
 
         public async Task<ApiResponse<List<NotificationDTO>>> GetAllAsync(RequestQueryObject queryObject)
@@ -222,16 +173,6 @@ namespace FrcsPos.Repository
                 query = query.Where(c => c.IsDeleted == queryObject.IsDeleted.Value);
             }
 
-            if (!string.IsNullOrEmpty(queryObject.UUID))
-            {
-                var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == queryObject.UUID);
-                if (user == null)
-                {
-                    return ApiResponse<List<NotificationDTO>>.Forbidden();
-                }
-                query = query.Where(c => c.UserId == user.Id);
-            }
-
             if (!string.IsNullOrEmpty(queryObject.Role) && queryObject.Role.Equals("superadmin"))
             {
                 query = query.Where(c => c.IsSuperAdmin == true);
@@ -239,6 +180,11 @@ namespace FrcsPos.Repository
             else
             {
                 query = query.Where(c => c.IsSuperAdmin == false);
+
+                if (!string.IsNullOrEmpty(queryObject.CompanyName))
+                {
+                    query = query.Where(c => c.Company != null && c.Company.Name == queryObject.CompanyName);
+                }
             }
 
             // Sorting
@@ -262,7 +208,7 @@ namespace FrcsPos.Repository
             var result = new List<NotificationDTO>();
             foreach (var notification in notifications)
             {
-                var dto = notification.FromModelToDto();
+                var dto = await _notificationMapper.FromModelToDto(notification); ;
                 result.Add(dto);
             }
 

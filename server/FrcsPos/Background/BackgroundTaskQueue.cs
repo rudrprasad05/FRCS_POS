@@ -3,6 +3,10 @@ using FrcsPos.Interfaces;
 
 namespace FrcsPos.Background
 {
+
+    /// <summary>
+    /// Background service used to offload tasks that arent required to be fully complete for the user to get a response
+    /// </summary>
     public class BackgroundTaskQueue : IBackgroundTaskQueue
     {
         private readonly ConcurrentQueue<Func<CancellationToken, Task>> _workItems = new();

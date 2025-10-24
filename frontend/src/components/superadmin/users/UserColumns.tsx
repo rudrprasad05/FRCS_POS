@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
@@ -32,9 +33,19 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
-      const cake = row.original; // Get the entire row data (of type CakeType)
+      const user = row.original; // Get the entire row data (of type CakeType)
 
-      return <div className="flex gap-2">{cake.username}</div>;
+      return (
+        <div className="flex gap-2">
+          <Avatar className="h-5 w-5">
+            <AvatarImage src={user?.profilePictureLink as string} alt="Admin" />
+            <AvatarFallback className="text-sm">
+              {user?.username.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          {user.username}
+        </div>
+      );
     },
   },
   {

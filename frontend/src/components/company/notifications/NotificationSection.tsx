@@ -1,6 +1,6 @@
 "use client";
 
-import { GetAllNotificationsSuperadmin } from "@/actions/Notifications";
+import { GetAllNotificationsAdmin } from "@/actions/Notifications";
 // import { GetAllNotificationsSuperAdmin } from "@/actions/Notifications";
 import { H1, P } from "@/components/font/HeaderFonts";
 import { DataTable } from "@/components/global/DataTable";
@@ -29,13 +29,14 @@ export default function NotificationSection() {
     pageNumber: 1,
     pageSize: 10,
     sortBy: ESortBy.DSC,
-    role: UserRoles.SUPERADMIN,
+    role: UserRoles.ADMIN,
+    companyName,
     uuid: user?.id,
   });
 
   const query = useQuery<ApiResponse<AppNotification[]>, Error>({
     queryKey: ["adminNotifications", pagination],
-    queryFn: () => GetAllNotificationsSuperadmin({ ...pagination }),
+    queryFn: () => GetAllNotificationsAdmin({ ...pagination }),
     staleTime: FIVE_MINUTE_CACHE,
   });
   return (

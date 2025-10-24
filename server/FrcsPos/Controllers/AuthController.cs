@@ -40,6 +40,9 @@ namespace FrcsPos.Controllers
             _mediaMapper = mediaMapper;
         }
 
+        /// <summary>   
+        /// handle logout
+        /// </summary>
         [Authorize]
         [HttpGet("logout")]
         public IActionResult Logout()
@@ -54,7 +57,11 @@ namespace FrcsPos.Controllers
             return Ok(ApiResponse<string>.Ok(data: "ok"));
         }
 
-
+        /// <summary>
+        /// Handle login
+        /// </summary>
+        /// <param name="model">Login Reuest -> email, password</param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {

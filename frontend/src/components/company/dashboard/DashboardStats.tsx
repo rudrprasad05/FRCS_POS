@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { QuickActions } from "@/components/superadmin/dashboard/QuickActions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
 import { formatFileSize } from "@/lib/utils";
 import { Notification, NotificationTypes, UserRoles } from "@/types/models";
@@ -107,20 +108,30 @@ export function CompanyDashboardStats() {
 
               {data?.notifications &&
                 data?.notifications.map((activity, index) => (
-                  <div key={index} className="flex items-center gap-3">
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm flex items-start gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={activity.user?.profilePictureLink as string}
+                            alt="Admin"
+                          />
+                          <AvatarFallback className="text-sm">
+                            {!activity.user && "SYS"}
+                            {activity.user?.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="text-xs flex flex-col items-start gap-0.5">
+                          <p>{activity.message}</p>
+                          <p className="text-muted-foreground">
+                            {formatFullDate(activity.createdOn)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex-shrink-0 mt-0.5">
                       {getNotificationIcon(activity.type as NotificationTypes)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm ">
-                        <span className="font-medium">
-                          {activity.user?.email}
-                        </span>
-                        {activity.message}
-                      </p>
-                      <p className="text-xs ">
-                        {formatFullDate(activity.createdOn)}
-                      </p>
                     </div>
                   </div>
                 ))}

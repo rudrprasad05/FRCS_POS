@@ -6,6 +6,9 @@ using StackExchange.Redis;
 
 namespace FrcsPos.Config
 {
+    /// <summary>
+    /// Redis creation helper. 
+    /// </summary>
     public static class RedisContext
     {
         public static void AddRedisContext(this IServiceCollection services, IConfiguration configuration)

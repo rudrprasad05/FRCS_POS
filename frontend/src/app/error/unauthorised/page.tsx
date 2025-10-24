@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertTriangle, ArrowLeft, Home, LogIn } from "lucide-react";
+import { AlertTriangle, Home, LogIn } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -45,12 +45,6 @@ export default function UnauthorizedPage() {
                 <Link href="/">
                   <Home className="mr-2 h-4 w-4" />
                   Go Home
-                </Link>
-              </Button>
-              <Button variant="ghost" asChild className="w-full">
-                <Link href="javascript:history.back()">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Go Back
                 </Link>
               </Button>
             </div>

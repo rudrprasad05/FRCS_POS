@@ -1,67 +1,76 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+// FrcsPos.Mappers/NotificationMapper.cs
 using System.Threading.Tasks;
 using FrcsPos.Models;
 using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Mappers
 {
-    public static class NotificationMapper
+    public interface INotificationMapper
     {
-        public static NotificationDTO FromModelToDto(this Notification request)
+        Task<NotificationDTO> FromModelToDto(Notification model);
+        Notification FromDtoToModel(NotificationDTO dto);
+    }
+    public class NotificationMapper : INotificationMapper
+    {
+        private readonly IUserMapper _userMapper;
+
+        public NotificationMapper(
+            IUserMapper userMapper
+        )
         {
-            if (request == null)
-            {
+            _userMapper = userMapper;
+        }
+
+        public async Task<NotificationDTO> FromModelToDto(Notification model)
+        {
+            if (model == null)
                 return new NotificationDTO();
-            }
 
             var dto = new NotificationDTO
             {
-                UUID = request.UUID,
-                Id = request.Id,
-                CreatedOn = request.CreatedOn,
-                UpdatedOn = request.UpdatedOn,
-                Title = request.Title,
-                Message = request.Message,
-                IsRead = request.IsRead,
-                Type = request.Type,
-                IsSuperAdmin = request.IsSuperAdmin,
-                ActionUrl = request.ActionUrl,
-                User = request.User?.FromUserToDtoStatic(),
-                Company = request.Company?.FromModelToDto(),
+                UUID = model.UUID,
+                Id = model.Id,
+                CreatedOn = model.CreatedOn,
+                UpdatedOn = model.UpdatedOn,
+                Title = model.Title,
+                Message = model.Message,
+                IsRead = model.IsRead,
+                Type = model.Type,
+                IsSuperAdmin = model.IsSuperAdmin,
+                ActionUrl = model.ActionUrl,
+                Company = model.Company?.FromModelToDto(),
+                UserId = model.UserId,
+                CompanyId = model.CompanyId
             };
 
-            return dto;
-        }
-
-
-        public static Notification FromDTOToModel(this NotificationDTO request)
-        {
-            if (request == null)
+            if (model.User != null)
             {
-                return new Notification();
+                dto.User = await _userMapper.FromModelToDtoAsync(model.User);
             }
 
-            var dto = new Notification
-            {
-                UUID = request.UUID,
-                Id = request.Id,
-                CreatedOn = request.CreatedOn,
-                UpdatedOn = request.UpdatedOn,
-                Title = request.Title,
-                Message = request.Message,
-                IsRead = request.IsRead,
-                Type = request.Type,
-                IsSuperAdmin = request.IsSuperAdmin,
-                ActionUrl = request.ActionUrl,
-                UserId = request.UserId,
-                CompanyId = request.CompanyId,
-            };
-
             return dto;
         }
 
+        public Notification FromDtoToModel(NotificationDTO dto)
+        {
+            if (dto == null)
+                return new Notification();
 
+            return new Notification
+            {
+                UUID = dto.UUID,
+                Id = dto.Id,
+                CreatedOn = dto.CreatedOn,
+                UpdatedOn = dto.UpdatedOn,
+                Title = dto.Title,
+                Message = dto.Message,
+                IsRead = dto.IsRead,
+                Type = dto.Type,
+                IsSuperAdmin = dto.IsSuperAdmin,
+                ActionUrl = dto.ActionUrl,
+                UserId = dto.UserId,
+                CompanyId = dto.CompanyId
+            };
+        }
     }
 }

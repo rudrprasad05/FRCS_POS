@@ -1,7 +1,8 @@
-import { NotificationTypes, Notification } from "@/types/models";
+import { Notification, NotificationTypes } from "@/types/models";
 import { AlertCircle, AlertTriangle, CheckCircle, Info } from "lucide-react";
 
 export function GetNotificationIcon({ type }: { type: Notification["type"] }) {
+  console.log(type);
   switch (type) {
     case NotificationTypes.ERROR:
       return <AlertCircle className="h-4 w-4 text-red-500" />;

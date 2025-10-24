@@ -112,3 +112,18 @@ export interface IApproveRefund {
   adminUsernameOrEmail: string;
   adminPassword: string;
 }
+
+export interface MonthlySalesReportDto {
+  year: number;
+  month: number;
+  monthName: string;
+  totalSales: number;
+  saleCount: number;
+}
+
+export interface MonthlyTaxReportDto {
+  year: number;
+  month: number;
+  monthName: string;
+  taxDue: number;
+}

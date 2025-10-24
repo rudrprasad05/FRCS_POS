@@ -9,6 +9,9 @@ using FrcsPos.Models;
 
 namespace FrcsPos.Context
 {
+    /// <summary>
+    /// contains database definitions
+    /// </summary>
     public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -71,6 +74,10 @@ namespace FrcsPos.Context
                     .WithMany()
                     .HasForeignKey(x => x.AdminUserId)
                     .OnDelete(DeleteBehavior.Restrict);
+                e.HasMany(c => c.Notifications)
+                    .WithOne(n => n.Company)
+                    .HasForeignKey(n => n.CompanyId)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 e.HasIndex(x => x.Name).IsUnique(); ;
             });

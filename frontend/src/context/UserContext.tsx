@@ -42,7 +42,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: "Redirecting shortly",
     });
 
-    router.push(searchParams.get("returnUrl") || "/redirect");
+    let redirectUrl = searchParams.get("returnUrl");
+
+    if (redirectUrl?.toLowerCase() == "redirect") redirectUrl = null;
+
+    router.push(redirectUrl || "/redirect");
   };
 
   const login = async (email: string, password: string, redirect?: string) => {

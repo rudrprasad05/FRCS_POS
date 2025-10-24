@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-    [Authorize(Roles = "admin, cashier")]
     [Route("api/checkout")]
     [ApiController]
     public class CheckoutController : BaseController
@@ -26,6 +25,7 @@ namespace FrcsPos.Controllers
             _checkoutRepository = checkoutRepository;
         }
 
+        [Authorize(Roles = "admin, cashier")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCheckout([FromBody] NewCheckoutRequest data)
         {

@@ -95,7 +95,7 @@ namespace FrcsPos.Repository
                 Message = $"Refund requested for Sale #{sale.Id}",
                 Type = NotificationType.INFO,
                 ActionUrl = $"/admin/refunds/{refund.Id}",
-                IsSuperAdmin = true,
+                IsSuperAdmin = false,
                 CompanyId = sale.CompanyId
             };
             FireAndForget.Run(_notificationService.CreateBackgroundNotification(notification));
@@ -233,6 +233,40 @@ namespace FrcsPos.Repository
             var dto = await _refundMapper.FromModelToDtoAsync(refund);
 
             return ApiResponse<RefundDTO>.Ok(dto);
+        }
+
+        public async Task<ApiResponse<RefundDTO>> RejectRefundAsync(RequestQueryObject requestQuery, AdminApprovalRequest request)
+        {
+            var refund = await _context.RefundRequests
+                .Include(r => r.Items)
+                    .ThenInclude(i => i.SaleItem)
+                        .ThenInclude(si => si.ProductVariant)
+                            .ThenInclude(p => p.Batches)
+                .FirstOrDefaultAsync(r => r.UUID == requestQuery.UUID);
+
+            if (refund == null) return ApiResponse<RefundDTO>.Fail(message: "Refund not found");
+            if (refund.Status == RefundStatus.REJECTED) return ApiResponse<RefundDTO>.Fail(message: "Refund already processed");
+
+            var admin = await _userManager.FindByNameAsync(request.AdminUsernameOrEmail)
+                        ?? await _userManager.FindByEmailAsync(request.AdminUsernameOrEmail);
+
+            if (admin == null) return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
+            var ok = await _userManager.CheckPasswordAsync(admin, request.AdminPassword);
+            if (!ok) return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
+
+            var roles = await _userManager.GetRolesAsync(admin);
+            var isAdmin = roles.Contains("admin");
+            if (!isAdmin)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "Admin creds required");
+            }
+
+            refund.Status = RefundStatus.REJECTED;
+            refund.ApprovedByUserId = admin.Id;
+            _context.RefundRequests.Update(refund);
+            await _context.SaveChangesAsync();
+
+            return ApiResponse<RefundDTO>.Ok(await _refundMapper.FromModelToDtoAsync(refund));
         }
     }
 }

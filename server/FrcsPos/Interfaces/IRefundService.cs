@@ -16,5 +16,6 @@ namespace FrcsPos.Interfaces
         public Task<ApiResponse<RefundDTO>> GetRefundByUUIDAsync(RequestQueryObject query);
         public Task<ApiResponse<List<RefundDTO>>> GetAllRefundsAsync(RequestQueryObject query);
         public Task<ApiResponse<RefundDTO>> ApproveRefundAsync(RequestQueryObject query, AdminApprovalRequest request);
+        public Task<ApiResponse<RefundDTO>> RejectRefundAsync(RequestQueryObject query, AdminApprovalRequest request);
     }
 }

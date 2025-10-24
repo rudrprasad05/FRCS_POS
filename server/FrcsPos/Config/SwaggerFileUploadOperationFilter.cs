@@ -7,11 +7,14 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace FrcsPos.Config
 {
+    /// <summary>
+    /// handle swagger file uploads
+    /// </summary>
     public class SwaggerFileUploadOperationFilter : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            var fileUploadMethods = context.ApiDescription.HttpMethod == "POST" && 
+            var fileUploadMethods = context.ApiDescription.HttpMethod == "POST" &&
                 context.ApiDescription.ParameterDescriptions
                     .Any(p => p.Type == typeof(IFormFile));
 

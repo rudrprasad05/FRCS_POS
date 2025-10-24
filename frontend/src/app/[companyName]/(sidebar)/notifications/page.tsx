@@ -1,6 +1,6 @@
 "use client";
 
-import NotificationSection from "@/components/superadmin/notifications/NotificationSection";
+import NotificationSection from "@/components/company/notifications/NotificationSection";
 
 export default function NotificationsPage() {
   return <NotificationSection />;

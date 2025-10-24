@@ -24,6 +24,16 @@ export async function ApproveRefund(
   });
 }
 
+export async function RejectRefund(
+  query: QueryObject,
+  data: IApproveRefund
+): Promise<ApiResponse<RefundRequest>> {
+  return RequestWrapper<RefundRequest>("POST", `refunds/reject`, {
+    query,
+    data,
+  });
+}
+
 export async function GetSaleByCompany(
   query: QueryObject
 ): Promise<ApiResponse<Sale[]>> {

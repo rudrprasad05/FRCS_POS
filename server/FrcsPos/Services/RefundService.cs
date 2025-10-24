@@ -40,5 +40,10 @@ namespace FrcsPos.Services
         {
             return _repo.GetRefundByUUIDAsync(query);
         }
+
+        public Task<ApiResponse<RefundDTO>> RejectRefundAsync(RequestQueryObject query, AdminApprovalRequest request)
+        {
+            return _repo.RejectRefundAsync(query, request);
+        }
     }
 }

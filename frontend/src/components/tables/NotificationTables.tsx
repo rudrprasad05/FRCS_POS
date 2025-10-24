@@ -35,6 +35,7 @@ export const NotificationColumns: ColumnDef<Notification>[] = [
     header: "Type",
     cell: ({ row }) => {
       const company = row.original;
+
       return (
         <div className="flex gap-2">
           <GetNotificationIcon type={company.type} />

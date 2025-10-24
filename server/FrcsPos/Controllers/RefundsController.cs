@@ -59,6 +59,14 @@ namespace FrcsPos.Controllers
             var res = await _refundService.ApproveRefundAsync(query, request);
             return StatusCode(res.StatusCode, res);
         }
+
+        [HttpPost("reject")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Reject([FromQuery] RequestQueryObject query, [FromBody] AdminApprovalRequest request)
+        {
+            var res = await _refundService.RejectRefundAsync(query, request);
+            return StatusCode(res.StatusCode, res);
+        }
     }
 }
 

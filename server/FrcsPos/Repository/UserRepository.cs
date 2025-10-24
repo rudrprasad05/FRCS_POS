@@ -143,7 +143,7 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<List<UserDTO>>> GetAllUsers(RequestQueryObject requestQuery)
         {
             var userDtos = new List<UserDTO>();
-            IQueryable<User> query = _userManager.Users;
+            IQueryable<User> query = _userManager.Users.Include(x => x.ProfilePicture);
 
             if (!string.IsNullOrWhiteSpace(requestQuery.Role) && requestQuery.Role.ToLower() != "user")
             {
@@ -233,6 +233,7 @@ namespace FrcsPos.Repository
 
             // Build query: users associated with the company
             var query = _context.Users
+                .Include(x => x.ProfilePicture)
                 .Where(u => company.Users.Select(cu => cu.UserId).Contains(u.Id))
                 .AsQueryable();
 
@@ -251,7 +252,6 @@ namespace FrcsPos.Repository
                         (c.NormalizedEmail != null && c.NormalizedEmail.Contains(search))
                 );
             }
-
 
             // Sorting
             query = queryObject.SortBy switch
@@ -277,12 +277,7 @@ namespace FrcsPos.Repository
 
             foreach (var user in pagedUsers)
             {
-                var dto = user.FromUserToDtoStatic();
-
-                var roles = await _userManager.GetRolesAsync(user);
-                dto.Role = roles.FirstOrDefault() ?? "USER";
-
-                result.Add(dto);
+                result.Add(await _userMapper.FromModelToDtoAsync(user));
             }
 
             return new ApiResponse<List<UserDTO>>
@@ -388,6 +383,42 @@ namespace FrcsPos.Repository
             await _context.SaveChangesAsync();
 
             return ApiResponse<UserDTO>.Ok(user.FromUserToDtoStatic());
+        }
+
+        public async Task<ApiResponse<UserDTO>> SoftDeleteAsync(RequestQueryObject queryObject)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(p => p.Id == queryObject.UUID);
+            if (user == null)
+            {
+                return ApiResponse<UserDTO>.NotFound();
+            }
+
+            user.IsDeleted = true;
+            user.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var userDTO = await _userMapper.FromModelToDtoAsync(user);
+
+            return ApiResponse<UserDTO>.Ok(userDTO);
+        }
+
+        public async Task<ApiResponse<UserDTO>> Activate(RequestQueryObject queryObject)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(p => p.Id == queryObject.UUID);
+            if (user == null)
+            {
+                return ApiResponse<UserDTO>.NotFound();
+            }
+
+            user.IsDeleted = false;
+            user.UpdatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var userDTO = await _userMapper.FromModelToDtoAsync(user);
+
+            return ApiResponse<UserDTO>.Ok(userDTO);
         }
     }
 }
