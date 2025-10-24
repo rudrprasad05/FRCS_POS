@@ -45,6 +45,40 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     getData();
   }, [setInitialState, uuid]);
 
+  const addProduct = useCallback(
+    (saleItem: SaleItemOmitted) => {
+      setCart((prev) => {
+        const existing = prev.find(
+          (p) => p.productVariantId === saleItem.productVariantId
+        );
+
+        if (existing) {
+          return prev.map((p) =>
+            p.productVariantId === saleItem.productVariantId
+              ? {
+                  ...p,
+                  quantity: p.quantity + 1,
+                  lineTotal: (p.quantity + 1) * p.unitPrice,
+                }
+              : p
+          );
+        }
+
+        return [
+          ...prev,
+          {
+            ...saleItem,
+            quantity: 1,
+            taxRatePercent: Number(
+              saleItem.productVariant.taxCategory?.ratePercent ?? 0
+            ),
+          },
+        ];
+      });
+    },
+    [setCart]
+  );
+
   // Create connection ONCE
   const createConnection = useCallback(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
@@ -124,41 +158,12 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     });
 
     return conn;
-  }, [uuid, setIsTerminalConnectedToServer, setIsScannerConnectedToServer]);
-
-  const addProduct = useCallback(
-    (saleItem: SaleItemOmitted) => {
-      setCart((prev) => {
-        const existing = prev.find(
-          (p) => p.productVariantId === saleItem.productVariantId
-        );
-
-        if (existing) {
-          return prev.map((p) =>
-            p.productVariantId === saleItem.productVariantId
-              ? {
-                  ...p,
-                  quantity: p.quantity + 1,
-                  lineTotal: (p.quantity + 1) * p.unitPrice,
-                }
-              : p
-          );
-        }
-
-        return [
-          ...prev,
-          {
-            ...saleItem,
-            quantity: 1,
-            taxRatePercent: Number(
-              saleItem.productVariant.taxCategory?.ratePercent ?? 0
-            ),
-          },
-        ];
-      });
-    },
-    [setCart]
-  );
+  }, [
+    uuid,
+    setIsTerminalConnectedToServer,
+    setIsScannerConnectedToServer,
+    addProduct,
+  ]);
 
   const validateUUID = useCallback(async () => {
     setInitialLoad(true);

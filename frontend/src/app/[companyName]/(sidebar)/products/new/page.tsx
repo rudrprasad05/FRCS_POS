@@ -75,6 +75,19 @@ export default function StepperForm() {
   const companyName = params.companyName;
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    if (currentStep < steps.length - 1) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    // Cleanup the timeout on unmount or re-run
+    return () => clearTimeout(timer);
+  }, [currentStep]);
+
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -128,18 +141,6 @@ export default function StepperForm() {
       return Math.max(prev - 1, 0);
     });
   };
-
-  useEffect(() => {
-    if (currentStep < steps.length - 1) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    // Cleanup the timeout on unmount or re-run
-    return () => clearTimeout(timer);
-  }, [currentStep]);
 
   const onSubmit = async (data: ProductFormData) => {
     if (isLoading) {

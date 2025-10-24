@@ -103,7 +103,7 @@ export default function NewCompanyDialoge() {
       setLoading(false);
     };
     getData();
-  }, [open]);
+  }, [open, router, selectedUser]);
 
   async function onSubmit(values: NewCompanyFormType) {
     setLoading(true);

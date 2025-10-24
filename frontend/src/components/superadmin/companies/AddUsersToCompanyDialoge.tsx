@@ -92,7 +92,7 @@ export default function AddUsersToCompanyDialoge() {
       setLoading(false);
     };
     getData();
-  }, []);
+  }, [companyId, router, selectedUser]);
 
   useEffect(() => {
     console.log(searchParams.get("open_create"));

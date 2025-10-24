@@ -73,7 +73,7 @@ export function EditorTab({ company }: { company: Company }) {
         role: UserRoles.ADMIN,
       } as QueryObject);
 
-      let users = data.data ?? [];
+      const users = data.data ?? [];
       if (company.adminUser) {
         users.push(company.adminUser as User);
       }
