@@ -12,10 +12,13 @@ export async function middleware(req: NextRequest) {
   }
 
   if (!token) {
-    console.error("qqqqq no token md.ts"); // ⬅️ optional debug
+    console.error("qqqqq no token md.ts");
     const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
 
     if (returnUrl == "/") {
+      return NextResponse.redirect(new URL(`/auth/login`, req.url));
+    }
+    if (returnUrl == "redirect") {
       return NextResponse.redirect(new URL(`/auth/login`, req.url));
     }
     return NextResponse.redirect(

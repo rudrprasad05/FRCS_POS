@@ -21,7 +21,13 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/UserContext";
 import { SignInForm, SignInFormType } from "@/types/forms/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ExternalLink, Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  CircleQuestionMark,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -62,8 +68,8 @@ export default function LoginPage() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <div className="h-[90vh] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-lg">
+      <div className="h-[100vh] relative flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg mb-32">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold tracking-tight">
               Welcome back
@@ -151,13 +157,19 @@ export default function LoginPage() {
                   >
                     Forgot password?
                   </Link>
-                  <Link
-                    className="underline text-muted-foreground items-center gap-2 text-sm  flex"
-                    href={"/auth/forgot-password"}
-                    prefetch
-                  >
-                    Verify Account <ExternalLink className="stroke-1 w-4 h-4" />
-                  </Link>
+
+                  <div className="absolute text-muted-foreground bottom-6 left-6 flex items-center gap-2 text-xs ">
+                    <CircleQuestionMark className="w-4 h-4" />
+                    <div>You must be verified to login</div>
+                    <Link
+                      className="underline  items-center gap-2  flex"
+                      href={"/auth/verify-email"}
+                      prefetch
+                    >
+                      Verify Account{" "}
+                      <ExternalLink className="stroke-1 w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
               </CardFooter>
             </form>

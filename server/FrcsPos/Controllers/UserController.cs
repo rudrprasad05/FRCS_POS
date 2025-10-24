@@ -49,7 +49,7 @@ namespace FrcsPos.Controllers
             _emailRepository = emailRepository;
         }
 
-        [Authorize(Roles = "admin, superadmin")]
+        [Authorize(Roles = "superadmin")]
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] RequestQueryObject requestQuery)
         {
@@ -145,7 +145,7 @@ namespace FrcsPos.Controllers
             var user = await _userManager.FindByEmailAsync(requestPasswordReset.Email);
             if (user == null)
             {
-                return BadRequest(ApiResponse<bool>.Fail(message: "email not sent"));
+                return BadRequest(ApiResponse<bool>.Fail(message: "Email is not associated with an account"));
             }
 
             var model = await _emailRepository.CreateNewLink(user);
@@ -164,7 +164,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
-        [Authorize(Roles = "superadmin")]
+        [Authorize(Roles = "superadmin, admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] RequestQueryObject queryObject)
         {

@@ -10,226 +10,205 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Mail, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function VerifyEmailConfirmPage() {
+type PageState = "resend" | "sent" | "verifying" | "verified" | "failed";
+
+export default function VerifyEmailPage() {
+  const [state, setState] = useState<PageState>("verifying");
+  const [email, setEmail] = useState("");
   const searchParams = useSearchParams();
+  const router = useRouter();
+
   const userId = searchParams.get("userId");
   const code = searchParams.get("code");
-  const [email, setEmail] = useState("");
 
-  const [status, setStatus] = useState<
-    "loading" | "success" | "error" | "default" | "sent"
-  >("loading");
-  const [message, setMessage] = useState("");
-
+  // Auto-verify if we have userId + code
   useEffect(() => {
-    const verifyEmail = async () => {
-      //   if (!code && !userId) {
-      //     setStatus("default");
-      //     setMessage("Invalid verification link. No token provided.");
-      //     return;
-      //   }
-      //   if (!code || !userId) {
-      //     setStatus("default");
-      //     setMessage("Invalid verification link. No token provided.");
-      //     return;
-      //   }
-      if (!code || !userId) {
-        setStatus("default");
-        return;
-      }
+    if (userId && code) {
+      verifyEmail();
+    } else {
+      setState("resend");
+    }
+  }, [userId, code]);
 
-      const res = await VerifyEmail({ userId: userId, uuid: code });
-      console.log(res);
-      if (res.success) {
-        setStatus("success");
-        setMessage(res.message || "Your email has been successfully verified!");
-        toast.success("Email verified", { description: "You can now login" });
-      } else {
-        setStatus("error");
-        setMessage(res.message || "Verification failed. Please try again.");
-      }
-    };
-
-    verifyEmail();
-  }, [code, userId]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus("loading");
-
-    const res = await RequestReEmailVerification(email);
+  const verifyEmail = async () => {
+    setState("verifying");
+    const res = await VerifyEmail({ userId: userId!, uuid: code! });
 
     if (res.success) {
-      toast.success("Email resent", { description: "Check your spam too" });
-      setStatus("sent");
-      return;
+      setState("verified");
+      toast.success("Email verified", { description: "You can now sign in" });
     } else {
-      toast.error("An error occured", { description: res.message });
-      setMessage(res.message || "Verification failed. Please try again.");
-      setStatus("error");
+      setState("failed");
+      toast.error("Verification failed", { description: res.message });
     }
   };
 
-  if (status == "sent") {
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center space-y-4">
-        <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-          <Mail className="w-8 h-8 text-primary" />
-        </div>
-        <div className="space-y-2">
-          <CardTitle className="text-2xl font-semibold text-balance">
-            Email sent
-          </CardTitle>
-          <CardDescription className="text-base leading-relaxed">
-            We&apos;ve sent a verification link to your email address. Please
-            check your inbox and click the link to verify your account.
-          </CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <p className="text-center text-sm text-muted-foreground">
-          Already verified?{" "}
-          <Link
-            href="/auth/login"
-            className="text-foreground font-medium hover:underline"
-          >
-            Sign in
-          </Link>
-        </p>
-      </CardContent>
-    </Card>;
-  }
+  const handleResend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
 
-  if (status == "default") {
+    setState("verifying");
+    const res = await RequestReEmailVerification(email);
+
+    if (res.success) {
+      setState("sent");
+      toast.success("Email sent", { description: "Check your spam too" });
+    } else {
+      setState("resend");
+      toast.error("Failed", { description: res.message });
+    }
+  };
+
+  // State 1 & 2: Resend / Sent
+  if (state === "resend" || state === "sent") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Mail className="w-8 h-8 text-primary" />
-            </div>
+      <AuthCard
+        icon={Mail}
+        title={state === "resend" ? "Verify your email" : "Check your email"}
+        description={
+          state === "resend"
+            ? "Enter your email to receive a verification link"
+            : `We sent a verification link to ${email}`
+        }
+      >
+        {state === "resend" ? (
+          <form onSubmit={handleResend} className="space-y-4">
             <div className="space-y-2">
-              <CardTitle className="text-2xl font-semibold text-balance">
-                Verify your email
-              </CardTitle>
-              <CardDescription className="text-base leading-relaxed">
-                We&apos;ve sent a verification link to your email address.
-                Please check your inbox and click the link to verify your
-                account.
-              </CardDescription>
+              <label htmlFor="email" className="text-sm font-medium">
+                Email address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={state === "sent"}
+              />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={!email || state === "sent"}
+            >
+              {state === "verifying" ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Resend verification link"
+              )}
+            </Button>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+              If you don't see the email, check your spam folder.
+            </div>
+          </div>
+        )}
 
-              <div className="space-y-3">
-                <Button type="submit" className="w-full" size="lg">
-                  Resend Verification Link
-                </Button>
-              </div>
-            </form>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Already verified?{" "}
-              <Link
-                href="/auth/login"
-                className="text-foreground font-medium hover:underline"
-              >
-                Sign in
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <Button variant="ghost" className="w-full" size="lg" asChild>
+          <Link href="/auth/login">Already verified? Sign in</Link>
+        </Button>
+      </AuthCard>
     );
   }
 
+  // State 3 & 4: Verifying / Verified/Failed
+  return (
+    <AuthCard
+      icon={
+        state === "verifying"
+          ? Loader2
+          : state === "verified"
+          ? CheckCircle2
+          : XCircle
+      }
+      iconProps={
+        state === "verifying"
+          ? { className: "animate-spin" }
+          : state === "verified"
+          ? { className: "text-green-600" }
+          : { className: "text-destructive" }
+      }
+      title={
+        state === "verifying"
+          ? "Verifying your email..."
+          : state === "verified"
+          ? "Email verified!"
+          : "Verification failed"
+      }
+      description={
+        state === "verifying"
+          ? "Please wait while we verify your email address"
+          : state === "verified"
+          ? "You can now sign in to your account"
+          : "The verification link may have expired. Request a new one."
+      }
+    >
+      <div className="space-y-3">
+        {state === "verified" && (
+          <>
+            <Button className="w-full" size="lg" asChild>
+              <Link href="/auth/login">Continue to sign in</Link>
+            </Button>
+            <Button variant="outline" className="w-full" size="lg" asChild>
+              <Link href="/">Return to home</Link>
+            </Button>
+          </>
+        )}
+
+        {state === "failed" && (
+          <>
+            <Button className="w-full" size="lg" asChild>
+              <Link href="/auth/verify-email">Request new link</Link>
+            </Button>
+            <Button variant="outline" className="w-full" size="lg" asChild>
+              <Link href="/">Return to home</Link>
+            </Button>
+          </>
+        )}
+      </div>
+    </AuthCard>
+  );
+}
+
+// ——————————————————————
+// Shared Card Wrapper (Reusable!)
+// ——————————————————————
+function AuthCard({
+  icon: Icon,
+  iconProps,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ElementType;
+  iconProps?: React.SVGProps<SVGSVGElement>;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            {status === "loading" && (
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            )}
-            {status === "success" && (
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
-            )}
-            {status === "error" && (
-              <XCircle className="w-8 h-8 text-destructive" />
-            )}
+            <Icon className="w-8 h-8 text-primary" {...iconProps} />
           </div>
           <div className="space-y-2">
-            <CardTitle className="text-2xl font-semibold text-balance">
-              {status === "loading" && "Verifying your email..."}
-              {status === "success" && "Email verified!"}
-              {status === "error" && "Verification failed"}
-            </CardTitle>
-            <CardDescription className="text-base leading-relaxed">
-              {message}
-            </CardDescription>
+            <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {status === "success" && (
-            <div className="space-y-3">
-              <Button className="w-full" size="lg" asChild>
-                <Link href="/auth/login">Continue to sign in</Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full bg-transparent"
-                size="lg"
-                asChild
-              >
-                <Link href="/">Return to home</Link>
-              </Button>
-            </div>
-          )}
-
-          {status === "error" && (
-            <div className="space-y-3">
-              <Button className="w-full" size="lg" asChild>
-                <Link href="/auth/verify-email">
-                  Request new verification link
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full bg-transparent"
-                size="lg"
-                asChild
-              >
-                <Link href="/">Return to home</Link>
-              </Button>
-            </div>
-          )}
-
-          {status === "loading" && (
-            <p className="text-center text-sm text-muted-foreground">
-              Please wait while we verify your email address...
-            </p>
-          )}
-        </CardContent>
+        <CardContent className="space-y-6">{children}</CardContent>
       </Card>
     </div>
   );

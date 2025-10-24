@@ -7,7 +7,6 @@ import { TableSkeleton } from "@/components/global/LoadingContainer";
 import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
@@ -20,9 +19,6 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { useState } from "react";
 import { TaxOnlyColumn } from "../../tables/TaxColumns";
 import NewTaxCategoryDialoge from "./NewTaxCategoryDialoge";
-
-export const { Provider: TaxDataProvider, useGenericData: useTaxData } =
-  createGenericListDataContext<TaxCategory>();
 
 export default function TaxSection() {
   const [pagination, setPagination] = useState<QueryObject>({

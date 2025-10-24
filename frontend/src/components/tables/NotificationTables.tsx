@@ -2,16 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, Loader2, MailCheck, MailX } from "lucide-react";
+import { Loader2, MailCheck, MailX } from "lucide-react";
 
 import { MarkAsRead } from "@/actions/Notifications";
-import { CompanyUser, Notification } from "@/types/models";
+import { Notification } from "@/types/models";
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { GetNotificationIcon } from "../global/NotificationIcons";
-import RemoveUserFromCompanyDialoge from "../superadmin/companies/RemoveUserFromCompanyDialoge";
 import { Badge } from "../ui/badge";
 
 function formatTimeAgo(str: string) {
@@ -125,78 +123,3 @@ const ReadBtn = ({ notification }: { notification: Notification }) => {
     </Button>
   );
 };
-
-export const CompanyUserColumn: ColumnDef<CompanyUser>[] = [
-  {
-    accessorKey: "user.name",
-    header: "Name",
-    cell: ({ row }) => {
-      const company = row.original; // Get the entire row data (of type companyType)
-
-      return <div className="flex gap-2">{company.user?.username}</div>;
-    },
-  },
-  {
-    accessorKey: "user.email",
-    header: "Email",
-    cell: ({ row }) => {
-      const company = row.original; // Get the entire row data (of type companyType)
-      return <div className="flex gap-2">{company.user?.email}</div>;
-    },
-  },
-  {
-    accessorKey: "user.role",
-    header: "Role",
-    cell: ({ row }) => {
-      const company = row.original; // Get the entire row data (of type companyType)
-      return (
-        <Badge variant={"outline"} className="flex gap-2">
-          {company.user?.role}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "createdOn",
-    header: "Created On",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("createdOn"));
-      return date.toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    },
-  },
-
-  {
-    id: "actions",
-    accessorKey: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      const company = row.original; // Get the entire row data (of type companyType)
-
-      return (
-        <div className="flex gap-2">
-          <Button variant={"outline"} asChild>
-            <Link
-              href={`/admin/users/${company.uuid}/edit`}
-              className="flex items-center justify-between"
-            >
-              <Edit className="" />
-            </Link>
-          </Button>
-          <Button variant={"outline"} asChild>
-            <Link
-              href={`/admin/users/${encodeURI(company.userId)}/view`}
-              className="flex items-center justify-between"
-            >
-              <Eye className="" />
-            </Link>
-          </Button>
-          <RemoveUserFromCompanyDialoge userId={company.userId} />
-        </div>
-      );
-    },
-  },
-];

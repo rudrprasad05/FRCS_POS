@@ -1,13 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { PosTerminal, UserRoles } from "@/types/models";
-import Link from "next/link";
-import { RoleWrapper } from "../wrapper/RoleWrapper";
+import { PosTerminal } from "@/types/models";
 
 export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
   {
@@ -58,41 +54,6 @@ export const PosTerminalOnlyColumns: ColumnDef<PosTerminal>[] = [
         month: "short",
         day: "numeric",
       });
-    },
-  },
-
-  {
-    id: "actions",
-    accessorKey: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      const company = row.original;
-
-      return (
-        <div className="flex gap-2">
-          <RoleWrapper allowedRoles={[UserRoles.ADMIN]}>
-            <Button variant={"outline"} asChild className={cn("w-24")}>
-              <Link
-                href={`/admin/companies/${company.uuid}`}
-                className="w-24 flex items-center justify-between"
-              >
-                Edit
-                <Edit className="" />
-              </Link>
-            </Button>
-
-            <Button variant={"outline"} asChild className="w-24">
-              <Link href={`/admin/companies/${company.uuid}`}>
-                View
-                <Eye className="" />
-              </Link>
-            </Button>
-          </RoleWrapper>
-          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
-            <div>-</div>
-          </RoleWrapper>
-        </div>
-      );
     },
   },
 ];

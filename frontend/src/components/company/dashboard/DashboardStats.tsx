@@ -127,7 +127,7 @@ export function CompanyDashboardStats() {
             </div>
           </CardContent>
           <div className="border-t">
-            <Link href="/admin/notifications">
+            <Link href={`/${companyName}/notifications`}>
               <Button
                 variant="ghost"
                 className="cursor-pointer w-full justify-center text-xs"

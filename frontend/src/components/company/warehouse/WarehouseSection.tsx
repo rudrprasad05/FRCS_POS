@@ -7,7 +7,7 @@ import PaginationSection from "@/components/global/PaginationSection";
 import { Header } from "@/components/global/TestHeader";
 import { WarehouseOnlyColumns } from "@/components/tables/WarehouseColumns";
 import { RoleWrapper } from "@/components/wrapper/RoleWrapper";
-import { createGenericListDataContext } from "@/context/GenericDataTableContext";
+
 import { FIVE_MINUTE_CACHE } from "@/lib/const";
 import {
   ApiResponse,
@@ -24,11 +24,6 @@ import {
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import NewWarehouseDialoge from "./NewWarehouseDialoge";
-
-export const {
-  Provider: WarehouseSectionProvider,
-  useGenericData: useWarehouseData,
-} = createGenericListDataContext<Warehouse>();
 
 export default function WarehouseSection() {
   const param = useParams();

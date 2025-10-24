@@ -193,7 +193,7 @@ export function NotificationBell() {
           </div>
         </ScrollArea>
         <div className="border-t">
-          <Link href="/admin/notifications" onClick={() => setOpen(false)}>
+          <Link href="notifications" onClick={() => setOpen(false)}>
             <Button variant="ghost" className="w-full justify-center text-sm">
               See All Notifications
             </Button>

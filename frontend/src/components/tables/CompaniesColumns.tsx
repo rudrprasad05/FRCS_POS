@@ -5,9 +5,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Company, CompanyUser, User } from "@/types/models";
+import { Company, CompanyUser, User, UserRoles } from "@/types/models";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
+import { RoleWrapper } from "../wrapper/RoleWrapper";
 
 export const CompanyOnlyColumn: ColumnDef<Company>[] = [
   {
@@ -58,24 +59,26 @@ export const CompanyOnlyColumn: ColumnDef<Company>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/admin/companies/${company.uuid}/view`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/admin/companies/${company.uuid}/edit`}
-              className="w-24 flex items-center justify-between"
-            >
-              Edit
-              <Edit className="" />
-            </Link>
-          </Button>
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                href={`/admin/companies/${company.uuid}/view`}
+                className="w-24 flex items-center justify-between"
+              >
+                View
+                <Eye className="" />
+              </Link>
+            </Button>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                href={`/admin/companies/${company.uuid}/edit`}
+                className="w-24 flex items-center justify-between"
+              >
+                Edit
+                <Edit className="" />
+              </Link>
+            </Button>
+          </RoleWrapper>
         </div>
       );
     },

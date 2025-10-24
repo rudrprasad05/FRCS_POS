@@ -23,8 +23,7 @@ namespace FrcsPos.Repository
         private readonly IEmailService _emailService;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<EmailVerificationRepository> _logger;
-
-
+        private readonly string baseUrl = "https://frcs.procyonfiji.com";
 
         public EmailVerificationRepository(
             ApplicationDbContext context,
@@ -68,7 +67,7 @@ namespace FrcsPos.Repository
             _context.EmailVerifications.Add(emailVerification);
             await _context.SaveChangesAsync();
 
-            string baseUrl = "https://frcs.procyonfiji.com";
+
             var verificationLink = $"{baseUrl}/auth/verify-email?code={code}&userId={user.Id}";
 
             FireAndForget.Run(_emailService.SendEmailAsync(user.Email ?? "", "Verify Email Address", EmailTemplates.VerifyEmailBody(verificationLink)));
@@ -173,7 +172,7 @@ namespace FrcsPos.Repository
             _context.EmailVerifications.Add(emailVerification);
             await _context.SaveChangesAsync();
 
-            string baseUrl = _configuration["BASE_URL"] ?? throw new InvalidOperationException("base url not found");
+
             var verificationLink = $"{baseUrl}/auth/forgot-password?code={code}&userId={user.Id}";
 
             FireAndForget.Run(_emailService.SendEmailAsync(user.Email ?? "", "Reset Password", EmailTemplates.ResetPasswordBody(verificationLink)));

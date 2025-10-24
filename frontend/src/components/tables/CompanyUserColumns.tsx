@@ -7,6 +7,7 @@ import { Edit, Eye } from "lucide-react";
 import { User, UserRoles } from "@/types/models";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
+import { RoleWrapper } from "../wrapper/RoleWrapper";
 
 export const CompanyUserColumns: ColumnDef<User>[] = [
   {
@@ -67,25 +68,27 @@ export const CompanyUserColumns: ColumnDef<User>[] = [
 
       return (
         <div className="flex gap-2">
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/admin/companies/${company.id}`}
-              className="w-24 flex items-center justify-between"
-            >
-              Edit
-              <Edit className="" />
-            </Link>
-          </Button>
-          {/* <DeleteCompanyDialoge data={company} /> */}
-          <Button variant={"outline"} asChild className="w-24">
-            <Link
-              href={`/${encodeURI(company.id)}`}
-              className="w-24 flex items-center justify-between"
-            >
-              View
-              <Eye className="" />
-            </Link>
-          </Button>
+          <RoleWrapper allowedRoles={[UserRoles.SUPERADMIN]}>
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                href={`/admin/companies/${company.id}`}
+                className="w-24 flex items-center justify-between"
+              >
+                Edit
+                <Edit className="" />
+              </Link>
+            </Button>
+            {/* <DeleteCompanyDialoge data={company} /> */}
+            <Button variant={"outline"} asChild className="w-24">
+              <Link
+                href={`/${encodeURI(company.id)}`}
+                className="w-24 flex items-center justify-between"
+              >
+                View
+                <Eye className="" />
+              </Link>
+            </Button>
+          </RoleWrapper>
         </div>
       );
     },

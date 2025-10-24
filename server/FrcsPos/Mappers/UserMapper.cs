@@ -39,6 +39,7 @@ namespace FrcsPos.Mappers
                 UpdatedOn = request.UpdatedOn,
                 Username = request.UserName ?? "",
                 IsDeleted = request.IsDeleted,
+                Email = request.Email ?? "",
 
             };
 
