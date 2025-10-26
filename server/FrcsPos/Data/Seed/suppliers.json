@@ -1,0 +1,227 @@
+[
+  {
+    "name": "Pacific Electronics Supply",
+    "code": "SUP001",
+    "contactName": "Rajesh Kumar",
+    "phone": "3312456",
+    "email": "rajesh@pacificelec.com.fj",
+    "address": "15 Victoria Parade, Suva",
+    "taxNumber": "1234567890"
+  },
+  {
+    "name": "Fiji Parts Distributor",
+    "code": "SUP002",
+    "contactName": "Mereoni Tuisese",
+    "phone": "6652341",
+    "email": "mereoni@fijiparts.com.fj",
+    "address": "42 Renwick Road, Suva",
+    "taxNumber": "2345678901"
+  },
+  {
+    "name": "Island Tech Components",
+    "code": "SUP003",
+    "contactName": "Sitiveni Rabuka",
+    "phone": "6701234",
+    "email": "sitiveni@islandtech.com.fj",
+    "address": "8 Queens Road, Nadi",
+    "taxNumber": "345678901"
+  },
+  {
+    "name": "Suva Wholesale Trading",
+    "code": "SUP004",
+    "contactName": "Priya Lal",
+    "phone": "3305678",
+    "email": "priya@suvawholesale.com.fj",
+    "address": "23 Cumming Street, Suva",
+    "taxNumber": "456789012"
+  },
+  {
+    "name": "Quality Imports Fiji",
+    "code": "SUP005",
+    "contactName": "Tevita Nakabea",
+    "phone": "6658910",
+    "email": "tevita@qualityimports.com.fj",
+    "address": "67 Namaka, Nadi",
+    "taxNumber": "5678901234"
+  },
+  {
+    "name": "Lautoka Supplies Ltd",
+    "code": "SUP006",
+    "contactName": "Salote Vakatawa",
+    "phone": "6661122",
+    "email": "salote@lautokasupplies.com.fj",
+    "address": "12 Tavewa Avenue, Lautoka",
+    "taxNumber": "678901234"
+  },
+  {
+    "name": "Central Trading Company",
+    "code": "SUP007",
+    "contactName": "Mohammed Ali",
+    "phone": "3314455",
+    "email": "mohammed@centraltrading.com.fj",
+    "address": "89 Usher Street, Suva",
+    "taxNumber": "7890123456"
+  },
+  {
+    "name": "Nadi Business Suppliers",
+    "code": "SUP008",
+    "contactName": "Luisa Mataika",
+    "phone": "6703344",
+    "email": "luisa@nadibusiness.com.fj",
+    "address": "34 Main Street, Nadi",
+    "taxNumber": "890123456"
+  },
+  {
+    "name": "Pacific Rim Distributors",
+    "code": "SUP009",
+    "contactName": "Apisai Domolailai",
+    "phone": "3327788",
+    "email": "apisai@pacificrim.com.fj",
+    "address": "56 Gordon Street, Suva",
+    "taxNumber": "9012345678"
+  },
+  {
+    "name": "Fiji Commercial Supplies",
+    "code": "SUP010",
+    "contactName": "Shivani Reddy",
+    "phone": "6669900",
+    "email": "shivani@fijicommercial.com.fj",
+    "address": "78 Tukani Street, Lautoka",
+    "taxNumber": "1234567891"
+  },
+  {
+    "name": "Island Wholesale Group",
+    "code": "SUP011",
+    "contactName": "Jone Tabuakoro",
+    "phone": "3301122",
+    "email": "jone@islandwholesale.com.fj",
+    "address": "45 Pratt Street, Suva",
+    "taxNumber": "2345678902"
+  },
+  {
+    "name": "Viti Trading Partners",
+    "code": "SUP012",
+    "contactName": "Reshma Prasad",
+    "phone": "6705566",
+    "email": "reshma@vititrading.com.fj",
+    "address": "91 Airport Road, Nadi",
+    "taxNumber": "345678902"
+  },
+  {
+    "name": "Suva Import Export",
+    "code": "SUP013",
+    "contactName": "Aminiasi Cava",
+    "phone": "3318899",
+    "email": "aminiasi@suvaimport.com.fj",
+    "address": "27 Waimanu Road, Suva",
+    "taxNumber": "456789013"
+  },
+  {
+    "name": "Coral Coast Suppliers",
+    "code": "SUP014",
+    "contactName": "Merelita Tokalau",
+    "phone": "6507788",
+    "email": "merelita@coralcoast.com.fj",
+    "address": "15 Queens Highway, Sigatoka",
+    "taxNumber": "5678901235"
+  },
+  {
+    "name": "Pacific Gateway Trading",
+    "code": "SUP015",
+    "contactName": "Vineet Singh",
+    "phone": "3334455",
+    "email": "vineet@pacificgateway.com.fj",
+    "address": "63 MacArthur Street, Suva",
+    "taxNumber": "678901235"
+  },
+  {
+    "name": "Lami Bay Distributors",
+    "code": "SUP016",
+    "contactName": "Litiana Vosa",
+    "phone": "3362211",
+    "email": "litiana@lamibay.com.fj",
+    "address": "88 Princess Road, Lami",
+    "taxNumber": "7890123457"
+  },
+  {
+    "name": "Savusavu Trade Centre",
+    "code": "SUP017",
+    "contactName": "Ratu Epeli",
+    "phone": "8850011",
+    "email": "epeli@savusavutrade.com.fj",
+    "address": "22 Main Street, Savusavu",
+    "taxNumber": "890123457"
+  },
+  {
+    "name": "Ba Town Suppliers",
+    "code": "SUP018",
+    "contactName": "Ashwini Kumar",
+    "phone": "6674433",
+    "email": "ashwini@batownsuppliers.com.fj",
+    "address": "35 Hospital Road, Ba",
+    "taxNumber": "9012345679"
+  },
+  {
+    "name": "Levuka Trading Post",
+    "code": "SUP019",
+    "contactName": "Adi Kelera",
+    "phone": "3440055",
+    "email": "kelera@levukatrading.com.fj",
+    "address": "7 Beach Street, Levuka",
+    "taxNumber": "1234567892"
+  },
+  {
+    "name": "Rakiraki Business Hub",
+    "code": "SUP020",
+    "contactName": "Pita Nauluvou",
+    "phone": "6694422",
+    "email": "pita@rakirakihub.com.fj",
+    "address": "54 Kings Road, Rakiraki",
+    "taxNumber": "2345678903"
+  },
+  {
+    "name": "Labasa Wholesale Mart",
+    "code": "SUP021",
+    "contactName": "Sera Bogileka",
+    "phone": "8813344",
+    "email": "sera@labasawholesale.com.fj",
+    "address": "19 Nasekula Road, Labasa",
+    "taxNumber": "345678903"
+  },
+  {
+    "name": "Tavua Supply Chain",
+    "code": "SUP022",
+    "contactName": "Kamal Chand",
+    "phone": "6680099",
+    "email": "kamal@tavuasupply.com.fj",
+    "address": "41 Main Street, Tavua",
+    "taxNumber": "456789014"
+  },
+  {
+    "name": "Korovou Trading Ltd",
+    "code": "SUP023",
+    "contactName": "Vaseva Draunidalo",
+    "phone": "3492255",
+    "email": "vaseva@korovoutrading.com.fj",
+    "address": "28 Kings Highway, Korovou",
+    "taxNumber": "5678901236"
+  },
+  {
+    "name": "Sigatoka Valley Suppliers",
+    "code": "SUP024",
+    "contactName": "Nitesh Raj",
+    "phone": "6501166",
+    "email": "nitesh@sigatokavalley.com.fj",
+    "address": "72 Valley Road, Sigatoka",
+    "taxNumber": "678901236"
+  },
+  {
+    "name": "Pacific Island Imports",
+    "code": "SUP025",
+    "contactName": "Makereta Bale",
+    "phone": "3398877",
+    "email": "makereta@pacificisland.com.fj",
+    "address": "103 Edinburgh Drive, Suva",
+    "taxNumber": "7890123458"
+  }
+]

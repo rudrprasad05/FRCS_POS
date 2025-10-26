@@ -32,20 +32,24 @@ export const SignalRProvider = ({
   >("connecting");
 
   useEffect(() => {
-    const conn = getPosHubConnection(uuid);
-    setConnection(conn);
-    setStatus(getConnectionStatus());
-
-    const unsubscribe = subscribeToStatus(() => {
+    // Delay connection setup by 2 seconds
+    const delayMs = 2000;
+    const timer = setTimeout(() => {
+      const conn = getPosHubConnection(uuid);
+      setConnection(conn);
       setStatus(getConnectionStatus());
-    });
 
-    return () => {
-      unsubscribe();
-      // Optional: keep alive across pages
-      // Only stop on full unmount (e.g. tab close)
-      // So we DON'T call closeConnection() here
-    };
+      const unsubscribe = subscribeToStatus(() => {
+        setStatus(getConnectionStatus());
+      });
+
+      // Cleanup on unmount
+      return () => {
+        unsubscribe();
+      };
+    }, delayMs);
+
+    return () => clearTimeout(timer);
   }, [uuid]);
 
   return (

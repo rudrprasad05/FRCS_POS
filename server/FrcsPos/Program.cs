@@ -18,6 +18,8 @@ using FrcsPos.Mappers;
 using Microsoft.AspNetCore.Mvc;
 using FrcsPos.Response;
 using FrcsPos.Models;
+using Microsoft.AspNetCore.Identity;
+using FrcsPos.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,7 @@ builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 builder.Services.AddScoped<IRefundRepository, RefundRepository>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
 // DI mappers
 builder.Services.AddScoped<IMediaMapper, MediaMapper>();
@@ -142,19 +145,19 @@ app.MapControllers();
 
 app.MapHub<NotificationHub>("/socket/notificationHub");
 app.MapHub<PosHub>("/socket/posHub");
+
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var services = scope.ServiceProvider;
     try
     {
-        var connection = dbContext.Database.GetDbConnection();
-        dbContext.Database.OpenConnection(); // Test the connection
-        dbContext.Database.CloseConnection();
-        Console.WriteLine("Database connection successful.");
+        var seeder = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        await seeder.SeedAsync();
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Database connection failed: {ex.Message}");
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred seeding the database.");
     }
 }
 

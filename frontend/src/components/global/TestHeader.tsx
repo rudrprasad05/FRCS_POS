@@ -35,7 +35,6 @@ export function Header({
 
   const NewButton = newButton;
 
-  // ✅ sync search param → local + pagination
   useEffect(() => {
     const urlSearch = searchParams.get("search") ?? "";
     setSearch(urlSearch);

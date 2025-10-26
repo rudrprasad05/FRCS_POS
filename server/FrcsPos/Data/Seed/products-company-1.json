@@ -1,0 +1,398 @@
+[
+  {
+    "name": "Punjas Basmati Rice",
+    "sku": "RICE-BASM",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Punjas Basmati Rice 5kg Premium",
+        "sku": "RICE-BASM-5KG-PREM",
+        "barcode": "9415000000017",
+        "price": 22.5
+      },
+      {
+        "name": "Punjas Basmati Rice 10kg Premium",
+        "sku": "RICE-BASM-10KG-PREM",
+        "barcode": "9415000000024",
+        "price": 42.5
+      },
+      {
+        "name": "Punjas Basmati Rice 5kg Standard",
+        "sku": "RICE-BASM-5KG-STD",
+        "barcode": "9415000000031",
+        "price": 18.5
+      }
+    ]
+  },
+  {
+    "name": "Punjas Wholegrain Rice",
+    "sku": "RICE-WG",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Punjas Wholegrain Rice 10kg",
+        "sku": "RICE-WG-10KG",
+        "barcode": "9415000000048",
+        "price": 35.0
+      },
+      {
+        "name": "Punjas Wholegrain Rice 5kg",
+        "sku": "RICE-WG-5KG",
+        "barcode": "9415000000055",
+        "price": 19.5
+      },
+      {
+        "name": "Punjas Wholegrain Rice 2kg",
+        "sku": "RICE-WG-2KG",
+        "barcode": "9415000000062",
+        "price": 8.5
+      }
+    ]
+  },
+  {
+    "name": "Fresh Milk",
+    "sku": "MILK-FRESH",
+    "isPerishable": true,
+    "firstWarningInDays": 3,
+    "criticalWarningInHours": 12,
+    "taxCategoryId": 4,
+    "variants": [
+      {
+        "name": "Fresh Milk 2L Full Cream",
+        "sku": "MILK-FRESH-2L-FC",
+        "barcode": "9415000000079",
+        "price": 6.5,
+        "firstWarningInDays": 3,
+        "criticalWarningInHours": 12
+      },
+      {
+        "name": "Fresh Milk 1L Full Cream",
+        "sku": "MILK-FRESH-1L-FC",
+        "barcode": "9415000000086",
+        "price": 3.5,
+        "firstWarningInDays": 3,
+        "criticalWarningInHours": 12
+      },
+      {
+        "name": "Fresh Milk 2L Skim",
+        "sku": "MILK-FRESH-2L-SK",
+        "barcode": "9415000000093",
+        "price": 6.5,
+        "firstWarningInDays": 3,
+        "criticalWarningInHours": 12
+      }
+    ]
+  },
+  {
+    "name": "Bread Loaf",
+    "sku": "BREAD",
+    "isPerishable": true,
+    "firstWarningInDays": 2,
+    "criticalWarningInHours": 24,
+    "taxCategoryId": 4,
+    "variants": [
+      {
+        "name": "White Bread Loaf 700g",
+        "sku": "BREAD-WHITE-700G",
+        "barcode": "9415000000109",
+        "price": 2.5,
+        "firstWarningInDays": 2,
+        "criticalWarningInHours": 24
+      },
+      {
+        "name": "Wholemeal Bread Loaf 700g",
+        "sku": "BREAD-WM-700G",
+        "barcode": "9415000000116",
+        "price": 3.0,
+        "firstWarningInDays": 2,
+        "criticalWarningInHours": 24
+      }
+    ]
+  },
+  {
+    "name": "Chicken Breast",
+    "sku": "CHICKEN-BREAST",
+    "isPerishable": true,
+    "firstWarningInDays": 2,
+    "criticalWarningInHours": 6,
+    "taxCategoryId": 4,
+    "variants": [
+      {
+        "name": "Fresh Chicken Breast 1kg",
+        "sku": "CHICKEN-BREAST-1KG",
+        "barcode": "9415000000123",
+        "price": 12.5,
+        "firstWarningInDays": 2,
+        "criticalWarningInHours": 6
+      }
+    ]
+  },
+  {
+    "name": "Tomatoes",
+    "sku": "VEG-TOMATO",
+    "isPerishable": true,
+    "firstWarningInDays": 4,
+    "criticalWarningInHours": 24,
+    "taxCategoryId": 4,
+    "variants": [
+      {
+        "name": "Fresh Tomatoes per kg",
+        "sku": "VEG-TOMATO-KG",
+        "barcode": "9415000000130",
+        "price": 5.5,
+        "firstWarningInDays": 4,
+        "criticalWarningInHours": 24
+      }
+    ]
+  },
+  {
+    "name": "Bananas",
+    "sku": "FRUIT-BANANA",
+    "isPerishable": true,
+    "firstWarningInDays": 5,
+    "criticalWarningInHours": 24,
+    "taxCategoryId": 4,
+    "variants": [
+      {
+        "name": "Fresh Bananas per kg",
+        "sku": "FRUIT-BANANA-KG",
+        "barcode": "9415000000147",
+        "price": 3.5,
+        "firstWarningInDays": 5,
+        "criticalWarningInHours": 24
+      }
+    ]
+  },
+  {
+    "name": "Coca Cola",
+    "sku": "DRINK-COKE",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Coca Cola 2L Bottle",
+        "sku": "DRINK-COKE-2L",
+        "barcode": "9415000000154",
+        "price": 4.5
+      },
+      {
+        "name": "Coca Cola 1.5L Bottle",
+        "sku": "DRINK-COKE-1.5L",
+        "barcode": "9415000000161",
+        "price": 3.5
+      },
+      {
+        "name": "Coca Cola 375ml Can",
+        "sku": "DRINK-COKE-375ML",
+        "barcode": "9415000000178",
+        "price": 1.5
+      }
+    ]
+  },
+  {
+    "name": "Fiji Gold Flour",
+    "sku": "FLOUR-FG",
+    "isPerishable": false,
+    "taxCategoryId": 4,
+    "variants": [
+      {
+        "name": "Fiji Gold Flour 5kg",
+        "sku": "FLOUR-FG-5KG",
+        "barcode": "9415000000185",
+        "price": 12.0
+      },
+      {
+        "name": "Fiji Gold Flour 2kg",
+        "sku": "FLOUR-FG-2KG",
+        "barcode": "9415000000192",
+        "price": 5.5
+      }
+    ]
+  },
+  {
+    "name": "Cooking Oil",
+    "sku": "OIL-COOK",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Vegetable Cooking Oil 2L",
+        "sku": "OIL-COOK-VEG-2L",
+        "barcode": "9415000000208",
+        "price": 8.5
+      },
+      {
+        "name": "Vegetable Cooking Oil 1L",
+        "sku": "OIL-COOK-VEG-1L",
+        "barcode": "9415000000215",
+        "price": 4.5
+      }
+    ]
+  },
+  {
+    "name": "Samsung LED TV",
+    "sku": "TV-SAMSUNG",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Samsung 43 inch LED TV",
+        "sku": "TV-SAMSUNG-43",
+        "barcode": "9415000000222",
+        "price": 850.0
+      },
+      {
+        "name": "Samsung 55 inch LED TV",
+        "sku": "TV-SAMSUNG-55",
+        "barcode": "9415000000239",
+        "price": 1250.0
+      }
+    ]
+  },
+  {
+    "name": "LG Refrigerator",
+    "sku": "FRIDGE-LG",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "LG 350L Top Freezer Refrigerator",
+        "sku": "FRIDGE-LG-350L",
+        "barcode": "9415000000246",
+        "price": 1450.0
+      }
+    ]
+  },
+  {
+    "name": "Panasonic Microwave",
+    "sku": "MICRO-PANA",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Panasonic 25L Microwave Oven",
+        "sku": "MICRO-PANA-25L",
+        "barcode": "9415000000253",
+        "price": 325.0
+      }
+    ]
+  },
+  {
+    "name": "HP Laptop",
+    "sku": "LAPTOP-HP",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "HP Pavilion 15.6 inch i5 8GB 512GB SSD",
+        "sku": "LAPTOP-HP-PAV-I5",
+        "barcode": "9415000000260",
+        "price": 1850.0
+      }
+    ]
+  },
+  {
+    "name": "Dining Table",
+    "sku": "FURN-TABLE-DINING",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Wooden Dining Table 6-Seater Brown",
+        "sku": "FURN-TABLE-DINING-6S-BRN",
+        "barcode": "9415000000277",
+        "price": 650.0
+      }
+    ]
+  },
+  {
+    "name": "Office Chair",
+    "sku": "FURN-CHAIR-OFFICE",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Ergonomic Office Chair Black",
+        "sku": "FURN-CHAIR-OFFICE-ERG-BLK",
+        "barcode": "9415000000284",
+        "price": 285.0
+      },
+      {
+        "name": "Ergonomic Office Chair Grey",
+        "sku": "FURN-CHAIR-OFFICE-ERG-GRY",
+        "barcode": "9415000000291",
+        "price": 285.0
+      }
+    ]
+  },
+  {
+    "name": "Bed Frame",
+    "sku": "FURN-BED",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Queen Size Bed Frame Wooden Brown",
+        "sku": "FURN-BED-QUEEN-WD-BRN",
+        "barcode": "9415000000307",
+        "price": 550.0
+      },
+      {
+        "name": "King Size Bed Frame Wooden Brown",
+        "sku": "FURN-BED-KING-WD-BRN",
+        "barcode": "9415000000314",
+        "price": 750.0
+      }
+    ]
+  },
+  {
+    "name": "Washing Machine",
+    "sku": "WASH-MACH",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Samsung 7kg Front Load Washing Machine",
+        "sku": "WASH-MACH-SAM-7KG-FL",
+        "barcode": "9415000000321",
+        "price": 1150.0
+      }
+    ]
+  },
+  {
+    "name": "Rice Cooker",
+    "sku": "COOK-RICE",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "Panasonic 1.8L Rice Cooker",
+        "sku": "COOK-RICE-PANA-1.8L",
+        "barcode": "9415000000338",
+        "price": 85.0
+      }
+    ]
+  },
+  {
+    "name": "Ceiling Fan",
+    "sku": "FAN-CEILING",
+    "isPerishable": false,
+    "taxCategoryId": 3,
+    "variants": [
+      {
+        "name": "52 inch Ceiling Fan with Remote White",
+        "sku": "FAN-CEILING-52-WHT",
+        "barcode": "9415000000345",
+        "price": 195.0
+      },
+      {
+        "name": "52 inch Ceiling Fan with Remote Brown",
+        "sku": "FAN-CEILING-52-BRN",
+        "barcode": "9415000000352",
+        "price": 195.0
+      }
+    ]
+  }
+]

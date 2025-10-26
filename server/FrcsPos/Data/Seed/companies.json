@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Shop-N-Save",
+    "adminEmail": "prasadrudr05@gmail.com",
+    "adminPassword": "[bS+&IJ0.kjC",
+    "adminImage": "admin-1"
+  },
+  {
+    "name": "Extra",
+    "adminEmail": "admin@extra.com",
+    "adminPassword": "[bS+&IJ0.kjC",
+    "adminImage": "admin-2"
+  },
+  {
+    "name": "NewWorld",
+    "adminEmail": "admin@nw.com",
+    "adminPassword": "[bS+&IJ0.kjC",
+    "adminImage": "admin-3"
+  },
+  {
+    "name": "MH SuperFresh",
+    "adminEmail": "admin@mh.com",
+    "adminPassword": "[bS+&IJ0.kjC",
+    "adminImage": "admin-4"
+  },
+  {
+    "name": "RB Patel",
+    "adminEmail": "admin@rbp.com",
+    "adminPassword": "[bS+&IJ0.kjC",
+    "adminImage": "admin-5"
+  }
+]

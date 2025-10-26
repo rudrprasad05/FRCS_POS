@@ -24,7 +24,7 @@ import {
 import { PackagePlus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function CompanySection() {
   const params = useParams();
@@ -45,27 +45,27 @@ export default function CompanySection() {
     staleTime: FIVE_MINUTE_CACHE,
   });
 
-  useEffect(() => {
-    if (
-      query.data?.meta?.totalPages &&
-      (pagination.pageNumber as number) < query.data.meta.totalPages
-    ) {
-      queryClient.prefetchQuery({
-        queryKey: [
-          "products",
-          { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
-        ],
-        queryFn: () =>
-          GetAllProductVar(
-            {
-              ...pagination,
-              pageNumber: (pagination.pageNumber as number) + 1,
-            },
-            false
-          ),
-      });
-    }
-  }, [query.data, pagination, queryClient]);
+  //   useEffect(() => {
+  //     if (
+  //       query.data?.meta?.totalPages &&
+  //       (pagination.pageNumber as number) < query.data.meta.totalPages
+  //     ) {
+  //       queryClient.prefetchQuery({
+  //         queryKey: [
+  //           "products",
+  //           { ...pagination, pageNumber: (pagination.pageNumber as number) + 1 },
+  //         ],
+  //         queryFn: () =>
+  //           GetAllProductVar(
+  //             {
+  //               ...pagination,
+  //               pageNumber: (pagination.pageNumber as number) + 1,
+  //             },
+  //             false
+  //           ),
+  //       });
+  //     }
+  //   }, [query.data, pagination, queryClient]);
 
   return (
     <>

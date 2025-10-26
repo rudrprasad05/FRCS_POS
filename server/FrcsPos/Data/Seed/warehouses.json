@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Main Storage",
+    "code": "WH001",
+    "location": "Walu Bay"
+  },
+  {
+    "name": "Bulk Storage",
+    "code": "WH002",
+    "location": "Laucala Bay"
+  },
+  {
+    "name": "Cold Storage",
+    "code": "WH003",
+    "location": "Lami"
+  }
+]

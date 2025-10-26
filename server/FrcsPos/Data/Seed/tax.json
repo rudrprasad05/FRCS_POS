@@ -1,0 +1,20 @@
+[
+  {
+    "name": "VAT",
+    "ratePercent": 12.5,
+    "isActive": true,
+    "isDeleted": false
+  },
+  {
+    "name": "VAT Exempt",
+    "ratePercent": 0.0,
+    "isActive": true,
+    "isDeleted": false
+  },
+  {
+    "name": "Heavy Goods Tax",
+    "ratePercent": 30.0,
+    "isActive": false,
+    "isDeleted": true
+  }
+]
