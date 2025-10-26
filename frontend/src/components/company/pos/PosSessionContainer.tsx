@@ -1,6 +1,7 @@
 "use client";
 
 import { GetPosSession } from "@/actions/PosSession";
+import { GetOneProductByBarcode } from "@/actions/Product";
 import { Button } from "@/components/ui/button";
 import { usePosSession } from "@/context/PosContext";
 import { useSignalR } from "@/context/SignalRContext";
@@ -75,20 +76,35 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     if (!connection) return;
 
     const handlers = {
-      ReceiveScan: (barcode: string) => {
+      ReceiveScan: async (barcode: string) => {
         console.log("Scanned:", barcode);
         toast.success(`Scanned: ${barcode}`);
         const product = productsRef.current.find((x) => x.barcode === barcode);
+
         if (!product) {
-          toast.error(`Product not found: ${barcode}`);
+          const res = await fetchVariantFromDb(barcode);
+          if (!res) {
+            toast.error(`Product not found: ${barcode}`);
+            return;
+          } else {
+            addProduct({
+              productVariantId: res.id,
+              productVariant: res,
+              quantity: 1,
+              unitPrice: res.price,
+              taxRatePercent: res.taxCategory?.ratePercent || 0.125,
+              lineTotal: res.price,
+            });
+          }
           return;
         }
+
         addProduct({
           productVariantId: product.id,
           productVariant: product,
           quantity: 1,
           unitPrice: product.price,
-          taxRatePercent: 0.125,
+          taxRatePercent: product.taxCategory?.ratePercent || 0.125,
           lineTotal: product.price,
         });
       },
@@ -120,6 +136,15 @@ export default function PosSessionContainer({ uuid }: { uuid: string }) {
     setIsScannerConnectedToServer,
     setIsTerminalConnectedToServer,
   ]);
+
+  const fetchVariantFromDb = async (barcode: string) => {
+    const res = await GetOneProductByBarcode({ uuid: barcode });
+    if (res.success) {
+      return res.data as ProductVariant;
+    } else {
+      return null;
+    }
+  };
 
   // Update connection status
   useEffect(() => {

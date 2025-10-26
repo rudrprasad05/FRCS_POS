@@ -106,8 +106,6 @@ namespace FrcsPos.Repository
                 .Take(queryObject.PageSize)
                 .ToListAsync();
 
-            // var productVariants = await query.ToListAsync();
-
             // Mapping to DTOs
             var result = new List<ProductVariantDTO>();
             foreach (var variant in productVariants)
