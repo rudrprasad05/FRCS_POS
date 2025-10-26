@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Product batch management controller
     [Authorize(Roles = "admin, cashier")]
     [Route("api/product-batch")]
     [ApiController]
@@ -26,6 +27,7 @@ namespace FrcsPos.Controllers
             _productBatchRepository = productBatchRepository;
         }
 
+        // Create new product batch
         [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateBatch([FromBody] NewProductBatchRequest newProductBatchRequest)
@@ -39,6 +41,7 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+        // Edit product batch
         [Authorize(Roles = "admin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> Edit([FromBody] EditProductBatchRequest newProductBatchRequest)
@@ -47,7 +50,7 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
-
+        // Soft delete product batch
         [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
@@ -57,7 +60,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
 
         }
-
+        // Activate product batch
         [Authorize(Roles = "admin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
@@ -80,6 +83,7 @@ namespace FrcsPos.Controllers
 
             return Ok(model);
         }
+        // Get product batch by UUID
         [HttpGet("get-by-uuid")]
         public async Task<IActionResult> GetOnByUUID([FromQuery] RequestQueryObject queryObject)
         {
@@ -87,7 +91,7 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
-
+        // Get info for creating new batch
         [HttpGet("load-pre-new")]
         public async Task<IActionResult> GetAllProducts([FromQuery] RequestQueryObject queryObject)
         {

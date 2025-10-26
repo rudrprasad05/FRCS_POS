@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
-
+    // POS terminal management controller
     [Authorize(Roles = "admin, cashier")]
     [Route("api/pos-terminal")]
     [ApiController]
@@ -28,6 +28,7 @@ namespace FrcsPos.Controllers
             _posTerminalRepository = posTerminalRepository;
         }
 
+        // Create new POS terminal
         [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCompany([FromBody] NewPosTerminalRequest data)
@@ -69,6 +70,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Soft delete a POS terminal
         [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDelete([FromQuery] RequestQueryObject queryObject)
@@ -97,6 +99,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Activate a POS terminal
         [Authorize(Roles = "admin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> Activate([FromQuery] RequestQueryObject queryObject)

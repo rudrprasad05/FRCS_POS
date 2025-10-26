@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // User management Controller
     [Route("api/user")]
     [ApiController]
     public class UserController : BaseController
@@ -49,6 +50,7 @@ namespace FrcsPos.Controllers
             _emailRepository = emailRepository;
         }
 
+        // Get all users
         [Authorize(Roles = "superadmin")]
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllSuperAdmins([FromQuery] RequestQueryObject requestQuery)
@@ -57,6 +59,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get all users not in company
         [Authorize(Roles = "admin, superadmin")]
         [HttpGet("get-all-users-not-in-company")]
         public async Task<IActionResult> GetAllSuperAdminsNotInCompany([FromQuery] string? role)
@@ -65,6 +68,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get users by company
         [Authorize(Roles = "admin, superadmin")]
         [HttpGet("get-user-by-company")]
         public async Task<IActionResult> GetUserByCompany([FromQuery] RequestQueryObject queryObject)
@@ -72,6 +76,8 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.GetUserByCompany(queryObject);
             return StatusCode(model.StatusCode, model);
         }
+
+        // Get user by UUID
         [Authorize]
         [HttpGet("get-user-by-uuid")]
         public async Task<IActionResult> GetUserByUUID([FromQuery] RequestQueryObject queryObject)
@@ -80,6 +86,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Verify email
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail([FromQuery] RequestQueryObject queryObject)
         {
@@ -92,6 +99,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Change profile picture
         [Authorize]
         [HttpPost("profile-picture")]
         public async Task<IActionResult> ChangePfp([FromQuery] RequestQueryObject queryObject, IFormFile? formFile)
@@ -104,6 +112,8 @@ namespace FrcsPos.Controllers
             var model = await _userRepository.ChangePfp(queryObject, formFile);
             return StatusCode(model.StatusCode, model);
         }
+
+        // Change username
         [Authorize]
         [HttpPost("change-username")]
         public async Task<IActionResult> ChangeUname([FromQuery] RequestQueryObject queryObject, ChangeUsernameRequest request)
@@ -117,6 +127,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Request password reset 
         [HttpPost("request-password-reset")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordReset requestPasswordReset)
         {
@@ -134,6 +145,7 @@ namespace FrcsPos.Controllers
             return Ok(ApiResponse<bool>.Ok(true, message: "email sent"));
         }
 
+        // Reset email verification
         [HttpPost("request-email-verification-resend")]
         public async Task<IActionResult> ReRequestEmailVerification([FromBody] RequestPasswordReset requestPasswordReset)
         {
@@ -152,6 +164,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Handle password reset
         [HttpPost("handle-password-reset")]
         public async Task<IActionResult> HandlePasswordReset([FromBody] PasswordResetRequest request)
         {
@@ -164,6 +177,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Soft delete user
         [Authorize(Roles = "superadmin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
@@ -172,6 +186,8 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
+
+        // Activate user
         [Authorize(Roles = "superadmin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
@@ -186,6 +202,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // create new user
         [Authorize(Roles = "superadmin, admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Register([FromBody] NewUserDTO model, [FromQuery] RequestQueryObject queryObject)

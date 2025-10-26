@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Controller for media management
     [Authorize]
     [ApiController]
     [Route("api/media")]
@@ -21,6 +22,7 @@ namespace FrcsPos.Controllers
     {
         private readonly IMediaRepository _mediaRepository;
 
+        // Constructor to inject dependencies
         public MediaController(IMediaRepository mediaRepository,
             IAmazonS3Service amazonS3Service,
             IConfiguration configuration,
@@ -31,6 +33,7 @@ namespace FrcsPos.Controllers
             _mediaRepository = mediaRepository;
         }
 
+        // Upsert media
         [HttpPost("upsert")]
         public async Task<IActionResult> UpsertAsync(
             [FromQuery] string? uuid,
@@ -73,6 +76,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Get total storage sum
         [HttpGet("sum")]
         public async Task<IActionResult> Sum()
         {

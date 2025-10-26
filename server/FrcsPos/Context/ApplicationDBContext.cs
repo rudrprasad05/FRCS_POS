@@ -37,10 +37,11 @@ namespace FrcsPos.Context
         public DbSet<EmailVerification> EmailVerifications => Set<EmailVerification>();
         public DbSet<Media> Medias { get; set; }
 
+        // Configure models and seed data
         protected override void OnModelCreating(ModelBuilder b)
         {
             base.OnModelCreating(b);
-
+            // Seed default roles
             List<IdentityRole> roles = new()
             {
                 new() {Id="c0470664-ac71-45da-a97f-92d7d3bde4c2", Name = "superadmin", NormalizedName = "SUPERADMIN"},
@@ -48,17 +49,19 @@ namespace FrcsPos.Context
                 new() {Id="9dc4cb79-ae75-48fb-af1d-a318e53d4364", Name = "cashier", NormalizedName = "CASHIER"},
                 new() {Id="e3f1f724-cd8b-4370-a40f-a82d3ebdff01", Name = "user", NormalizedName = "USER"}
             };
+            // Set collation and seed roles
             b.UseCollation("utf8mb4_general_ci");
             b.Entity<IdentityRole>().HasData(roles);
+            // Configure Identity Keys
             b.Entity<IdentityUserLogin<string>>().HasKey(login => new { login.LoginProvider, login.ProviderKey });
             b.Entity<IdentityUserRole<string>>().HasKey(role => new { role.UserId, role.RoleId });
             b.Entity<IdentityUserToken<string>>().HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
-
+            // Configure User entity
             b.Entity<User>(e =>
             {
                 e.HasIndex(x => x.Email).IsUnique();
             });
-
+            // Configure Email Verification
             b.Entity<EmailVerification>(e =>
             {
                 e.HasIndex(x => x.Code).IsUnique();
@@ -228,7 +231,7 @@ namespace FrcsPos.Context
                 e.HasOne(x => x.ProductVariant)
                     .WithMany()
                     .HasForeignKey(x => x.ProductVariantId)
-                    .OnDelete(DeleteBehavior.Restrict); // ✅ Changed
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasOne(x => x.Sale)
                     .WithMany(x => x.Items)

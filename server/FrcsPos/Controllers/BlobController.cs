@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Controller for blob storage operations
     [Authorize]
     [ApiController]
     [Route("api/blob")]
@@ -25,6 +26,7 @@ namespace FrcsPos.Controllers
         private readonly BlobServiceClient _blobServiceClient;
         private readonly BlobContainerClient _containerClient;
 
+        //Contructor to initialize blob clients
         public BlobController(
             BlobServiceClient blobServiceClient,
             IConfiguration configuration,
@@ -37,6 +39,7 @@ namespace FrcsPos.Controllers
             _containerClient.CreateIfNotExists();
         }
 
+        // Upload file to blob storage
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] string AltText, [FromForm] IFormFile? file)
         {
@@ -45,6 +48,7 @@ namespace FrcsPos.Controllers
 
             try
             {
+                // Generate unique file name
                 var fileName = $"frcs/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
                 var blobClient = _containerClient.GetBlobClient(fileName);
                 var headers = new BlobHttpHeaders
@@ -59,6 +63,7 @@ namespace FrcsPos.Controllers
                     await blobClient.UploadAsync(stream, headers);
                 }
 
+                // Generate SAS token for secure access
                 var sasBuilder = new BlobSasBuilder
                 {
                     BlobContainerName = _containerClient.Name,

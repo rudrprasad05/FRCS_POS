@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace FrcsPos.Config
 {
+    // Manage roles in the app
     public class Roles
     {
         public async Task EnsureRoles(IServiceProvider services)

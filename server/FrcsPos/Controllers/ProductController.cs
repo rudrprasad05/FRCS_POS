@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Product management controller 
     [Authorize(Roles = "admin, cashier")]
     [Route("api/product")]
     [ApiController]
@@ -27,6 +28,7 @@ namespace FrcsPos.Controllers
             _productRepository = productRepository;
         }
 
+        // Create  new product
         [Authorize(Roles = "admin")]
 
         [HttpPost("create")]
@@ -52,6 +54,7 @@ namespace FrcsPos.Controllers
             return Ok(res);
         }
 
+        // Update product
         [Authorize(Roles = "admin")]
         [HttpPost("update")]
         public async Task<IActionResult> UpdateProdut(
@@ -97,6 +100,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get info for creating new product
         [HttpGet("get-new-page-info")]
         public async Task<IActionResult> GetNewPageInfo([FromQuery] RequestQueryObject queryObject)
         {
@@ -113,6 +117,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Soft delete product
         [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
@@ -127,6 +132,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Activate product
         [Authorize(Roles = "admin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)

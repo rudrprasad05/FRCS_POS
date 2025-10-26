@@ -9,12 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Sale Controller
     [Route("api/sale")]
     [ApiController]
     public class SaleController : BaseController
     {
         private readonly ICheckoutRepository _checkoutRepository;
-
+        
+        // Constructor to inject dependencies
         public SaleController(
             IConfiguration configuration,
             ITokenService tokenService,
@@ -25,6 +27,7 @@ namespace FrcsPos.Controllers
             _checkoutRepository = checkoutRepository;
         }
 
+        // Get sale by UUID
         [Authorize(Roles = "admin, cashier")]
         [HttpGet("get-by-uuid")]
         public async Task<IActionResult> CreateCheckout([FromQuery] string uuid)
@@ -39,6 +42,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Get sales by company
         [Authorize(Roles = "admin, cashier")]
         [HttpGet("get-by-company")]
         public async Task<IActionResult> GetSaleByCompany([FromQuery] RequestQueryObject requestQuery)
@@ -53,6 +57,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Get receipt by invoice UUID
         [HttpGet("get-by-invoice")]
         public async Task<IActionResult> GetReceipt([FromQuery] string uuid)
         {

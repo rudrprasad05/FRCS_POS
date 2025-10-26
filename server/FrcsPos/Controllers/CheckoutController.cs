@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Controller for checkout operations
     [Route("api/checkout")]
     [ApiController]
     public class CheckoutController : BaseController
@@ -25,7 +26,7 @@ namespace FrcsPos.Controllers
         {
             _checkoutRepository = checkoutRepository;
         }
-
+        // Create new checkout
         [Authorize(Roles = "admin, cashier")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCheckout([FromBody] NewCheckoutRequest data)
@@ -40,6 +41,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Download receipt PDF
         [HttpGet("download-receipt")]
         public async Task<IActionResult> Download([FromQuery] string uuid)
         {
@@ -53,6 +55,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Email receipt PDF
         [HttpPost("email-receipt")]
         public async Task<IActionResult> Download([FromQuery] RequestQueryObject requestQueryObject, [FromBody] RequestPasswordReset requestPasswordReset)
         {

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Base Controller with common dependencies and methods
     public abstract class BaseController : ControllerBase
     {
         protected readonly IConfiguration _configuration;
@@ -21,6 +22,7 @@ namespace FrcsPos.Controllers
             _tokenService = tokenService;
             _logger = logger;
         }
+        // Get user ID from HttpContext items
         protected string? UserId => HttpContext.Items["UserId"]?.ToString();
 
         [HttpDelete("{uuid}")]

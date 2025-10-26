@@ -12,12 +12,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Superadmin dashboard Controller
     [Route("api/superadmin")]
     [ApiController]
     public class SuperAdminDashboardController : BaseController
     {
         private readonly ISuperAdminDashboardRepository _superAdminDashboardRepository;
 
+        // Constructor to inject dependencies
         public SuperAdminDashboardController(
             IConfiguration configuration,
             ITokenService tokenService,
@@ -28,6 +30,7 @@ namespace FrcsPos.Controllers
             _superAdminDashboardRepository = superAdminDashboardRepository;
         }
 
+        // Get Superadmin dashboard data
         [Authorize(Roles = "superadmin")]
         [HttpGet("get-dashboard")]
         public async Task<IActionResult> GetSuperAdminDashboard()
@@ -37,6 +40,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get admin dashboard data
         [Authorize(Roles = "admin")]
         [HttpGet("company-dashboard")]
         public async Task<IActionResult> GetAdminDashboard([FromQuery] RequestQueryObject queryObject)

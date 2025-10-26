@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    //Notification management controller
     [Authorize]
     [Route("api/notification")]
     [ApiController]
@@ -26,6 +27,7 @@ namespace FrcsPos.Controllers
             _notificationRepository = notificationRepository;
         }
 
+        // Get all notifications 
         [HttpGet("get-all-superadmin")]
         public async Task<IActionResult> GetAllNotificationsForSuperAdmin([FromQuery] RequestQueryObject queryObject)
         {
@@ -61,6 +63,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Mark notification as read/unread
         [HttpPost("read")]
         public async Task<IActionResult> MarkReadUnread([FromQuery] RequestQueryObject queryObject)
         {

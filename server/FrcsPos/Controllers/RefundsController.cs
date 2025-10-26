@@ -9,6 +9,7 @@ using FrcsPos.Response.DTO;
 
 namespace FrcsPos.Controllers
 {
+    //Refund management controller
     [Authorize(Roles = "admin, cashier")]
     [ApiController]
     [Route("api/refunds")]
@@ -16,6 +17,7 @@ namespace FrcsPos.Controllers
     {
         private readonly IRefundService _refundService;
 
+        //Constructor to inject refund service
         public RefundsController(IRefundService refundService)
         {
             _refundService = refundService;
@@ -43,6 +45,7 @@ namespace FrcsPos.Controllers
         }
 
         // POST api/refunds
+        // Start new refund
         [HttpPost]
         public async Task<IActionResult> Start([FromBody] StartRefundRequest request)
         {
@@ -52,6 +55,7 @@ namespace FrcsPos.Controllers
         }
 
         // POST api/refunds/{id}/approve
+        // Approve refund
         [HttpPost("approve")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Approve([FromQuery] RequestQueryObject query, [FromBody] AdminApprovalRequest request)

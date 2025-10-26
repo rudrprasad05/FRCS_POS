@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Supplier management controller
     [Route("api/supplier")]
     [ApiController]
     [Authorize(Roles = "admin, cashier")]
@@ -17,6 +18,7 @@ namespace FrcsPos.Controllers
     {
         private readonly ISupplierRepository _supplierRepository;
 
+        // Constructor to inject dependencies
         public SupplierController(
             IConfiguration configuration,
             ITokenService tokenService,
@@ -27,6 +29,7 @@ namespace FrcsPos.Controllers
             _supplierRepository = supplierRepository;
         }
 
+        // Create new supplier
         [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateSupplier([FromBody] NewSupplierRequest data)
@@ -41,6 +44,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Edit supplier
         [Authorize(Roles = "admin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> EditSupplier([FromBody] EditSupplierData data, [FromQuery] RequestQueryObject queryObject)
@@ -50,6 +54,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get all supplier
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllSuppliers([FromQuery] RequestQueryObject queryObject)
         {
@@ -58,6 +63,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get supplier by UUID
         [HttpGet("get-full-by-uuid")]
         public async Task<IActionResult> GetFullWarehouseByUUID([FromQuery] RequestQueryObject requestQueryObject)
         {
@@ -66,6 +72,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Soft delete Supplier
         [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
@@ -75,6 +82,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Activate supplier
         [Authorize(Roles = "admin")]
         [HttpPost("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)

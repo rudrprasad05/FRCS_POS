@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // POS session management controller
     [Route("api/pos-session")]
     [Authorize(Roles = "admin, cashier")]
     [ApiController]
@@ -119,6 +120,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get POS session by UUID
         [HttpGet("get-session-by-uuid")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] string uuid)
         {
@@ -127,6 +129,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get all sessions for a terminal
         [HttpGet("get-all-by-terminal-uuid")]
         public async Task<IActionResult> GetAllSessionsForOneTerminal([FromQuery] string terminalUUID)
         {

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FrcsPos.Controllers
 {
+    // WebSocket connections controller
     [ApiController]
     [Route("ws")]
     public class WebSocketController : BaseController
@@ -24,6 +25,7 @@ namespace FrcsPos.Controllers
         {
         }
 
+        // Establish websocket connection
         [HttpGet("connect")]
         public async Task Connect()
         {
@@ -40,6 +42,7 @@ namespace FrcsPos.Controllers
             }
         }
 
+        // Handle websocket connection and messages
         private async Task HandleConnection(WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];

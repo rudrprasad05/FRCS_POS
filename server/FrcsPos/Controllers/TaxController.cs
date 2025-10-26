@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Tax category management controller
     [Authorize]
     [Route("api/tax")]
     [ApiController]
@@ -14,6 +15,7 @@ namespace FrcsPos.Controllers
     {
         private readonly ITaxCategoryRepository _taxRepository;
 
+        // Constructor to inject dependencies
         public TaxController(
             ITokenService tokenService,
             ITaxCategoryRepository taxRepository,
@@ -25,6 +27,7 @@ namespace FrcsPos.Controllers
             _taxRepository = taxRepository;
         }
 
+        // Get all tax 
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllTax([FromQuery] RequestQueryObject queryObject)
         {
@@ -34,6 +37,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Get tax by UUID
         [HttpGet("get-by-uuid")]
         public async Task<IActionResult> GetOne([FromQuery] RequestQueryObject queryObject)
         {
@@ -43,6 +47,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Create new tax 
         [Authorize(Roles = "superadmin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateTax([FromBody] NewTaxRequest request)
@@ -53,6 +58,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Edit tax 
         [Authorize(Roles = "superadmin")]
         [HttpPost("edit")]
         public async Task<IActionResult> EditTax([FromBody] NewTaxRequest request, [FromQuery] RequestQueryObject queryObject)
@@ -63,6 +69,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Soft delete tax 
         [Authorize(Roles = "superadmin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteTax([FromQuery] string uuid)
@@ -74,6 +81,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Activate tax
         [Authorize(Roles = "superadmin")]
         [HttpPatch("activate")]
         public async Task<IActionResult> Activate([FromQuery] string uuid)

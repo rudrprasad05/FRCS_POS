@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Quick Connect functionality Controller
     [Route("api/quickconnect")]
     [ApiController]
     public class QuickConnectController : BaseController
@@ -23,6 +24,7 @@ namespace FrcsPos.Controllers
             _quickConnectRepository = quickConnectRepository;
         }
 
+        // Generate quick connect link
         [HttpGet("generate")]
         public async Task<IActionResult> CreateCompany([FromQuery] string uuid)
         {
@@ -31,6 +33,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Validate quick connect UUID
         [HttpGet("validate")]
         public async Task<IActionResult> ValidateQCLink([FromQuery] string uuid)
         {

@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Company management Controller
     [Authorize]
     [Route("api/company")]
     [ApiController]
     public class CompanyController : BaseController
     {
         private readonly ICompanyRepository _companyRepository;
-
+        // Constructor to inject dependencies
         public CompanyController(
             IConfiguration configuration,
             ITokenService tokenService,
@@ -25,7 +26,7 @@ namespace FrcsPos.Controllers
         {
             _companyRepository = companyRepository;
         }
-
+        // Create new company (Superadmin only)
         [Authorize(Roles = "superadmin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCompany([FromBody] NewCompanyRequest data)
@@ -34,7 +35,7 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
-
+        // Edit existing company (Superadmin only)
         [Authorize(Roles = "superadmin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> EditCompany([FromBody] NewCompanyRequest data, [FromQuery] RequestQueryObject requestQuery)
@@ -44,6 +45,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Add user to company (Superadmin or admin)
         [Authorize(Roles = "superadmin, admin")]
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUserToCompany([FromBody] AddUserToCompany request)
@@ -53,6 +55,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        //Get all companies (Superadmin only)
         [Authorize(Roles = "superadmin")]
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllCompanies([FromQuery] RequestQueryObject queryObject)
@@ -62,6 +65,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get company by admin user ID
         [HttpGet("get-one-by-admin-id")]
         public async Task<IActionResult> GetCompanyByAdminUserId([FromQuery] string uuid)
         {
@@ -94,6 +98,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Soft delete company
         [Authorize(Roles = "superadmin, admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] string uuid)
@@ -102,7 +107,8 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
-
+        
+        // Activate company
         [Authorize(Roles = "superadmin, admin")]
         [HttpPatch("activate")]
         public async Task<IActionResult> ActivateCompany([FromQuery] string uuid)

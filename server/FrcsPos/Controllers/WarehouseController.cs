@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FrcsPos.Controllers
 {
+    // Warehouse managemnt controller
     [Authorize(Roles = "admin, cashier")]
     [Route("api/warehouse")]
     [ApiController]
@@ -25,6 +26,8 @@ namespace FrcsPos.Controllers
         {
             _warehouseRepository = warehouseRepository;
         }
+
+        // Create new warehouse
         [Authorize(Roles = "admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCheckout([FromBody] NewWarehouseRequest data)
@@ -39,6 +42,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Edit existing warehouse
         [Authorize(Roles = "admin")]
         [HttpPatch("edit")]
         public async Task<IActionResult> EditWarehouse([FromBody] EditWarehouseData data, [FromQuery] RequestQueryObject queryObject)
@@ -53,6 +57,7 @@ namespace FrcsPos.Controllers
             return Ok(model);
         }
 
+        // Get all warehouse
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAllWarehouses([FromQuery] RequestQueryObject queryObject)
         {
@@ -61,6 +66,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Get full warehouse by UUID
         [HttpGet("get-full-by-uuid")]
         public async Task<IActionResult> GetFullWarehouseByUUID([FromQuery] RequestQueryObject requestQueryObject)
         {
@@ -69,6 +75,7 @@ namespace FrcsPos.Controllers
             return StatusCode(model.StatusCode, model);
         }
 
+        // Soft delete warehouse
         [Authorize(Roles = "admin")]
         [HttpDelete("soft-delete")]
         public async Task<IActionResult> SoftDeleteCompany([FromQuery] RequestQueryObject queryObject)
@@ -77,6 +84,8 @@ namespace FrcsPos.Controllers
 
             return StatusCode(model.StatusCode, model);
         }
+
+        // Activate warehouse
         [Authorize(Roles = "admin")]
         [HttpDelete("activate")]
         public async Task<IActionResult> ActivateProduct([FromQuery] RequestQueryObject queryObject)
