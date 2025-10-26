@@ -4,9 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    // ---------------------------------------------------------
-    // 1. Grab the token that the browser sent in the Cookie header
-    // ---------------------------------------------------------
     const cookieHeader = req.headers.get("cookie") ?? "";
     const tokenMatch = cookieHeader.match(/token=([^;]+)/);
     const accessToken = tokenMatch ? tokenMatch[1] : null;

@@ -30,5 +30,5 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 export const config = {
-  matcher: ["/((?!auth|quickconnect|error|receipt|_next|api|favicon.ico).*)"],
+  matcher: ["/((?!auth|error|receipt|_next|api|favicon.ico).*)"],
 };
