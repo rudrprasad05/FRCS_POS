@@ -205,14 +205,8 @@ namespace FrcsPos.Repository
 
             if (sale != null)
             {
-                var refundedItemIds = sale.Refunds
-                    .Where(r => r.Status == RefundStatus.APPROVED)
-                    .SelectMany(r => r.Items)
-                    .Select(ri => ri.SaleItemId)
-                    .ToHashSet();
-
                 sale.Items = sale.Items
-                    .Where(si => !refundedItemIds.Contains(si.Id))
+                    .Where(si => si.Quantity > 0)
                     .ToList();
             }
 

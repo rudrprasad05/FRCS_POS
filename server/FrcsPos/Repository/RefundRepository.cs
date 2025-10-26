@@ -158,65 +158,58 @@ namespace FrcsPos.Repository
             var refund = await _context.RefundRequests
                 .Include(r => r.Sale)
                     .ThenInclude(s => s.Company)
+                .Include(r => r.Sale)
+                    .ThenInclude(s => s.Items)               // <-- SaleItems
+                        .ThenInclude(si => si.ProductVariant)
+                            .ThenInclude(pv => pv.Batches)
                 .Include(r => r.Items)
                     .ThenInclude(i => i.SaleItem)
                         .ThenInclude(si => si.ProductVariant)
-                            .ThenInclude(p => p.Batches)
+                            .ThenInclude(pv => pv.Batches)
                 .FirstOrDefaultAsync(r => r.UUID == requestQuery.UUID);
 
             if (refund == null)
-            {
                 return ApiResponse<RefundDTO>.Fail(message: "Refund not found");
-            }
 
             if (refund.Status != RefundStatus.PENDING)
-            {
                 return ApiResponse<RefundDTO>.Fail(message: "Refund already processed");
-            }
 
             var admin = await _userManager.FindByNameAsync(request.AdminUsernameOrEmail) ?? await _userManager.FindByEmailAsync(request.AdminUsernameOrEmail);
-            if (admin == null)
-            {
-                return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
-            }
 
-            var ok = await _userManager.CheckPasswordAsync(admin, request.AdminPassword);
-            if (!ok)
-            {
+            if (admin == null || !await _userManager.CheckPasswordAsync(admin, request.AdminPassword))
                 return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
-            }
 
-            var roles = await _userManager.GetRolesAsync(admin);
-            var isAdmin = roles.Contains("admin");
-            if (!isAdmin)
-            {
+            if (!await _userManager.IsInRoleAsync(admin, "admin"))
                 return ApiResponse<RefundDTO>.Fail(message: "Admin creds required");
-            }
 
-            foreach (var item in refund.Items)
+            foreach (var refundItem in refund.Items)
             {
-                var saleItem = await _context.SaleItems
-                    .Include(si => si.ProductVariant)
-                        .ThenInclude(p => p.Batches)
-                    .FirstOrDefaultAsync(si => si.Id == item.SaleItemId);
+                var saleItem = refundItem.SaleItem;
+                if (saleItem == null)
+                    return ApiResponse<RefundDTO>.Fail(message: "Sale item not found");
 
-                if (saleItem == null) return ApiResponse<RefundDTO>.Fail(message: "Sale item not found");
+                if (saleItem.Quantity < refundItem.Quantity)
+                    return ApiResponse<RefundDTO>.Fail(message: $"Cannot refund {refundItem.Quantity} of item {saleItem.Id} only {saleItem.Quantity} available.");
 
-                var remainingQty = item.Quantity;
-                var batches = saleItem.ProductVariant.Batches
-                    .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
-                    .ToList();
+                saleItem.Quantity -= refundItem.Quantity;
+                var subtotal = saleItem.Quantity * saleItem.UnitPrice;
+                var tax = subtotal * saleItem.TaxRatePercent / 100;
+                saleItem.LineTotal = subtotal + tax;
 
-                foreach (var batch in batches)
+                var remaining = refundItem.Quantity;
+                foreach (var batch in saleItem.ProductVariant.Batches
+                    .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue))
                 {
-                    batch.Quantity += remainingQty;
-                    remainingQty = 0;
+                    batch.Quantity += remaining;
+                    remaining = 0;
                     _context.ProductBatches.Update(batch);
-                    break; // For simplicity, add to first batch
+                    break;
                 }
 
-                item.ApprovedQuantity = item.Quantity;
+                refundItem.ApprovedQuantity = refundItem.Quantity;
             }
+
+            RecomputeSaleTotals(refund.Sale);
 
             Sale sale = refund.Sale;
 
