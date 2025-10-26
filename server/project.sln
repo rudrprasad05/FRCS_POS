@@ -9,7 +9,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9EEA9F9A8F40}") = "FrcsPos", "FrcsPos\FrcsPos.csproj", "{F9ADB2E1-340F-4255-EAD8-03F62FA8CEF2}"
 EndProject
 
-Project("{9A19103F-16F7-4668-BE54-9EEA9F9A8F40}") = "FrcsPos.Test", "FrcsPos.Test\FrcsPos.Test.csproj", "{A1B2C3D4-5678-90AB-CDEF-1234567890AB}"
+Project("{9A19103F-16F7-4668-BE54-9EEA9F9A8F40}") = "FrcsPos.Tests", "FrcsPos.Tests\FrcsPos.Tests.csproj", "{A1B2C3D4-5678-90AB-CDEF-1234567890AB}"
 EndProject
 
 Global

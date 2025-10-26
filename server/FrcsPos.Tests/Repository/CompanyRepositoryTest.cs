@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Moq;
 
 using FrcsPos.Repository;
+using FrcsPos;
 using FrcsPos.Models;
 using FrcsPos.Interfaces;
 using FrcsPos.Services;
@@ -47,7 +48,7 @@ namespace FrcsPos.Tests.Repository
             // UserManager<User> is special — needs full mock setup
             var userStoreMock = new Mock<IUserStore<User>>();
             _mockUserManager = new Mock<UserManager<User>>(
-                userStoreMock.Object, null, null, null, null, null, null, null, null);
+                userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
             // Instantiate repository with ALL dependencies
             _repository = new CompanyRepository(
