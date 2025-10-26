@@ -56,6 +56,12 @@ namespace FrcsPos.Mappers
                 dto.Product = request.Product.FromModelToDtoStatic();
             }
 
+            if (request.Product?.TaxCategory != null)
+            {
+
+                dto.TaxCategory = request.Product.TaxCategory.FromModelToDto();
+            }
+
             return dto;
         }
 

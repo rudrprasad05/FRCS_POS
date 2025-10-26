@@ -37,9 +37,9 @@ export const ProductsOnlyColumns: ColumnDef<Product>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
-      const company = row.original;
+      const prod = row.original;
 
-      return <div className="flex gap-2">{company.name}</div>;
+      return <HandleProdName prod={prod} />;
     },
   },
   {
@@ -262,6 +262,20 @@ export const ProductsVariantsColumns: ColumnDef<ProductVariant>[] = [
     },
   },
 ];
+
+const HandleProdName = ({ prod }: { prod: Product }) => {
+  const maxLength = 10;
+  const displayName =
+    prod.name.length > maxLength
+      ? prod.name.slice(0, maxLength) + "..."
+      : prod.name;
+
+  return (
+    <div className="flex gap-2 max-w-[200px] truncate" title={prod.name}>
+      {displayName}
+    </div>
+  );
+};
 
 export function HandleBarcode({ barcode }: { barcode: string }) {
   if (!barcode || barcode.length === 0) {

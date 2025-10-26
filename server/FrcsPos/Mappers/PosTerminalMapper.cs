@@ -44,7 +44,6 @@ namespace FrcsPos.Mappers
             if (request.Sales != null)
             {
                 dto.Sales = request.Sales.FromModelToDtoStatic();
-                dto.TotalSales = request.Sales?.Sum(s => s.Total) ?? 0m;
             }
             if (request.Company != null)
             {
@@ -54,6 +53,10 @@ namespace FrcsPos.Mappers
             {
                 dto.Session = request.Session.FromPosSessionListToPosSessionDTOList();
                 dto.LastUsedBy = request.Session.OrderByDescending(s => s.CreatedOn)?.FirstOrDefault()?.PosUser.FromUserToDtoStatic();
+
+                dto.TotalSales = request.Session
+                    .SelectMany(s => s.Sales)
+                    .Sum(x => x.Total);
             }
 
             return dto;

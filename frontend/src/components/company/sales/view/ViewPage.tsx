@@ -99,9 +99,16 @@ export default function SaleDetailPage() {
               </p>
             </div>
           </div>
-          <Badge variant={getStatusColor(sale.status)} className="text-sm">
-            {sale.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={getStatusColor(sale.status)} className="text-sm">
+              {sale.status}
+            </Badge>
+            <Button asChild>
+              <Link target="_blank" href={`/receipt/${sale.invoiceNumber}`}>
+                Receipt <ExternalLink className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Sale Overview */}

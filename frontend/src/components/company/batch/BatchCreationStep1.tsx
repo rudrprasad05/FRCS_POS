@@ -31,7 +31,7 @@ export function BatchCreationStep1({
     <div className="flex flex-col gap-6">
       <div>
         <LargeText>Supplier Information</LargeText>
-        <MutedText>select a supplier</MutedText>
+        <MutedText>Select a Supplier</MutedText>
       </div>
       <FormField
         control={form.control}

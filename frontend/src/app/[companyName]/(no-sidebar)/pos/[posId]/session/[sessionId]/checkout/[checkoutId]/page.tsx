@@ -220,7 +220,11 @@ export default function ReceiptPage() {
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>
-                    {item.quantity} x {formatCurrency(item.unitPrice)}
+                    {item.quantity} x {formatCurrency(item.unitPrice)} +{" "}
+                    {formatCurrency(
+                      (item.quantity * item.unitPrice * item.taxRatePercent) /
+                        100
+                    )}
                   </span>
                   <span>
                     Tax: {item.productVariant.taxCategory?.ratePercent}%

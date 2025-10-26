@@ -33,9 +33,11 @@ export default function BarcodeScanner() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected" | "reconnecting"
   >("connecting");
+  const [progress, setProgress] = useState(0);
 
   const params = useParams();
   const id = params.id as string;
@@ -46,6 +48,26 @@ export default function BarcodeScanner() {
   const beep = useMemo(() => new Audio("/scanner-beep.mp3"), []);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const apiUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL;
+
+  useEffect(() => {
+    const duration = 5000; // 3 seconds
+    const startTime = Date.now();
+
+    const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const t = Math.min(elapsed / duration, 1); // 0 to 1
+      const eased = easeOutQuart(t); // Fast at start, slow at end
+      setProgress(eased * 100);
+
+      if (t >= 1) {
+        clearInterval(timer);
+      }
+    }, 16); // ~60fps
+
+    return () => clearInterval(timer);
+  }, []);
 
   const createConnection = useCallback(() => {
     const conn = new signalR.HubConnectionBuilder()
@@ -226,11 +248,6 @@ export default function BarcodeScanner() {
     }
   }, []);
 
-  //   // Initialize connection on mount
-  //   useEffect(() => {
-  //     validateUUID();
-  //   }, [validateUUID]);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -259,10 +276,29 @@ export default function BarcodeScanner() {
   if (initialLoad) {
     return (
       <div className="w-screen h-screen grid place-items-center">
-        <div className="flex items-center flex-col gap-3">
-          <span className="mt-2">Connect To Server</span>
-          <Button onClick={() => validateUUID()}>Connect</Button>
-        </div>
+        {progress != 100 && (
+          <div className="w-full max-w-md mx-auto p-6">
+            <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-100 ease-linear"
+                style={{ width: `${progress}%` }}
+              >
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-40 animate-shimmer" />
+              </div>
+            </div>
+
+            <p className="text-center mt-2 text-sm text-gray-600 font-medium">
+              Loading Configs {Math.round(progress)}%...
+            </p>
+          </div>
+        )}
+        {progress == 100 && (
+          <div className="flex items-center flex-col gap-3">
+            <span className="mt-2">Connect To Server</span>
+            <Button onClick={() => validateUUID()}>Connect</Button>
+          </div>
+        )}
       </div>
     );
   }

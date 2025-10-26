@@ -122,9 +122,10 @@ namespace FrcsPos.Repository
         {
             // Query terminals directly, but scoped to the company
             var terminalQuery = _context.PosTerminals
-                .Include(t => t.Sales) // Include Sales for TotalSales calculation
-                .Include(t => t.Session) // Include Sessions for LastUsedBy
+                .Include(t => t.Session)
                     .ThenInclude(s => s.PosUser)
+                .Include(t => t.Session)
+                    .ThenInclude(s => s.Sales)
                 .Where(t => t.Company.Name == queryObject.CompanyName);
 
             // Company deleted filter (through navigation)
@@ -133,7 +134,6 @@ namespace FrcsPos.Repository
                 terminalQuery = terminalQuery.Where(t => t.IsDeleted == queryObject.IsDeleted.Value);
             }
 
-            // Search (example: by terminal name or code — adjust as needed)
             if (!string.IsNullOrWhiteSpace(queryObject.Search))
             {
                 terminalQuery = terminalQuery.Where(t => t.Name.Contains(queryObject.Search));

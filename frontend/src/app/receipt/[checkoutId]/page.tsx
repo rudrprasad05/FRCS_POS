@@ -58,7 +58,7 @@ export default function ReceiptPage() {
     sale ? sale.createdOn : Date.now.toString()
   );
   const params = useParams();
-  const checkoutId = String(params.invoiceNumber);
+  const checkoutId = String(params.checkoutId);
 
   const getDate = useCallback(async () => {
     if (!checkoutId) {
@@ -76,7 +76,7 @@ export default function ReceiptPage() {
     try {
       setIsDownloading(true);
 
-      const res = await DownloadRecieptFromServer(sale.invoiceNumber); // or your dedicated endpoint
+      const res = await DownloadRecieptFromServer(sale.uuid);
 
       if (!res.success || !res.data) {
         toast.error("Failed to fetch receipt");
@@ -197,7 +197,11 @@ export default function ReceiptPage() {
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>
-                    {item.quantity} x {formatCurrency(item.unitPrice)}
+                    {item.quantity} x {formatCurrency(item.unitPrice)} +{" "}
+                    {formatCurrency(
+                      (item.quantity * item.unitPrice * item.taxRatePercent) /
+                        100
+                    )}
                   </span>
                   <span>
                     Tax: {item.productVariant.taxCategory?.ratePercent}%

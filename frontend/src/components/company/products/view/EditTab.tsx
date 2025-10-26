@@ -446,14 +446,14 @@ function Step3({ form }: { form: UseFormReturn<ProductFormData> }) {
                         value={value}
                         onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         onBlur={(e) => {
-                          if (!e.target.value) field.onChange(""); // reset if cleared
+                          if (!e.target.value) field.onChange(0); // reset if cleared
                         }}
                       />
                     ) : (
                       <Select
                         onValueChange={(val) => {
                           if (val === "custom") {
-                            field.onChange("");
+                            field.onChange(0);
                             setIsSelectCustom((prev) => ({
                               ...prev,
                               customExpiryDays: true,

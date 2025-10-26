@@ -2,6 +2,7 @@
 
 import PosSessionContainer from "@/components/company/pos/PosSessionContainer";
 import { PosSessionProvider } from "@/context/PosContext";
+import { SignalRProvider } from "@/context/SignalRContext";
 import { use } from "react";
 
 type PageProps = {
@@ -12,7 +13,9 @@ export default function PosSessionPage({ params }: PageProps) {
 
   return (
     <PosSessionProvider>
-      <PosSessionContainer uuid={sessionId} />
+      <SignalRProvider uuid={sessionId}>
+        <PosSessionContainer uuid={sessionId} />
+      </SignalRProvider>
     </PosSessionProvider>
   );
 }

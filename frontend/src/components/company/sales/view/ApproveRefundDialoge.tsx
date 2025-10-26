@@ -39,6 +39,7 @@ export default function ApproveRefundDialoge() {
   const queryClient = useQueryClient();
   const params = useParams();
   const refundId = String(params.refundId);
+  const saleId = String(params.saleId);
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInForm),
@@ -66,6 +67,10 @@ export default function ApproveRefundDialoge() {
         toast.success("Refund approved");
         queryClient.invalidateQueries({
           queryKey: ["viewRefund", refundId],
+          exact: false,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["viewSale", saleId],
           exact: false,
         });
       } else {

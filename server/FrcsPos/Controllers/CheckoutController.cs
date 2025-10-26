@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FrcsPos.Interfaces;
 using FrcsPos.Request;
+using FrcsPos.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,9 +54,13 @@ namespace FrcsPos.Controllers
         }
 
         [HttpPost("email-receipt")]
-        public async Task<IActionResult> Download([FromQuery] string uuid, [FromBody] RequestPasswordReset requestPasswordReset)
+        public async Task<IActionResult> Download([FromQuery] RequestQueryObject requestQueryObject, [FromBody] RequestPasswordReset requestPasswordReset)
         {
-            var model = await _checkoutRepository.EmailReceiptPDF(uuid, requestPasswordReset.Email);
+            if (requestQueryObject.UUID == null)
+            {
+                return BadRequest(ApiResponse<bool>.Fail(message: "Sale not found"));
+            }
+            var model = await _checkoutRepository.EmailReceiptPDF(requestQueryObject.UUID, requestPasswordReset.Email);
 
             if (model == null || !model.Success || model.Success == false)
             {

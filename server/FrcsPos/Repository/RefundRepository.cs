@@ -22,11 +22,13 @@ namespace FrcsPos.Repository
         private readonly INotificationService _notificationService;
         private readonly IRefundMapper _refundMapper;
         private readonly UserManager<User> _userManager;
+        private readonly IRedisCacheService _redisCacheService;
 
         public RefundRepository(
             ApplicationDbContext context,
             INotificationService notificationService,
             UserManager<User> userManager,
+            IRedisCacheService redisCacheService,
             IRefundMapper refundMapper
         )
         {
@@ -34,6 +36,7 @@ namespace FrcsPos.Repository
             _notificationService = notificationService;
             _userManager = userManager;
             _refundMapper = refundMapper;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ApiResponse<RefundDTO>> StartRefundAsync(StartRefundRequest request, string cashierUserId)
@@ -153,21 +156,35 @@ namespace FrcsPos.Repository
         public async Task<ApiResponse<RefundDTO>> ApproveRefundAsync(RequestQueryObject requestQuery, AdminApprovalRequest request)
         {
             var refund = await _context.RefundRequests
+                .Include(r => r.Sale)
+                    .ThenInclude(s => s.Company)
                 .Include(r => r.Items)
                     .ThenInclude(i => i.SaleItem)
                         .ThenInclude(si => si.ProductVariant)
                             .ThenInclude(p => p.Batches)
                 .FirstOrDefaultAsync(r => r.UUID == requestQuery.UUID);
 
-            if (refund == null) return ApiResponse<RefundDTO>.Fail(message: "Refund not found");
-            if (refund.Status != RefundStatus.PENDING) return ApiResponse<RefundDTO>.Fail(message: "Refund already processed");
+            if (refund == null)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "Refund not found");
+            }
 
-            var admin = await _userManager.FindByNameAsync(request.AdminUsernameOrEmail)
-                        ?? await _userManager.FindByEmailAsync(request.AdminUsernameOrEmail);
+            if (refund.Status != RefundStatus.PENDING)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "Refund already processed");
+            }
 
-            if (admin == null) return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
+            var admin = await _userManager.FindByNameAsync(request.AdminUsernameOrEmail) ?? await _userManager.FindByEmailAsync(request.AdminUsernameOrEmail);
+            if (admin == null)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
+            }
+
             var ok = await _userManager.CheckPasswordAsync(admin, request.AdminPassword);
-            if (!ok) return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
+            if (!ok)
+            {
+                return ApiResponse<RefundDTO>.Fail(message: "Invalid Credentials");
+            }
 
             var roles = await _userManager.GetRolesAsync(admin);
             var isAdmin = roles.Contains("admin");
@@ -175,7 +192,7 @@ namespace FrcsPos.Repository
             {
                 return ApiResponse<RefundDTO>.Fail(message: "Admin creds required");
             }
-            // Restock items by updating ProductBatch quantities
+
             foreach (var item in refund.Items)
             {
                 var saleItem = await _context.SaleItems
@@ -201,12 +218,32 @@ namespace FrcsPos.Repository
                 item.ApprovedQuantity = item.Quantity;
             }
 
+            Sale sale = refund.Sale;
+
+            var invoiceNumber = $"{sale.Company.Name[0..2]}-{DateTime.UtcNow:yyyyMMddHHmmss}";
+
+            string newCacheKey = $"receipt:{sale.InvoiceNumber}";
+            string oldCacheKey = $"receipt:{sale.InvoiceNumber}";
+
+            sale.InvoiceNumber = invoiceNumber;
             refund.Status = RefundStatus.APPROVED;
             refund.ApprovedByUserId = admin.Id;
+
             _context.RefundRequests.Update(refund);
+            _context.Sales.Update(refund.Sale);
+
             await _context.SaveChangesAsync();
+            await _redisCacheService.SetAsync(newCacheKey, sale);
+            await _redisCacheService.RemoveAsync(oldCacheKey);
 
             return ApiResponse<RefundDTO>.Ok(await _refundMapper.FromModelToDtoAsync(refund));
+        }
+        private void RecomputeSaleTotals(Sale sale)
+        {
+            // EF Core will track the SaleItems that are already loaded
+            sale.TaxTotal = sale.Items.Sum(i => i.UnitPrice * i.Quantity * i.TaxRatePercent / 100);
+            sale.Subtotal = sale.Items.Sum(i => i.UnitPrice * i.Quantity);
+            sale.Total = sale.Subtotal + sale.TaxTotal;
         }
 
         public async Task<ApiResponse<RefundDTO>> GetRefundByUUIDAsync(RequestQueryObject query)

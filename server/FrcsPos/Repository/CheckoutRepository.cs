@@ -187,30 +187,44 @@ namespace FrcsPos.Repository
 
             var sale = await _context.Sales
                 .Include(s => s.Company)
-                .Include(s => s.Items)
-                    .ThenInclude(si => si.ProductVariant)
-                        .ThenInclude(x => x.Media)
-                .Include(s => s.Items)
-                    .ThenInclude(si => si.ProductVariant)
-                        .ThenInclude(x => x.Product)
-                            .ThenInclude(p => p.TaxCategory)
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
                 .Include(s => s.Cashier)
                 .Include(s => s.Refunds)
-                    .ThenInclude(si => si.RequestedBy)
+                    .ThenInclude(r => r.RequestedBy)
                 .Include(s => s.Refunds)
-                    .ThenInclude(si => si.Items)
-                        .ThenInclude(x => x.SaleItem)
-                            .ThenInclude(si => si.ProductVariant)
-                                .ThenInclude(x => x.Media)
-
+                    .ThenInclude(r => r.Items)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant)
+                        .ThenInclude(pv => pv.Media)
+                .Include(s => s.Items)
+                    .ThenInclude(si => si.ProductVariant)
+                        .ThenInclude(pv => pv.Product)
+                            .ThenInclude(p => p.TaxCategory)
                 .FirstOrDefaultAsync(s => s.UUID == uuid);
 
+            if (sale != null)
+            {
+                var refundedItemIds = sale.Refunds
+                    .Where(r => r.Status == RefundStatus.APPROVED)
+                    .SelectMany(r => r.Items)
+                    .Select(ri => ri.SaleItemId)
+                    .ToHashSet();
+
+                sale.Items = sale.Items
+                    .Where(si => !refundedItemIds.Contains(si.Id))
+                    .ToList();
+            }
+
             if (sale == null)
-                return ApiResponse<SaleDTO>.NotFound(message: "Sale not found");
-            if (sale.Company == null)
+            {
                 return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
+            }
+
+            if (sale.Company == null)
+            {
+                return ApiResponse<SaleDTO>.NotFound(message: "Company not found");
+            }
 
             var dto = await _saleMapper.FromModelToDtoAsync(sale);
 
@@ -268,6 +282,8 @@ namespace FrcsPos.Repository
                 {
                     return ApiResponse<string>.Fail(message: "invalid pdf url");
                 }
+
+                await _redisCacheService.SetAsync(cacheKey, sale);
 
                 var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
                 return ApiResponse<string>.Ok(data: fileUrl);
@@ -382,7 +398,7 @@ namespace FrcsPos.Repository
                                 });
 
                                 // Tax per line
-                                items.Item().PaddingLeft(8).Text($"Tax: {(item.LineTotal * 0.125m):P1}")
+                                items.Item().PaddingLeft(8).Text($"Tax: {item.UnitPrice * item.Quantity * item.TaxRatePercent / 100:P1}")
                                     .FontSize(10)
                                     .FontColor(Colors.Grey.Darken2);
                             }
@@ -447,34 +463,28 @@ namespace FrcsPos.Repository
 
             if (cachedReceipt != null)
             {
-                var pdfBytes = GenerateReceiptPdfBytes(cachedReceipt);
-                var formFile = ToFormFile(pdfBytes, $"{cachedReceipt.InvoiceNumber}.pdf");
-
-                var objKey = await _azureBlobService.UploadFileAsync(formFile, cachedReceipt.InvoiceNumber);
-                if (objKey == null || string.IsNullOrEmpty(objKey))
-                {
-                    return ApiResponse<SaleDTO>.Fail(message: "invalid pdf url");
-                }
-
-                var fileUrl = await _azureBlobService.GetImageSignedUrl(objKey);
                 return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(cachedReceipt));
             }
             else
             {
                 var sale = await _context.Sales
-                .Include(s => s.Company)
-                .Include(s => s.Items)
-                    .ThenInclude(si => si.ProductVariant.Product)
-                        .ThenInclude(p => p.TaxCategory)
-                .Include(s => s.PosSession)
-                    .ThenInclude(ps => ps.PosTerminal)
-                .Include(s => s.Cashier)
-                .FirstOrDefaultAsync(s => s.InvoiceNumber == uuid);
+                    .Include(s => s.Company)
+                    .Include(s => s.Items)
+                        .ThenInclude(si => si.ProductVariant)
+                            .ThenInclude(x => x.Product)
+                                .ThenInclude(p => p.TaxCategory)
+                    .Include(s => s.PosSession)
+                        .ThenInclude(ps => ps.PosTerminal)
+                    .Include(s => s.Cashier)
+                    .FirstOrDefaultAsync(s => s.InvoiceNumber == uuid);
 
                 if (sale == null)
                     return ApiResponse<SaleDTO>.NotFound(message: "Sale not found");
 
-                return ApiResponse<SaleDTO>.Ok(await _saleMapper.FromModelToDtoAsync(sale));
+                await _redisCacheService.SetAsync(cacheKey, sale);
+                var dto = await _saleMapper.FromModelToDtoAsync(sale);
+
+                return ApiResponse<SaleDTO>.Ok(dto);
             }
         }
 
@@ -545,7 +555,7 @@ namespace FrcsPos.Repository
                 .Include(s => s.PosSession)
                     .ThenInclude(ps => ps.PosTerminal)
                 .Include(s => s.Cashier)
-                .FirstOrDefaultAsync(s => s.UUID == uuid);
+                .FirstOrDefaultAsync(s => s.UUID == uuid || s.InvoiceNumber == uuid);
 
             if (sale == null)
                 return ApiResponse<bool>.NotFound(message: "Sale not found");
