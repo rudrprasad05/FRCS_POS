@@ -1,6 +1,5 @@
 "use client";
 
-import { Logout } from "@/actions/User";
 import { axiosGlobal } from "@/lib/axios";
 import { RegisterFormType } from "@/types/forms/zod";
 import { ApiResponse, User } from "@/types/models";
@@ -147,16 +146,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // helperHandleRedirectAfterLogin(tempUser);
   };
 
-  // 🔹 Logout function
   const logout = async () => {
-    await Logout();
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    console.log("hit1");
+    const res = await fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email: user?.email }),
+    });
+    console.log("hit2");
+
+    const resp: ApiResponse<User> = await res.json();
+    const data = resp.data;
+
+    if (!data) {
+      toast.error("An error occurred", { description: resp.message });
+      return;
+    }
+
+    console.log("hit3", res);
 
     setUser(null);
 
     toast.info("Logging out");
     router.push("/auth/login");
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   const checkAuth = useCallback(async () => {

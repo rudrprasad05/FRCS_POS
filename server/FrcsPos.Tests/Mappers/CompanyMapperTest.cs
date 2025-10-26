@@ -79,6 +79,53 @@ namespace FrcsPos.Tests.Mappers
         }
 
         [Fact]
+        public void FromModelToDto_WithNullCompany()
+        {
+            // Arrange
+            Company company = null!;
+
+            // Act
+            var result = company.FromModelToDto();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("default name", result.Name);
+        }
+
+        [Fact]
+        public void FromModelToDto_WithValidCompany()
+        {
+            // Arrange
+            var uuid = Guid.NewGuid().ToString().ToUpper();
+            var adminUUID = Guid.NewGuid().ToString().ToUpper();
+            var createdOn = DateTime.UtcNow;
+
+            Company company = new()
+            {
+                UUID = uuid,
+                Id = 1,
+                CreatedOn = createdOn,
+                UpdatedOn = createdOn,
+                Name = "default-company",
+                IsDeleted = false,
+                AdminUserId = adminUUID
+            };
+
+            // Act
+            var result = company.FromModelToDto();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(uuid, result.UUID);
+            Assert.Equal(1, result.Id);
+            Assert.Equal(createdOn, result.CreatedOn);
+            Assert.Equal(createdOn, result.UpdatedOn);
+            Assert.Equal("default-company", result.Name);
+            Assert.Equal(adminUUID, result.AdminUserId);
+            Assert.False(result.IsDeleted);
+        }
+
+        [Fact]
         public void FromModelToDTOWithoutPosTerminals_WithValidCompany_ReturnsDtoWithoutTerminals()
         {
             // Arrange

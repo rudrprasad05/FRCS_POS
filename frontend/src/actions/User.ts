@@ -127,16 +127,6 @@ export async function CreateUser(
   return RequestWrapper<User>("POST", `user/create`, { data, query });
 }
 
-export async function Logout(): Promise<ApiResponse<string>> {
-  const token = await GetToken();
-
-  const res = await axiosGlobal.get<ApiResponse<string>>("auth/logout", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return res.data;
-}
-
 export async function GetToken(): Promise<string | undefined> {
   const a = await cookies();
   const token = a.get("token")?.value;
